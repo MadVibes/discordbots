@@ -15,6 +15,7 @@ class Bot:
         self.logger = logger
         self.config = config
         self.client = client
+        self.guild_id = 0
 
         db_schema = {
             'users': []
@@ -47,3 +48,12 @@ class Bot:
             data['users'].append(user_schema)
             self.data.write(data)
             return True
+
+    def alter_balance(self, amount: int, user_id: int):
+        """Alter balance by amount"""
+        data = self.data.read()
+        for user in data['users']:
+            if user['user_id'] == user_id:
+                user['balance'] += amount
+
+        self.data.write(data)
