@@ -1,8 +1,8 @@
 # Bank Bot
 # Handles the moving/maintaining of VibeCoin
 ####################################################################################################
-import discord
-import os, sys, json
+from dis import discord
+import os, sys
 from re import A
 import configparser
 import discord
@@ -24,11 +24,12 @@ VERSION = 'v0.1'
 load_dotenv()
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
+# GET BOT:
+# URL: https://discord.com/api/oauth2/authorize?client_id=949437220450861066&permissions=534791059520&scope=bot
 ########################################################################################################
 
 intents = discord.Intents.default()
 intents.members = True
-intents.dm_messages = True
 
 logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
 logger.log('Starting Bank - ' + VERSION)
@@ -37,7 +38,7 @@ bot = Bot(logger, config, client)
 
 @client.event
 async def on_ready():
-    logger.log(f'Connected to Discord! {client.user.id}')
+    logger.log('Connected to Discord!')
     for guild in client.guilds:
         if guild.name == GUILD:
             bot.guild_id = guild.id
@@ -57,11 +58,6 @@ async def on_message(message: discord.Message):
         success = bot.create_user(int(message.author.id), message.author.display_name)
         if not(success):
             logger.warn(f'Failed to create new user {message.author.display_name}')
-    
-    # Is a direct message (This is a null check)
-    if not message.guild:
-        on_message_dm(message)
-        return
 
 @tasks.loop(minutes=float(config['BALANCE_LOOP']))
 async def balance_accrue():
@@ -78,21 +74,6 @@ async def balance_accrue():
         if not(bot.user_id_exists(int(online_user.id))):
             bot.create_user(int(online_user.id), online_user.display_name)
         bot.alter_balance(int(config['BALANCE_ACCRUE']), online_user.id)
-
-def on_message_dm(message: discord.Message):
-    """Handle direct messages from other bots"""
-    content = str(message.content).split(config['COMMS_DELIM'])
-    if(len(content) != 2):
-        logger.warn('Invalid request DM:' + str(message.content))
-        return 
-
-    if content[0] not in config['COMMS_ACCEPTED_SECRET']:
-        logger.warn('Invalid request secret:' + str(content[0]))
-        return
-
-    data_in = json.loads(content[1])
-    print('DATA IN ACCEPTED!')
-    print(data_in)
 
 
 # Start the bot using TOKEN
