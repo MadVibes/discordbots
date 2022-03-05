@@ -1,7 +1,7 @@
 # Bank Bot
 # Handles the moving/maintaining of VibeCoin
 ####################################################################################################
-from dis import discord
+import discord
 import os, sys
 from re import A
 import configparser
@@ -24,8 +24,6 @@ VERSION = 'v0.1'
 load_dotenv()
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
-# GET BOT:
-# URL: https://discord.com/api/oauth2/authorize?client_id=949437220450861066&permissions=534791059520&scope=bot
 ########################################################################################################
 
 intents = discord.Intents.default()
