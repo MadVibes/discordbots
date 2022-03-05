@@ -6,7 +6,6 @@ import discord
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.data import Database
 from lib.logger import Logger
 
 class Bot:
@@ -16,44 +15,4 @@ class Bot:
         self.config = config
         self.client = client
         self.guild_id = 0
-
-        db_schema = {
-            'users': []
-        }
-
-        self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     
-    def user_id_exists(self, user_id: int):
-        """Does user name exist"""
-        data = self.data.read()
-        for user in data['users']:
-            if user['user_id'] == user_id:
-                return True
-        return False
-
-    def create_user(self, user_id: int, user_name: str):
-        """Create a new user, returns true|false if success"""
-        data = self.data.read()
-        if user_name in data['users']:
-            self.logger.warn(f'Attempted to create user "{user_name}" but they already exist')
-            return False
-        else:
-            user_schema = {
-                'user_id': int(user_id),
-                'created_time': str(datetime.now().strftime("%s")),# In epoch time
-                'balance': 0,
-                'meta': []
-            }
-
-            data['users'].append(user_schema)
-            self.data.write(data)
-            return True
-
-    def alter_balance(self, amount: int, user_id: int):
-        """Alter balance by amount"""
-        data = self.data.read()
-        for user in data['users']:
-            if user['user_id'] == user_id:
-                user['balance'] += amount
-
-        self.data.write(data)

@@ -70,8 +70,7 @@ class Bot:
                 self.logger.warn('Request for getBalance is missing parameters')
                 return {
                     'request': 'failure',
-                    'message': 'missing parameters',
-                    'details': 'parameters: user_id are required'
+                    'message': 'missing parameters, parameters: user_id are required'
                 }
 
             return self.req_get_balance(json_in['parameters']['user_id'])
@@ -88,7 +87,6 @@ class Bot:
         if balance != -1:
             response = {
                 'request': 'success',
-                'message': 'get balance requests was successful',
                 'balance': balance
             }
         else:
