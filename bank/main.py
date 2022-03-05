@@ -3,7 +3,6 @@
 ####################################################################################################
 import discord
 import os, sys, json
-from re import A
 import configparser
 import discord
 from discord.ext import tasks

@@ -2,7 +2,6 @@
 ####################################################################################################
 from datetime import datetime
 import sys
-import configparser
 import discord
 
 sys.path.insert(0, '../')

@@ -3,7 +3,6 @@
 ####################################################################################################
 from dis import discord
 import os, sys
-from re import A
 import configparser
 import discord
 from discord.ext import tasks
