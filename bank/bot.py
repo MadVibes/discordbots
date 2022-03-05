@@ -1,10 +1,12 @@
 # This handles the actual bot logic
 ####################################################################################################
 from datetime import datetime
-import sys
+from re import A
+import sys, json
 import discord
 
 sys.path.insert(0, '../')
+sys.path.insert(0, './')
 from lib.data import Database
 from lib.logger import Logger
 
@@ -56,3 +58,44 @@ class Bot:
                 user['balance'] += amount
 
         self.data.write(data)
+
+    def handle_input(self, json_in):
+        """Handle action"""
+        action = json_in['action']
+
+        if action == 'getBalance':
+            # Validate required parameters
+            if ('parameters' not in json_in 
+                or 'user_id' not in json_in['parameters']):
+                self.logger.warn('Request for getBalance is missing parameters')
+                return {
+                    'request': 'failure',
+                    'message': 'missing parameters',
+                    'details': 'parameters: user_id are required'
+                }
+
+            return self.req_get_balance(json_in['parameters']['user_id'])
+
+    def req_get_balance(self, user_id):
+        """Handle request to get balance and create response"""
+        data = self.data.read()
+        balance = -1
+        for user in data['users']:
+            if user['user_id'] == user_id:
+                balance = user['balance']
+
+        response = {}
+        if balance != -1:
+            response = {
+                'request': 'success',
+                'message': 'get balance requests was successful',
+                'balance': balance
+            }
+        else:
+            response = {
+                'request': 'failure',
+                'message': 'user_id does not exist',
+                'balance': balance
+            }
+
+        return response

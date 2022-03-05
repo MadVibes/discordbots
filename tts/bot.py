@@ -5,6 +5,7 @@ import sys
 import discord
 
 sys.path.insert(0, '../')
+sys.path.insert(0, './')
 from lib.data import Database
 from lib.logger import Logger
 

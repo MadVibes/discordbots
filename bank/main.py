@@ -9,13 +9,14 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 sys.path.insert(0, '../')
+sys.path.insert(0, './')
 from lib.logger import Logger
 from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
 config = configparser.ConfigParser()
-config.read('./config.ini')
+config.read('/home/liam/Documents/vibebots/config.ini') # CHANGE ME
 config = config['bank']
 
 VERSION = 'v0.1'
@@ -59,7 +60,7 @@ async def on_message(message: discord.Message):
     
     # Is a direct message (This is a null check)
     if not message.guild:
-        on_message_dm(message)
+        await on_message_dm(message)
         return
 
 @tasks.loop(minutes=float(config['BALANCE_LOOP']))
@@ -78,7 +79,7 @@ async def balance_accrue():
             bot.create_user(int(online_user.id), online_user.display_name)
         bot.alter_balance(int(config['BALANCE_ACCRUE']), online_user.id)
 
-def on_message_dm(message: discord.Message):
+async def on_message_dm(message: discord.Message):
     """Handle direct messages from other bots"""
     content = str(message.content).split(config['COMMS_DELIM'])
     if(len(content) != 2):
@@ -90,9 +91,9 @@ def on_message_dm(message: discord.Message):
         return
 
     data_in = json.loads(content[1])
-    print('DATA IN ACCEPTED!')
-    print(data_in)
+    response = bot.handle_input(data_in)
 
+    await message.reply(response)
 
 # Start the bot using TOKEN
 client.run(TOKEN)

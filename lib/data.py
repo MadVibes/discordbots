@@ -29,7 +29,7 @@ class Database:
 
     @staticmethod
     def _read_file(target):
-        with open(target) as input_file:
+        with open(target, 'r') as input_file:
             return json.load(input_file)
 
     def read(self):
