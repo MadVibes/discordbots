@@ -1,4 +1,7 @@
 __pycache__
-bank.log
 config.ini
 data.json
+
+# Logs
+bank.log
+chameleon.log
