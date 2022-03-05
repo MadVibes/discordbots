@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
 from lib.logger import Logger
+from lib.server import Web_Server
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -37,7 +38,7 @@ bot = Bot(logger, config, client)
 
 @client.event
 async def on_ready():
-    logger.log(f'Connected to Discord! {client.user.id}')
+    logger.log(f'Connected to Discord! uid:{client.user.id}')
     for guild in client.guilds:
         if guild.name == GUILD:
             bot.guild_id = guild.id
@@ -48,7 +49,7 @@ async def on_ready():
 
     # Start loops
     balance_accrue.start()
-    
+
 
 @client.event
 async def on_message(message: discord.Message):
@@ -94,6 +95,20 @@ async def on_message_dm(message: discord.Message):
     response = bot.handle_input(data_in)
 
     await message.reply(response)
+
+
+
+# Functions for webserver
+def test():
+    print('test function for web called')
+
+
+actions = {
+    'getBalance': test
+}
+
+web = Web_Server(logger, actions, config)
+web.start()
 
 # Start the bot using TOKEN
 client.run(TOKEN)
