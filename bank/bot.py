@@ -1,7 +1,6 @@
 # This handles the actual bot logic
 ####################################################################################################
 from datetime import datetime
-from re import A
 import sys, json
 import discord
 
@@ -53,11 +52,22 @@ class Bot:
     def alter_balance(self, amount: int, user_id: int):
         """Alter balance by amount"""
         data = self.data.read()
+        balance = 0
         for user in data['users']:
             if user['user_id'] == user_id:
                 user['balance'] += amount
-
+                balance = user['balance']
         self.data.write(data)
+        return balance
+
+    def get_balance(self, user_id: int):
+        """Get the balance of a user id"""
+        data = self.data.read()
+        balance = -1
+        for user in data['users']:
+            if user['user_id'] == user_id:
+                balance = user['balance']
+        return balance
 
     def handle_input(self, json_in):
         """Handle action"""
@@ -69,31 +79,84 @@ class Bot:
                 or 'user_id' not in json_in['parameters']):
                 self.logger.warn('Request for getBalance is missing parameters')
                 return {
-                    'request': 'failure',
+                    'request': 'Failure',
                     'message': 'missing parameters, parameters: user_id are required'
+                }
+
+            return self.req_get_balance(json_in['parameters']['user_id'])
+
+        if action == 'moveCurrency':
+            # Validate required parameters
+            if ('parameters' not in json_in 
+                or 'user_id_sender' not in json_in['parameters']
+                or 'user_id_receiver' not in json_in['parameters']):
+                self.logger.warn('Request for getBalance is missing parameters')
+                return {
+                    'request': 'Failure',
+                    'message': 'missing parameters, parameters: user_id_sender and user_id_receiver are required'
                 }
 
             return self.req_get_balance(json_in['parameters']['user_id'])
 
     def req_get_balance(self, user_id):
         """Handle request to get balance and create response"""
-        data = self.data.read()
-        balance = -1
-        for user in data['users']:
-            if user['user_id'] == user_id:
-                balance = user['balance']
+        balance = self.get_balance(user_id)
 
         response = {}
         if balance != -1:
             response = {
-                'request': 'success',
+                'request': 'Success',
                 'balance': balance
             }
         else:
             response = {
-                'request': 'failure',
+                'request': 'Failure',
                 'message': 'user_id does not exist',
                 'balance': balance
             }
 
         return response
+
+    def req_move_currency(self, user_id_sender, user_id_receiver, amount):
+        """Handle request to move currency and create response"""
+        sender_balance = self.get_balance(user_id_sender)
+        receiver_balance = self.get_balance(user_id_receiver)
+
+        # If target isers dont exist
+        if sender_balance==-1 or receiver_balance ==-1:
+            sender = ('exists' if sender_balance!=-1 else 'missing')
+            receiver = ('exists' if receiver_balance!=-1 else 'missing')
+            return {
+                'request': 'Failure',
+                'message': 'either sender or receiver user does not exist',
+                'sender': sender,
+                'receiver': receiver
+            }
+
+        # Sender has insufficient funds
+        if sender_balance < amount:
+            return {
+                'request': 'Failure',
+                'message': 'user_id_sender has insufficient balance',
+                'balance': sender_balance
+            }
+
+        # Try move balance
+        try:
+            sender_balance = self.alter_balance(-amount, user_id_sender)
+            receiver_balance = self.alter_balance(amount, user_id_receiver)
+            self.logger.log(f'Transferred {user_id_sender} -> {user_id_receiver} ({amount})')
+            return {
+                'request': 'Success',
+                'message': 'balance transferred',
+                'balance_sender': sender_balance,
+                'balance_receiver': receiver_balance
+                }
+        # Handle error
+        except Exception as e:
+            self.logger.warn('Failed to move currency:' + str(e))
+            self.logger.warn(f'{user_id_sender} -> {user_id_receiver} ({amount})')
+            return {
+                'request': 'Failure',
+                'message': str(e)
+            }

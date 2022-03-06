@@ -36,7 +36,7 @@ class Handler(BaseHTTPRequestHandler):
     def handle_POST(self):
         if self.path == '/bounce':
             content = { 
-                    'request': 'accepted',
+                    'request': 'Accepted',
                     'timestamp': str(datetime.now()),
                     'request_body': self.read_json_body()
                 }
@@ -70,11 +70,19 @@ class Handler(BaseHTTPRequestHandler):
                 return None
 
             self.logger.log(f"Processing action '{str(action_json['action'])}'")
-            response = self.actions[action_json['action']](self.service, action_json['parameters'])
-            content = { 
+            response = {}
+            try: 
+                response = self.actions[action_json['action']](self.service, action_json['parameters'])
+                content = { 
                     'request': 'Accepted',
                     'timestamp': str(datetime.now()),
                     'response': response
+                }
+            except Exception as e:
+                content = { 
+                    'request': 'Failed',
+                    'timestamp': str(datetime.now()),
+                    'response': str(e)
                 }
             self.write_response(200, dumps(content))
         except Exception as e:

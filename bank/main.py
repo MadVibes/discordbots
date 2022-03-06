@@ -49,7 +49,9 @@ async def on_ready():
 
     # Start loops
     balance_accrue.start()
-
+    # Create it's own user in bank
+    if not bot.user_id_exists(client.user.id):
+        bot.create_user(client.user.id, client.user.name)
 
 @client.event
 async def on_message(message: discord.Message):
@@ -109,14 +111,25 @@ class Servlet:
 
 # Functions for webserver
 def getBalance(service: Servlet, parameters: json):
+    """Return users balance"""
     if 'user_id' not in parameters:
         raise Exception('user_id was not included in parameters')
 
     return service.bot.req_get_balance(user_id=parameters['user_id'])
 
+def moveCurrency(service: Servlet, parameters: json):
+    """Move balance from one user to another"""
+    if ('user_id_sender' not in parameters
+        or 'user_id_receiver' not in parameters
+        or 'amount' not in parameters):
+        raise Exception('user_id_sender, user_id_receiver, amount were not all included in parameters')
+
+    return service.bot.req_move_currency(user_id_sender=parameters['user_id_sender'], user_id_receiver=parameters['user_id_receiver'], amount=parameters['amount'])
+
 # Mapping of possible functions that the web server can call
 actions = {
-    'getBalance': getBalance
+    'getBalance': getBalance,
+    'moveCurrency': moveCurrency
 }
 servlet = Servlet(client, bot)
 
