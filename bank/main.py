@@ -81,6 +81,7 @@ async def balance_accrue():
         bot.alter_balance(int(config['BALANCE_ACCRUE']), online_user.id)
 
 async def on_message_dm(message: discord.Message):
+    """LEGACY DON'T USE ME"""
     """Handle direct messages from other bots"""
     content = str(message.content).split(config['COMMS_DELIM'])
     if(len(content) != 2):
@@ -97,17 +98,29 @@ async def on_message_dm(message: discord.Message):
     await message.reply(response)
 
 
+# WEB SERVER INIT
+########################################################################################################
+
+# Mini service/class for actions
+class Servlet:
+    def __init__(self, client: discord.Client, bot: Bot):
+        self.client = client
+        self.bot = bot
 
 # Functions for webserver
-def test():
-    print('test function for web called')
+def getBalance(service: Servlet, parameters: json):
+    if 'user_id' not in parameters:
+        raise Exception('user_id was not included in parameters')
 
+    return service.bot.req_get_balance(user_id=parameters['user_id'])
 
+# Mapping of possible functions that the web server can call
 actions = {
-    'getBalance': test
+    'getBalance': getBalance
 }
+servlet = Servlet(client, bot)
 
-web = Web_Server(logger, actions, config)
+web = Web_Server(logger, actions, servlet, config)
 web.start()
 
 # Start the bot using TOKEN
