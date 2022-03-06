@@ -16,10 +16,11 @@ from lib.logger import Logger
 
 class Handler(BaseHTTPRequestHandler):
 
-    def __init__(self, logger, actions, config, start_time, *args, **kwargs):
+    def __init__(self, logger, actions, service, config, start_time, *args, **kwargs):
         self.start_time = start_time
         self.actions = actions
         self.logger = logger
+        self.service = service
         self.config = config
         super().__init__(*args, **kwargs)
 
@@ -69,7 +70,7 @@ class Handler(BaseHTTPRequestHandler):
                 return None
 
             self.logger.log(f"Processing action '{str(action_json['action'])}'")
-            response = self.actions[action_json['action']]()
+            response = self.actions[action_json['action']](self.service, action_json['parameters'])
             content = { 
                     'request': 'Accepted',
                     'timestamp': str(datetime.now()),
@@ -130,14 +131,15 @@ class Handler(BaseHTTPRequestHandler):
 
 class Web_Server:
 
-    def __init__(self, logger, actions, config):
+    def __init__(self, logger, actions, service, config):
         self.actions = actions
         self.logger = logger
+        self.service = service
         self.config = config
         self.url = self.config['COMMS_IP']
         self.port = int(self.config['COMMS_PORT'])
 
-        h = partial(Handler, logger, actions, config, datetime.now())
+        h = partial(Handler, logger, actions, service, config, datetime.now())
 
         # Create server
         try:
