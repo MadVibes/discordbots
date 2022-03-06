@@ -49,15 +49,16 @@ async def on_ready():
             exit(1)
 
     # Restore defaults
-    await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['TTS_DEFAULT_NAME'])
+    await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
 
 @client.command(name='tts')
 async def command_tts(ctx: commands.Context, *args):
+    """Execute tts command""" 
+    await bot.send_tts(ctx, args)
 
-    await bot.can_afford()
-
-    print('SEND TTS!')
-    # await bot.send_tts(ctx, args)
+@client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
+async def command_nothing(ctx: commands.Context, *args):
+    """"""# Catch to do nothing. Used for overlapping bot prefix
 
 # Start the bot using TOKEN
 client.run(TOKEN)

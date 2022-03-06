@@ -6,6 +6,7 @@ import os, sys, json
 import configparser
 import discord
 from discord.ext import tasks
+from discord.ext import commands
 from dotenv import load_dotenv
 
 sys.path.insert(0, '../')
@@ -27,13 +28,15 @@ TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
 ########################################################################################################
 
+# Bot perms (534790879296)
 intents = discord.Intents.default()
 intents.members = True
 intents.dm_messages = True
+intents.messages = True
 
 logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
 logger.log('Starting Bank - ' + VERSION)
-client = discord.Client(intents=intents)
+client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bot = Bot(logger, config, client)
 
 @client.event
@@ -68,6 +71,9 @@ async def on_message(message: discord.Message):
     if not message.guild:
         await on_message_dm(message)
         return
+
+    # Handle normal on_message event
+    await client.process_commands(message)
 
 @tasks.loop(minutes=float(config['BALANCE_ACCRUE_TIME']))
 async def balance_accrue():
@@ -117,6 +123,25 @@ async def balance_fade():
             bot.create_user(int(afk_user.id), afk_user.display_name)
         bot.alter_balance(-int(config['BALANCE_FADE']), afk_user.id)
 
+@client.command(name='balance')
+async def command_balance(ctx: commands.Context, *args):
+    """Display a users balance"""
+    if not(bot.user_id_exists(int(ctx.author.id))):
+        bot.create_user(int(ctx.author.id), ctx.author.display_name)
+
+    balance = bot.get_balance(ctx.author.id)
+    await ctx.send(f'Your current balance is {balance} vbc')
+
+@client.command(name='transfer')
+async def command_transfer(ctx: commands.Context, *args):
+    """Tansfer money to another player"""
+
+@client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
+async def command_nothing(ctx: commands.Context, *args):
+    """"""# Catch to do nothing. Used for overlapping bot prefix
+
+# LEGACY CODE
+# REMOVE ME IN v1.0
 async def on_message_dm(message: discord.Message):
     """LEGACY DON'T USE ME"""
     """Handle direct messages from other bots"""
@@ -125,7 +150,7 @@ async def on_message_dm(message: discord.Message):
         logger.warn('Invalid request DM:' + str(message.content))
         return 
 
-    if content[0] not in config['COMMS_ACCEPTED_SECRETS']:
+    if content[0] not in config['COMMS_ACCEPTED_SECRETS'].split(','):
         logger.warn('Invalid request secret:' + str(content[0]))
         return
 
@@ -133,7 +158,6 @@ async def on_message_dm(message: discord.Message):
     response = bot.handle_input(data_in)
 
     await message.reply(response)
-
 
 # WEB SERVER INIT
 ########################################################################################################

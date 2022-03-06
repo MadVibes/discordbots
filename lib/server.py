@@ -56,7 +56,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_POST_action(self):
         try:
-            self.logger.log('Web action received')
+            self.logger.debug('Web action received')
             action_json = self.read_json_body()
             
             # Check for missing fields
@@ -69,7 +69,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.write_response(400, dumps(content))
                 return None
 
-            self.logger.log(f"Processing action '{str(action_json['action'])}'")
+            self.logger.debug(f"Processing action '{str(action_json['action'])}'")
             response = {}
             try: 
                 response = self.actions[action_json['action']](self.service, action_json['parameters'])
@@ -137,7 +137,7 @@ class Handler(BaseHTTPRequestHandler):
         secret = self.headers.get('Authorization')
         if not secret:
             return False
-        return secret in self.config['COMMS_ACCEPTED_SECRETS'];
+        return secret in self.config['COMMS_ACCEPTED_SECRETS'].split(',');
 
 class Web_Server:
 
