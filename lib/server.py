@@ -135,6 +135,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def auth(self):
         secret = self.headers.get('Authorization')
+        if not secret:
+            return False
         return secret in self.config['COMMS_ACCEPTED_SECRETS'];
 
 class Web_Server:
