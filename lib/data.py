@@ -2,7 +2,7 @@
 # This handles storing data. This abstracts the process so it can be dia via DB or a JSON file 
 ####################################################################################################
 import json
-import os, sys
+import os, sys, time
 
 sys.path.insert(0, '../')
 from lib.logger import Logger
@@ -21,8 +21,21 @@ class Database:
 
     @staticmethod
     def _write_file(target, data):
+        # Wait for data lock to finish
+        lock_suffix = '.lock'
+        while(os.path.exists(target + lock_suffix)):
+            # Sleep to avoid writing to a file that is locked
+            time.sleep(1.0)
+        # Create data lock
+        with open(target + lock_suffix, 'w') as lock_file:
+            json.dump({'file':'is_locked'}, lock_file)
+            
+        # Write data
         with open(target, 'w') as output_file:
             json.dump(data, output_file)
+
+        # Remove data lock
+        os.remove(target + lock_suffix)
 
     def write(self, data):
         Database._write_file(self.output, data)
