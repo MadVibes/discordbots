@@ -49,9 +49,12 @@ async def on_ready():
 
     # Start loops
     balance_accrue.start()
+    balance_fade.start()
     # Create it's own user in bank
     if not bot.user_id_exists(client.user.id):
         bot.create_user(client.user.id, client.user.name)
+    # Restore defaults
+    await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
 
 @client.event
 async def on_message(message: discord.Message):
@@ -66,21 +69,53 @@ async def on_message(message: discord.Message):
         await on_message_dm(message)
         return
 
-@tasks.loop(minutes=float(config['BALANCE_LOOP']))
+@tasks.loop(minutes=float(config['BALANCE_ACCRUE_TIME']))
 async def balance_accrue():
     """Accrue balance to users currently in a channel"""
     online_users = []
 
     guild: discord.Guild = client.get_guild(bot.guild_id)
     for channel in guild.voice_channels:
+        # Skip afk channel
         if channel.name != guild.afk_channel.name:
             for member in channel.members:
-                online_users.append(member)
+                # Skip giving coin on conditions
+                #   1. deafened
+                #   2. only 1 person in channel
+                if not(member.voice.self_deaf 
+                    and len(channel.members)==1):
+                    online_users.append(member)
 
     for online_user in online_users:
         if not(bot.user_id_exists(int(online_user.id))):
             bot.create_user(int(online_user.id), online_user.display_name)
         bot.alter_balance(int(config['BALANCE_ACCRUE']), online_user.id)
+
+@tasks.loop(minutes=float(config['BALANCE_FADE_TIME']))
+async def balance_fade():
+    """Fade balance to users currently in a channel and afk"""
+    afk_users = []
+
+    guild: discord.Guild = client.get_guild(bot.guild_id)
+    
+    # Afk channel
+    for channel in guild.voice_channels:
+        for member in channel.members:
+            afk_users.append(member)
+    
+    for channel in guild.voice_channels:
+        # Skip afk channel
+        if channel.name != guild.afk_channel.name:
+            for member in channel.members:
+                # fade coin on conditions
+                #   1. deafened
+                if member.voice.self_deaf:
+                    afk_users.append(member)
+
+    for afk_user in afk_users:
+        if not(bot.user_id_exists(int(afk_user.id))):
+            bot.create_user(int(afk_user.id), afk_user.display_name)
+        bot.alter_balance(-int(config['BALANCE_FADE']), afk_user.id)
 
 async def on_message_dm(message: discord.Message):
     """LEGACY DON'T USE ME"""
