@@ -125,7 +125,7 @@ async def on_message_dm(message: discord.Message):
         logger.warn('Invalid request DM:' + str(message.content))
         return 
 
-    if content[0] not in config['COMMS_ACCEPTED_SECRET']:
+    if content[0] not in config['COMMS_ACCEPTED_SECRETS']:
         logger.warn('Invalid request secret:' + str(content[0]))
         return
 
