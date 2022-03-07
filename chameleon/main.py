@@ -66,12 +66,7 @@ async def command_tts(ctx: commands.Context, *args):
     # Perform tts and spend currency
     try:
         await bot.send_tts(ctx, args)
-        remaining_balance = bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
-        emojis = Utils.emoji_int_to_string_list(remaining_balance)
-        # NOTE(Liam): commented out since not sure this looks good - need feedback
-        # emojis.insert(0, '🪙') # Add coint emoji
-        for emoji in emojis:
-            await ctx.message.add_reaction(emoji)
+        bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
 
     except Exception as e:
         logger.warn('Failed to execute tts:')
