@@ -1,0 +1,25 @@
+version: '3.3'
+
+services:
+  
+  bank:
+    container_name: VibeBot-Bank
+    build:
+      dockerfile: ./DockerfileBank
+      context: .
+    volumes:
+      - ./config.ini:/app/config.ini:ro
+      - ./data.json:/app/data.json:rw
+    network_mode: host
+
+  chameleon:
+    container_name: VibeBot-Chameleon
+    build:
+      dockerfile: ./DockerfileChameleon
+      context: .
+    volumes:
+      - ./config.ini:/app/config.ini:ro
+      - ./data.json:/app/data.json:rw
+    depends_on:
+      - bank
+    network_mode: host
