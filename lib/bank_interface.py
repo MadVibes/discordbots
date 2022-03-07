@@ -17,7 +17,7 @@ class Bank:
         }
 
     def getBalance(self, user_id: int):
-        """Get users balance using user_id"""
+        """Get users balance using user_id. Returns user balance as int"""
         # Create payload/request for bank server
         payload = dumps({
             'action': 'getBalance',
@@ -47,12 +47,13 @@ class Bank:
         return int(content['response']['balance'])
 
     def spendCurrency(self, user_id: int, amount: int):
-        """Get users balance using user_id"""
+        """Spend users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
         payload = dumps({
-            'action': 'getBalance',
+            'action': 'spendCurrency',
             'parameters': {
-                'user_id': user_id
+                'user_id': user_id,
+                'amount': amount
             }
         })
         # Create headers
@@ -74,4 +75,4 @@ class Bank:
         if content['request'] != 'Accepted':
             self.logger.warn('Bank response was not Accepted')
             self.logger.warn(content)
-        return int(content['response']['balance'])
+        return int(content['response']['balance_sender'])

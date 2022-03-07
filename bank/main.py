@@ -185,10 +185,19 @@ def moveCurrency(service: Servlet, parameters: json):
 
     return service.bot.req_move_currency(user_id_sender=parameters['user_id_sender'], user_id_receiver=parameters['user_id_receiver'], amount=parameters['amount'])
 
+def spendCurrency(service: Servlet, parameters: json):
+    """Spend balance of user"""
+    if ('user_id' not in parameters
+        or 'amount' not in parameters):
+        raise Exception('user_id, amount were not all included in parameters')
+
+    return service.bot.req_move_currency(user_id_sender=parameters['user_id'], user_id_receiver=service.client.user.id, amount=parameters['amount'])
+
 # Mapping of possible functions that the web server can call
 actions = {
     'getBalance': getBalance,
-    'moveCurrency': moveCurrency
+    'moveCurrency': moveCurrency,
+    'spendCurrency': spendCurrency
 }
 servlet = Servlet(client, bot)
 
