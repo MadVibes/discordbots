@@ -5,8 +5,10 @@ services:
   bank:
     container_name: VibeBot-Bank
     build:
-      dockerfile: ./DockerfileBank
+      dockerfile: ./Dockerfile
       context: .
+      args:
+        bot: bank
     volumes:
       - ./config.ini:/app/config.ini:ro
       - ./data.json:/app/data.json:rw
@@ -15,8 +17,10 @@ services:
   chameleon:
     container_name: VibeBot-Chameleon
     build:
-      dockerfile: ./DockerfileChameleon
+      dockerfile: ./Dockerfile
       context: .
+      args:
+        bot: chameleon
     volumes:
       - ./config.ini:/app/config.ini:ro
       - ./data.json:/app/data.json:rw
