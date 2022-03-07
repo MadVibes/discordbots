@@ -7,10 +7,10 @@ import configparser
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from bank.main import balance_accrue
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
+from lib.utils import Utils
 from lib.logger import Logger
 from lib.bank_interface import Bank
 from bot import Bot
@@ -60,13 +60,19 @@ async def command_tts(ctx: commands.Context, *args):
 
     user_balance = bank.getBalance(ctx.author.id)
     # insufficient balance
-    if config['TTS_COST'] >= user_balance:
-        ctx.reply(f'Insufficient balance, current balance is {user_balance} vbc')
+    if int(config['TTS_COST']) >= user_balance:
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} vbc')
         return
     # Perform tts and spend currency
     try:
         await bot.send_tts(ctx, args)
-        
+        remaining_balance = bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
+        emojis = Utils.emoji_int_to_string_list(remaining_balance)
+        # NOTE(Liam): commented out since not sure this looks good - need feedback
+        # emojis.insert(0, '🪙') # Add coint emoji
+        for emoji in emojis:
+            await ctx.message.add_reaction(emoji)
+
     except Exception as e:
         logger.warn('Failed to execute tts:')
         logger.warn(str(e))
