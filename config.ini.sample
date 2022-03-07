@@ -1,5 +1,5 @@
 [bank]
-DATA_STORE = ../data.json
+DATA_STORE = /app/data.json
 LOGGING_LEVEL = 2
 WRITE_TO_LOG_FILE = True
 LOG_FILE_DIR = ./bank.log
@@ -26,7 +26,7 @@ DISCORD_GUILD = SERVER NAME HERE!
 COMMS_SECRET = SampleSecret
 COMMS_TARGET = http://127.0.0.1:7101
 COMMS_DELIM = |
-TTS_COST = 1
+TTS_COST = 600
 DEFAULT_NAME = VibeBot Chameleon
 COMMAND_PREFIX = $
 IGNORE_COMMANDS = balance,transfer

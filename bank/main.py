@@ -7,7 +7,6 @@ import configparser
 import discord
 from discord.ext import tasks
 from discord.ext import commands
-from dotenv import load_dotenv
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
@@ -18,12 +17,11 @@ from bot import Bot
 # CONFIGS/LIBS
 ########################################################################################################
 config = configparser.ConfigParser()
-config.read('/home/liam/Documents/vibebots/config.ini') # CHANGE ME
+config.read('./config.ini') # CHANGE ME
 config = config['bank']
 
 VERSION = 'v0.1'
 
-load_dotenv()
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
 ########################################################################################################
