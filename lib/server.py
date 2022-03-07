@@ -86,6 +86,7 @@ class Handler(BaseHTTPRequestHandler):
                 }
             self.write_response(200, dumps(content))
         except Exception as e:
+            self.logger.warn(f'Handle POST exception: {e}')
             raise e # Rethrow, maybe add logging here?
 
     # GET
