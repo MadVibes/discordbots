@@ -4,6 +4,7 @@
 
 class Utils:
 
+
     @staticmethod
     def emoji_int_to_string_list(integer: int):
         """Convert ing to list of string form. e,g 23 returns ['two', 'three']"""
@@ -11,6 +12,7 @@ class Utils:
         for num in str(integer):
             list.append(Utils.emoji_int_to_string(num))
         return list
+
 
     @staticmethod
     def emoji_int_to_string(char):

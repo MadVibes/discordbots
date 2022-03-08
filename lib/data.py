@@ -9,6 +9,7 @@ from lib.logger import Logger
 
 class Database:
     
+    
     def __init__(self, logger, output_file, init_schema):
         self.logger = logger
         self.output = output_file
@@ -18,6 +19,7 @@ class Database:
         if not os.path.exists(self.output):
             with open(self.output, 'w') as file:
                 json.dump(init_schema, file)
+
 
     @staticmethod
     def _write_file(target, data):
@@ -37,13 +39,16 @@ class Database:
         # Remove data lock
         os.remove(target + lock_suffix)
 
+
     def write(self, data):
         Database._write_file(self.output, data)
+
 
     @staticmethod
     def _read_file(target):
         with open(target, 'r') as input_file:
             return json.load(input_file)
+
 
     def read(self):
         return Database._read_file(self.output)

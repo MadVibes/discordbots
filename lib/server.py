@@ -16,6 +16,7 @@ from lib.logger import Logger
 
 class Handler(BaseHTTPRequestHandler):
 
+
     def __init__(self, logger, actions, service, config, start_time, *args, **kwargs):
         self.start_time = start_time
         self.actions = actions
@@ -23,6 +24,7 @@ class Handler(BaseHTTPRequestHandler):
         self.service = service
         self.config = config
         super().__init__(*args, **kwargs)
+
 
     # POST
     ####################################################################################################
@@ -32,6 +34,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             self.logger.error('Failed to handle POST request: %s' % e)
             self.write_response(500, '')
+
 
     def handle_POST(self):
         if self.path == '/bounce':
@@ -53,6 +56,7 @@ class Handler(BaseHTTPRequestHandler):
             self.write_response(404, '')
         
         self.logger.debug('Request: POST %s' % self.path)
+
 
     def handle_POST_action(self):
         try:
@@ -91,12 +95,14 @@ class Handler(BaseHTTPRequestHandler):
 
     # GET
     ####################################################################################################
+    
     def do_GET(self):
         try:
             self.handle_GET()
         except Exception as e:
             self.logger.error('Failed to handle GET request: %s' % e)
             self.write_response(500, '')
+
 
     def handle_GET(self):
         if self.path == '/health':
@@ -110,6 +116,7 @@ class Handler(BaseHTTPRequestHandler):
         self.logger.debug('Request: GET %s' % self.path)
     ####################################################################################################
 
+
     def write_response(self, status_code, content):
         response = content.encode('utf-8')
 
@@ -118,6 +125,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(response)))
         self.end_headers()
         self.wfile.write(response)
+
 
     def read_json_body(self):
         try:
@@ -130,9 +138,11 @@ class Handler(BaseHTTPRequestHandler):
             self.logger.debug('JSON body parse exception: %s' % e)
             return ''
 
+
     def log_request(self, message):
         """ Do nothing """
         pass
+
 
     def auth(self):
         secret = self.headers.get('Authorization')
@@ -140,7 +150,9 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return secret in self.config['COMMS_ACCEPTED_SECRETS'].split(',');
 
+
 class Web_Server:
+
 
     def __init__(self, logger, actions, service, config):
         self.actions = actions

@@ -11,6 +11,7 @@ from lib.logger import Logger
 
 class Bot:
 
+
     def __init__(self, logger: Logger, config, client: discord.Client):
         self.logger = logger
         self.config = config
@@ -23,6 +24,7 @@ class Bot:
 
         self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     
+
     def user_id_exists(self, user_id: int):
         """Does user name exist"""
         data = self.data.read()
@@ -30,6 +32,7 @@ class Bot:
             if user['user_id'] == user_id:
                 return True
         return False
+
 
     def create_user(self, user_id: int, user_name: str):
         """Create a new user, returns true|false if success"""
@@ -49,6 +52,7 @@ class Bot:
             self.data.write(data)
             return True
 
+
     def alter_balance(self, amount: int, user_id: int):
         """Alter balance by amount"""
         data = self.data.read()
@@ -60,6 +64,7 @@ class Bot:
         self.data.write(data)
         return balance
 
+
     def get_balance(self, user_id: int):
         """Get the balance of a user id"""
         data = self.data.read()
@@ -68,6 +73,7 @@ class Bot:
             if user['user_id'] == user_id:
                 balance = user['balance']
         return balance
+
 
     def handle_input(self, json_in):
         """Handle action"""
@@ -98,6 +104,7 @@ class Bot:
 
             return self.req_get_balance(json_in['parameters']['user_id'])
 
+
     def req_get_balance(self, user_id):
         """Handle request to get balance and create response"""
         balance = self.get_balance(user_id)
@@ -116,6 +123,7 @@ class Bot:
             }
 
         return response
+
 
     def req_move_currency(self, user_id_sender, user_id_receiver, amount):
         """Handle request to move currency and create response"""
@@ -160,6 +168,7 @@ class Bot:
                 'request': 'Failure',
                 'message': str(e)
             }
+
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper

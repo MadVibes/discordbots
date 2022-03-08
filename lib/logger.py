@@ -11,16 +11,19 @@ from datetime import datetime
 
 class Logger:
 
+
     def __init__(self, logging_level, log_file, log_file_dir):
         self.level = logging_level
         self.log_file = log_file
         self.log_file_dir = log_file_dir
+
 
     # Static
     ####################################################################################################
     @staticmethod
     def timestamp():
         return datetime.now().strftime("[%H:%M:%S]")
+
 
     @staticmethod
     def get_prefix(level):
@@ -40,6 +43,7 @@ class Logger:
 
         return prefix
 
+
     @staticmethod
     def _write(content, level):
     
@@ -49,10 +53,12 @@ class Logger:
         print(output)
         Logger.write_file(output)
 
+
     @staticmethod
     def write_file(content, log):
         with open(log, 'a') as f:
             f.write(content + "\n")
+
 
     @staticmethod
     def create_custom_prefix(custom_prefix, custom_prefix_size):
@@ -85,17 +91,22 @@ class Logger:
             if self.log_file:
                 Logger.write_file(output, self.log_file_dir)
 
+
     def error(self, content):
         self.write(content, 0)
+
 
     def warn(self, content):
         self.write(content, 1)
 
+
     def log(self, content):
         self.write(content, 2)
 
+
     def debug(self, content):
         self.write(content, 3)
+
 
     ####################################################################################################
 
