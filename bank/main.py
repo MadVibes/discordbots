@@ -136,7 +136,7 @@ async def command_transfer(ctx: commands.Context, *args):
 
 @client.command(name='version')
 async def command_tts(ctx: commands.Context, *args):
-    """List bot version""" 
+    """View bot version""" 
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
 
