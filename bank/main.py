@@ -20,7 +20,7 @@ config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config['bank']
 
-VERSION = 'v0.1'
+VERSION = 'v1.0'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -141,25 +141,6 @@ async def command_transfer(ctx: commands.Context, *args):
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):
     """"""# Catch to do nothing. Used for overlapping bot prefix
-
-# LEGACY CODE
-# REMOVE ME IN v1.0
-async def on_message_dm(message: discord.Message):
-    """LEGACY DON'T USE ME"""
-    """Handle direct messages from other bots"""
-    content = str(message.content).split(config['COMMS_DELIM'])
-    if(len(content) != 2):
-        logger.warn('Invalid request DM:' + str(message.content))
-        return 
-
-    if content[0] not in config['COMMS_ACCEPTED_SECRETS'].split(','):
-        logger.warn('Invalid request secret:' + str(content[0]))
-        return
-
-    data_in = json.loads(content[1])
-    response = bot.handle_input(data_in)
-
-    await message.reply(response)
 
 # WEB SERVER INIT
 ########################################################################################################
