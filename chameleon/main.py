@@ -89,7 +89,7 @@ async def command_nothing(ctx: commands.Context, *args):
 client.run(TOKEN)
 
 ########################################################################################################
-#   Copyright (C) 2022  Liam Coombs
+#   Copyright (C) 2022  Liam Coombs, Sam Tipper
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
