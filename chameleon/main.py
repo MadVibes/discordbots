@@ -16,11 +16,12 @@ from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
+bot_type = 'chameleon'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
-config = config['chameleon']
+config = config[bot_type]
 
-VERSION = 'v0.1'
+VERSION = 'v1.0'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -36,7 +37,7 @@ logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']),
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
-logger.log('Starting Chameleon - ' + VERSION)
+logger.log(f'Starting {bot_type} - ' + VERSION)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bot = Bot(logger, config, client)
@@ -73,6 +74,12 @@ async def command_tts(ctx: commands.Context, *args):
     except Exception as e:
         logger.warn('Failed to execute tts:')
         logger.warn(str(e))
+
+@client.command(name='version')
+async def command_tts(ctx: commands.Context, *args):
+    """List bot version""" 
+    if len(args) == 0 or args[0] == bot_type:
+        await ctx.message.reply(VERSION)
 
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):

@@ -16,11 +16,12 @@ from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
+bot_type = 'bank'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
-config = config['bank']
+config = config[bot_type]
 
-VERSION = 'v0.1'
+VERSION = 'v1.0'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -36,7 +37,7 @@ logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']),
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
-logger.log('Starting Bank - ' + VERSION)
+logger.log(f'Starting {bot_type} - ' + VERSION)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bot = Bot(logger, config, client)
@@ -68,11 +69,6 @@ async def on_message(message: discord.Message):
         success = bot.create_user(int(message.author.id), message.author.display_name)
         if not(success):
             logger.warn(f'Failed to create new user {message.author.display_name}')
-    
-    # Is a direct message (This is a null check)
-    if not message.guild:
-        await on_message_dm(message)
-        return
 
     # Handle normal on_message event
     await client.process_commands(message)
@@ -138,28 +134,15 @@ async def command_balance(ctx: commands.Context, *args):
 async def command_transfer(ctx: commands.Context, *args):
     """Tansfer money to another player"""
 
+@client.command(name='version')
+async def command_tts(ctx: commands.Context, *args):
+    """List bot version""" 
+    if len(args) == 0 or args[0] == bot_type:
+        await ctx.message.reply(VERSION)
+
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):
     """"""# Catch to do nothing. Used for overlapping bot prefix
-
-# LEGACY CODE
-# REMOVE ME IN v1.0
-async def on_message_dm(message: discord.Message):
-    """LEGACY DON'T USE ME"""
-    """Handle direct messages from other bots"""
-    content = str(message.content).split(config['COMMS_DELIM'])
-    if(len(content) != 2):
-        logger.warn('Invalid request DM:' + str(message.content))
-        return 
-
-    if content[0] not in config['COMMS_ACCEPTED_SECRETS'].split(','):
-        logger.warn('Invalid request secret:' + str(content[0]))
-        return
-
-    data_in = json.loads(content[1])
-    response = bot.handle_input(data_in)
-
-    await message.reply(response)
 
 # WEB SERVER INIT
 ########################################################################################################
