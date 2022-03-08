@@ -14,7 +14,7 @@ class Logger:
 
     def __init__(self, logging_level, log_file, log_file_dir):
         self.level = logging_level
-        self.log_file = log_file
+        self.log_file = (log_file == 'True')
         self.log_file_dir = log_file_dir
 
 

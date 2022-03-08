@@ -61,6 +61,10 @@ async def on_ready():
         bot.create_user(client.user.id, client.user.name)
     # Restore defaults
     await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
+    if config['STATUS_START_ONLINE'] == 'True':
+        await client.change_presence(status=discord.Status.online)
+    else:
+        await client.change_presence(status=discord.Status.invisible)
 
 
 @client.event
