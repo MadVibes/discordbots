@@ -54,11 +54,29 @@ class Logger:
         with open(log, 'a') as f:
             f.write(content + "\n")
 
+    @staticmethod
+    def create_custom_prefix(custom_prefix, custom_prefix_size):
+        c_prefix = '['
+        for i in range(custom_prefix_size):
+            if i< len(custom_prefix):
+                c_prefix += custom_prefix[i]
+            else:
+                c_prefix += ' '
+        c_prefix += ']'
+        return c_prefix
+
     # Instance
     ####################################################################################################
     def write(self, content, level):
-
+        
         prefix = Logger.get_prefix(level)
+        
+        # Add custom prefix
+        # These attributes have to be populated by the instantiator
+        if hasattr(self, 'custom_prefix') and hasattr(self, 'custom_prefix_size'):
+            if self.custom_prefix_size > 0:
+                prefix = Logger.create_custom_prefix(self.custom_prefix, self.custom_prefix_size) + prefix
+
 
         if (level <= self.level):
             output = Logger.timestamp() + prefix + ' ' + content

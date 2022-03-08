@@ -12,6 +12,7 @@ services:
     volumes:
       - ./config.ini:/app/config.ini:ro
       - ./data.json:/app/data.json:rw
+      - ./output.log:/app/bank.log:rw
     network_mode: host
 
   chameleon:
@@ -24,6 +25,7 @@ services:
     volumes:
       - ./config.ini:/app/config.ini:ro
       - ./data.json:/app/data.json:rw
+      - ./output.log:/app/chameleon.log:rw
     depends_on:
       - bank
     network_mode: host

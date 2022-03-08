@@ -33,7 +33,11 @@ intents.dm_messages = True
 intents.messages = True
 
 logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
+if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
+    logger.custom_prefix = config['LOGGING_PREFIX']
+    logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
 logger.log('Starting Chameleon - ' + VERSION)
+
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bot = Bot(logger, config, client)
 bank = Bank(logger, config)
