@@ -25,7 +25,7 @@ class Bot:
         to_say = ' '.join(args)
         await ctx.guild.get_member(self.client.user.id).edit(nick=ctx.author.name)
         message = await ctx.send(to_say, tts=True)
-        #await message.delete() -- NOTE(Liam): Implement a timed cleanup as deleting the message cancels the current TTS readout
+        await message.delete()
         await ctx.guild.get_member(self.client.user.id).edit(nick=self.config['DEFAULT_NAME'])
 
 ########################################################################################################
