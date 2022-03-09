@@ -16,7 +16,7 @@ from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
-bot_type = 'chameleon'
+bot_type = 'croupier'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
@@ -29,8 +29,8 @@ GUILD = config['DISCORD_GUILD']
 
 # Bot perms (534790879296)
 intents = discord.Intents.default()
-intents.members = True
-intents.messages = True
+#intents.members = True
+#intents.messages = True
 
 logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
@@ -63,6 +63,11 @@ async def command_tts(ctx: commands.Context, *args):
     """View bot version""" 
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
+
+
+@client.command(name='bet')
+async def bet(ctx: commands.Context, *args):
+  await bot.bet(ctx, args)
 
 
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
