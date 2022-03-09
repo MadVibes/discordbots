@@ -42,6 +42,7 @@ client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bot = Bot(logger, config, client)
 bank = Bank(logger, config)
 
+
 @client.event
 async def on_ready():
     logger.log(f'Connected to Discord! uid:{client.user.id}')
@@ -55,6 +56,11 @@ async def on_ready():
 
     # Restore defaults
     await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
+    if config['STATUS_START_ONLINE'] == 'True':
+        await client.change_presence(status=discord.Status.online)
+    else:
+        await client.change_presence(status=discord.Status.invisible)
+
 
 @client.command(name='tts')
 async def command_tts(ctx: commands.Context, *args):
@@ -74,11 +80,13 @@ async def command_tts(ctx: commands.Context, *args):
         logger.warn('Failed to execute tts:')
         logger.warn(str(e))
 
+
 @client.command(name='version')
 async def command_tts(ctx: commands.Context, *args):
     """View bot version""" 
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
+
 
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):
