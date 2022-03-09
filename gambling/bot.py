@@ -12,76 +12,68 @@ from lib.logger import Logger
 from lib.data import Database
 from lib.bank_interface import Bank
 
-# CONFIGS/LIBS
-########################################################################################################
-bot_type = 'croupier'
-config = configparser.ConfigParser()
-config.read('./config.ini') # CHANGE ME
-config = config[bot_type]
-
-VERSION = 'v1.0'
-
-TOKEN = config['DISCORD_TOKEN']
-GUILD = config['DISCORD_GUILD']
-########################################################################################################
-
-logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
-if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
-    logger.custom_prefix = config['LOGGING_PREFIX']
-    logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
-logger.log(f'Starting {bot_type} - ' + VERSION)
-bank = Bank(logger, config)
 
 db_schema = {
   "bets": []
 }
 
-data = Database(logger, config['DATA_STORE'], db_schema)
+#data = Database(logger, config['DATA_STORE'], db_schema)
 
-async def bet(ctx, *, args=None):
-  if args == None:
-    pass
+class Bot:
+  def __init__(self, logger: Logger, config, bank, client: discord.Client):
+      self.logger = logger
+      self.config = config
+      self.client = client
+      self.bank = bank
+      self.guild_id = 0
     
-  elif args[0] == "create":
-    args.pop(0)
-    for word in args:
-      if word.isdigit():
-        pos = args.index(word)
-        wager = int(word)
-        args.pop(pos)
-        
-    user_balance = bank.getBalance(ctx.author.id)
-    # insufficient balance
-    if int(wager) >= user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
-        return
-    try:
-        bank.spendCurrency(ctx.author.id, wager)
-        await make_bet(ctx, args, wager)
-        
-    except Exception as e:
-        logger.warn('Failed to execute bet:')
-        logger.warn(str(e))
+  async def bet(self, ctx, args):
+    args = ' '.join(args)
+    if not len(args):
+      await ctx.send("poo brain")
+      
+    elif args[0] == "create":
+      args.pop(0)
+      for word in args:
+        if word.isdigit():
+          pos = args.index(word)
+          wager = int(word)
+          args.pop(pos)
+          
+      user_balance = self.bank.getBalance(ctx.author.id)
+      # insufficient balance
+      if int(wager) >= user_balance:
+          await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+          return
+      try:
+          self.bank.spendCurrency(ctx.author.id, wager)
+          await make_bet(ctx, args, wager)
+          
+      except Exception as e:
+          self.logger.warn('Failed to execute bet:')
+          self.logger.warn(str(e))
 
 
 async def make_bet(ctx, args, wager):
-  
-# FIGURE THIS OUT LATER
-  def user_id_exists(self, user_id: int):
-        """Does user name exist"""
-        data = self.data.read()
-        for user in data['users']:
-            if user['user_id'] == user_id:
-                return True
-        return False
+  data1 = data.read()
+  print(data1)
 
-  def alter_balance(self, amount: int, user_id: int):
-        """Alter balance by amount"""
-        data = self.data.read()
-        balance = 0
-        for user in data['users']:
-            if user['user_id'] == user_id:
-                user['balance'] += amount
-                balance = user['balance']
-        self.data.write(data)
-        return balance
+'''
+  balance = 0
+  for user in data['users']:
+      if user['user_id'] == user_id:
+          user['balance'] += amount
+          balance = user['balance']
+  self.data.write(data)
+  return balance
+
+
+
+# FIGURE THIS OUT LATER
+def user_id_exists(self, user_id: int):
+      """Does user name exist"""
+      data = self.data.read()
+      for user in data['users']:
+          if user['user_id'] == user_id:
+              return True
+      return False'''
