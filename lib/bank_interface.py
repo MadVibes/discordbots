@@ -9,12 +9,14 @@ from lib.logger import Logger
 
 class Bank:
 
+
     def __init__(self, logger, config):
         self.logger = logger
         self.config = config
         self.default_headers = {
             'Content-Type': 'application/json'
         }
+
 
     def getBalance(self, user_id: int):
         """Get users balance using user_id. Returns user balance as int"""
@@ -46,6 +48,7 @@ class Bank:
             self.logger.warn(content)
         return int(content['response']['balance'])
 
+
     def spendCurrency(self, user_id: int, amount: int):
         """Spend users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
@@ -76,7 +79,8 @@ class Bank:
             self.logger.warn('Bank response was not Accepted')
             self.logger.warn(content)
         return int(content['response']['balance_sender'])
-    
+
+
     def moveCurrency(self, user_id_sender: int, user_id_receiver: int, amount: int):
         """Moves balance from one user id to another. Returns users balance afterwards as int"""
         # Create payload/request for bank server
@@ -108,6 +112,7 @@ class Bank:
             self.logger.warn('Bank response was not Accepted')
             self.logger.warn(content)
         return int(content['response'])
+
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper

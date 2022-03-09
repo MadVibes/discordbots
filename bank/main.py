@@ -61,6 +61,11 @@ async def on_ready():
         bot.create_user(client.user.id, client.user.name)
     # Restore defaults
     await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
+    if config['STATUS_START_ONLINE'] == 'True':
+        await client.change_presence(status=discord.Status.online)
+    else:
+        await client.change_presence(status=discord.Status.invisible)
+
 
 @client.event
 async def on_message(message: discord.Message):
@@ -72,6 +77,7 @@ async def on_message(message: discord.Message):
 
     # Handle normal on_message event
     await client.process_commands(message)
+
 
 @tasks.loop(minutes=float(config['BALANCE_ACCRUE_TIME']))
 async def balance_accrue():
@@ -94,6 +100,7 @@ async def balance_accrue():
         if not(bot.user_id_exists(int(online_user.id))):
             bot.create_user(int(online_user.id), online_user.display_name)
         bot.alter_balance(int(config['BALANCE_ACCRUE']), online_user.id)
+
 
 @tasks.loop(minutes=float(config['BALANCE_FADE_TIME']))
 async def balance_fade():
@@ -121,6 +128,7 @@ async def balance_fade():
             bot.create_user(int(afk_user.id), afk_user.display_name)
         bot.alter_balance(-int(config['BALANCE_FADE']), afk_user.id)
 
+
 @client.command(name='balance')
 async def command_balance(ctx: commands.Context, *args):
     """Display a users balance"""
@@ -130,9 +138,11 @@ async def command_balance(ctx: commands.Context, *args):
     balance = bot.get_balance(ctx.author.id)
     await ctx.send(f'Your current balance is {balance} vbc')
 
+
 @client.command(name='transfer')
 async def command_transfer(ctx: commands.Context, *args):
     """Tansfer money to another player"""
+
 
 @client.command(name='version')
 async def command_tts(ctx: commands.Context, *args):
@@ -140,9 +150,11 @@ async def command_tts(ctx: commands.Context, *args):
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
 
+
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):
     """"""# Catch to do nothing. Used for overlapping bot prefix
+
 
 # WEB SERVER INIT
 ########################################################################################################
@@ -153,6 +165,7 @@ class Servlet:
         self.client = client
         self.bot = bot
 
+
 # Functions for webserver
 def getBalance(service: Servlet, parameters: json):
     """Return users balance"""
@@ -160,6 +173,7 @@ def getBalance(service: Servlet, parameters: json):
         raise Exception('user_id was not included in parameters')
 
     return service.bot.req_get_balance(user_id=parameters['user_id'])
+
 
 def moveCurrency(service: Servlet, parameters: json):
     """Move balance from one user to another"""
@@ -170,6 +184,7 @@ def moveCurrency(service: Servlet, parameters: json):
 
     return service.bot.req_move_currency(user_id_sender=parameters['user_id_sender'], user_id_receiver=parameters['user_id_receiver'], amount=parameters['amount'])
 
+
 def spendCurrency(service: Servlet, parameters: json):
     """Spend balance of user"""
     if ('user_id' not in parameters
@@ -177,6 +192,7 @@ def spendCurrency(service: Servlet, parameters: json):
         raise Exception('user_id, amount were not all included in parameters')
 
     return service.bot.req_move_currency(user_id_sender=parameters['user_id'], user_id_receiver=service.client.user.id, amount=parameters['amount'])
+
 
 # Mapping of possible functions that the web server can call
 actions = {

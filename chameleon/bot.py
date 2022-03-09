@@ -12,11 +12,13 @@ from lib.logger import Logger
 
 class Bot:
 
+
     def __init__(self, logger: Logger, config, client: discord.Client):
         self.logger = logger
         self.config = config
         self.client = client
         self.guild_id = 0
+
 
     async def send_tts(self, ctx, args):
         """Send tts message"""
