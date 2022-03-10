@@ -1,6 +1,7 @@
 __pycache__
 config.ini
 data.json
+data-bets.json
 
 # Replit
 .replit
@@ -11,3 +12,4 @@ pyproject.toml
 bank.log
 chameleon.log
 output.log
+croupier.log
