@@ -1,5 +1,11 @@
+# Misc
 __pycache__
+git-redate
+
+# Configs
 config.ini
+
+# Data
 data.json
 
 # Replit
