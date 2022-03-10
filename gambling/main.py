@@ -39,8 +39,9 @@ if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
 logger.log(f'Starting {bot_type} - ' + VERSION)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
-bot = Bot(logger, config, client)
 bank = Bank(logger, config)
+bot = Bot(logger, config, bank, client)
+
 
 
 @client.event
