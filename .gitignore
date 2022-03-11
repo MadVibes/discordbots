@@ -8,6 +8,10 @@ config.ini
 # Data
 data.json
 
+# VIM
+*.swp
+*.swo
+
 # Replit
 .replit
 poetry.lock
