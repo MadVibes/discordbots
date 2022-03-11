@@ -5,6 +5,7 @@ WORKDIR /app
 COPY start.sh start.sh
 COPY bank bank
 COPY chameleon chameleon
+COPY shop shop
 COPY requirements requirements
 COPY lib lib
 COPY config.ini.sample config.ini
