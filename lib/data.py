@@ -5,7 +5,7 @@ import json
 import os, sys, time
 
 sys.path.insert(0, '../')
-from lib.logger import Logger
+from lib.logger import Logger #pylint: disable=E0401
 
 class Database:
     

@@ -6,8 +6,8 @@ import discord
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.data import Database
-from lib.logger import Logger
+from lib.data import Database #pylint: disable=E0401
+from lib.logger import Logger #pylint: disable=E0401
 
 class Bot:
 

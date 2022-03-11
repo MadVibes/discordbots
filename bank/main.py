@@ -10,8 +10,8 @@ from discord.ext import commands
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.logger import Logger
-from lib.server import Web_Server
+from lib.logger import Logger #pylint: disable=E0401
+from lib.server import Web_Server #pylint: disable=E0401
 from bot import Bot
 
 # CONFIGS/LIBS
