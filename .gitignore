@@ -20,4 +20,6 @@ pyproject.toml
 # Logs
 bank.log
 chameleon.log
+shop.log
 output.log
+

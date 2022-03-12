@@ -32,7 +32,7 @@ intents.members = True
 intents.dm_messages = True
 intents.messages = True
 
-logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
+logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
@@ -83,7 +83,7 @@ async def command_tts(ctx: commands.Context, *args):
 
 @client.command(name='version')
 async def command_tts(ctx: commands.Context, *args):
-    """View bot version""" 
+    """View bot version"""
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
 
