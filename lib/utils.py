@@ -1,6 +1,9 @@
 # Lib of generic functions to make life easier
 #
 ########################################################################################################
+from time import sleep
+import threading, os
+
 
 class Utils:
 
@@ -39,6 +42,27 @@ class Utils:
             return '9️⃣'
         elif char == '-':
             return '➖'
+
+
+    @staticmethod
+    def future_call(seconds: float, func_to_call, func_args=None):
+        """Call a function on a different thread in X seconds"""
+        def future_call(*args):
+            if len(args) < 2:
+                print('FATAL ERROR: INSUFFICIENT ARGS IN MULTITHREADED FUTURE_CALL UTIL METHOD')
+                os._exit(1)
+            sleep(float(args[0]))
+            if len(args) > 2:
+                args[1](2)
+            else:
+                args[1]()
+        if func_args is None:
+            thread = threading.Thread(target=future_call, args=(seconds, func_to_call))
+        else:
+            thread = threading.Thread(target=future_call, args=(seconds, func_to_call, func_args))
+
+        thread.start()
+
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper

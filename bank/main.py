@@ -92,7 +92,7 @@ async def balance_accrue():
                 # Skip giving coin on conditions
                 #   1. deafened
                 #   2. only 1 person in channel
-                if not(member.voice.self_deaf 
+                if not(member.voice.self_deaf
                     and len(channel.members)==1):
                     online_users.append(member)
 
@@ -108,12 +108,12 @@ async def balance_fade():
     afk_users = []
 
     guild: discord.Guild = client.get_guild(bot.guild_id)
-    
+
     # Afk channel
     for channel in guild.voice_channels:
         for member in channel.members:
             afk_users.append(member)
-    
+
     for channel in guild.voice_channels:
         # Skip afk channel
         if channel.name != guild.afk_channel.name:

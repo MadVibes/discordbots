@@ -11,6 +11,7 @@ sys.path.insert(0, '../')
 sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
+from lib.utils import Utils #pylint: disable=E0401
 
 class Bot:
 
@@ -20,6 +21,7 @@ class Bot:
         self.config = config
         self.bank = bank
         self.client = client
+        self.guild_id = 0
         # fuzzy percent required to match
         self.fuzzy_percent = 95
         self.products = {
@@ -110,15 +112,45 @@ class Bot:
         """Handle service purchase of server mute"""
         # NOTE(LIAM):
         #       Maybe use nickname and real name? then fuzzy match?
+
+        all_active = await self.all_channel_members(self.guild_id)
+        if len(all_active) == 0:
+            await ctx.reply('No users are online!')
+            return {
+                "user_id": ctx.author.id,
+                "error": 'No users online'
+            }
         await ctx.reply('Who is the target? (use the targets server nickname)')
 
         # Function is parsed into wait_for for validation
         def user_match(message: discord.Message):
             return (message.channel == ctx.channel) and (message.author.id == ctx.author.id)
         message = await self.client.wait_for('message', check=user_match)
+
+        all_active_names = map(lambda member: member.nickname, all_active)
+        # Get fuzzy search
+        fuzzy = process.extract(message.content, all_active_names)
+        matches = []
+        for match in fuzzy:
+            if match[1] > self.fuzzy_percent:
+                matches.append(match[0])
+        if len(matches) == 0:
+            await ctx.reply('No users match that name')
+            return
+        # 1+ matches
+        elif len(matches) > 1:
+            items = []
+            for item in matches:
+                items.append(' \n - '+item)
+            await ctx.reply('User name was to generic, did you mean?' + ''.join(items))
+            return
         # Actually mute someone, and spend currency
-        await ctx.send(f'STUBBED MUTE NOW! data:{message.content}')
+        # DO MUTE HERE
+        await message.add_reaction('✔️')
         self.bank.spendCurrency(ctx.author.id, product['price'])
+        def testFunc():
+            print('Waay! multithreaded')
+        Utils.future_call(5.0, testFunc)
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -128,6 +160,16 @@ class Bot:
 
     async def service_server_deafen(self, ctx: commands.context, product):
         await ctx.reply('service_deafen')
+
+
+    async def all_channel_members(self, guild_id: int):
+        """Returns all members currently in a channel within the guild"""
+        online_users = []
+        guild = await self.client.fetch_guild(guild_id)
+        for channel in guild.voice_channels:
+            for member in channel.members:
+                online_users.append(member)
+        return online_users
 
 
 ########################################################################################################

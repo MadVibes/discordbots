@@ -45,13 +45,18 @@ guild_id = 0
 @client.event
 async def on_ready():
     logger.log(f'Connected to Discord! uid:{client.user.id}')
+    guild_temp = None
     for guild in client.guilds:
         if guild.name == GUILD:
             guild_id = guild.id
+            guild_temp = guild
             break
         else:
             logger.error('Failed to find guild from config! shutting down :(')
             exit(1)
+    for channel in guild_temp.channels:
+        if channel.name == config['JOIN_CHANNEL']:
+            await channel.connect()
 
 
 @client.event
