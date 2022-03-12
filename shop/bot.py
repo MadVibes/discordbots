@@ -10,13 +10,15 @@ import discord
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
+from lib.bank_interface import Bank #pylint: disable=E0401
 
 class Bot:
 
 
-    def __init__(self, logger: Logger, config, client: discord.Client):
+    def __init__(self, logger: Logger, config, bank: Bank, client: discord.Client):
         self.logger = logger
         self.config = config
+        self.bank = bank
         self.client = client
         # fuzzy percent required to match
         self.fuzzy_percent = 95
@@ -26,45 +28,20 @@ class Bot:
                     'name': 'Server mute',
                     'description': 'Mute someone on the server for 30 seconds',
                     'price': 2160,
-                    'params': ['target'],
-                    'function': self.testFunc
+                    'function': self.service_server_mute
                 },
                 {
                     'name': 'Server deafen',
-                    'description': 'Deafen someone on the server for 1 minutes',
+                    'description': 'Deafen someone on the server for 1 minute',
                     'price': 1440,
-                    'params': ['target']
-                },
-                {
-                    'name': '1111',
-                    'description': 'Deafen someone on the server for 1 minutes',
-                    'price': 1111,
-                    'params': ['target']
-                },
-                {
-                    'name': '2222',
-                    'description': 'Deafen someone on the server for 1 minutes',
-                    'price': 2222,
-                    'params': ['target']
-                },
-                {
-                    'name': '3333',
-                    'description': 'Deafen someone on the server for 1 minutes',
-                    'price': 3333,
-                    'params': ['target']
-                },
-                {
-                    'name': '4444',
-                    'description': 'Deafen someone on the server for 1 minutes',
-                    'price': 4444,
-                    'params': ['target']
+                    'function': self.service_server_deafen
                 }
             ]
         }
 
 
     async def handle_input(self, ctx: commands.context, *args):
-        """Handle the purchase of a service"""
+        """Handle input for the shop"""
         # If no args are given
         if len(args) == 0:
             ctx.reply('Invalid arguments, see help menu `!shop help`')
@@ -87,6 +64,7 @@ class Bot:
 
 
     async def handle_purchase(self, ctx: commands.context, args):
+        """Handle purchase request"""
         if len(args) > 2:
             query = ' '.join(args[1:len(args)]) # Get query string by combining anything after 'buy' (index 1)
         else:
@@ -113,14 +91,47 @@ class Bot:
             await ctx.reply('Shop purchase request was to generic, did you mean?' + ''.join(items))
             return
         # Actually execute function attached to shop service/product
-        print(matches[0])
+        product_to_call = {}
         for product in self.products['services']:
             if product['name'] == matches[0]:
+                product_to_call = product
                 func_to_call = product['function']
-        await func_to_call()
+        try:
+            response =  await func_to_call(ctx, product_to_call)
+            self.logger.log(f"Service '{product['name']}' was purchased by {ctx.author.id}")
+            self.logger.log(f'Purchased service info: {response}')
+        except Exception as e:
+            self.logger.error(f"Service '{product['name']}' was purchased by {ctx.author.id} and failed:")
+            self.logger.error(str(e))
 
-    async def testFunc(self):
-        print('TempCall')
+
+
+    async def service_server_mute(self, ctx: commands.context, product):
+        """Handle service purchase of server mute"""
+
+        # NOTE(LIAM):
+        #       Maybe use nickname and real name? then fuzzy match?
+        await ctx.reply('Who is the target? (use the targets server nickname)')
+
+        # Function is parsed into wait_for for validation
+        def user_match(message: discord.Message):
+            return (message.channel == ctx.channel) and (message.author.id == ctx.author.id)
+        message = await self.client.wait_for('message', check=user_match)
+        # Actually mute someone, and spend currency
+        await ctx.send(f'STUBBED MUTE NOW! data:{message.content}')
+        self.bank.spendCurrency(ctx.author.id, product['price'])
+        # Return info about service purchase
+        return {
+            "user_id": ctx.author.id,
+            "target_id": 'STUBBED!'
+            }
+
+
+    async def service_server_deafen(self, ctx: commands.context, product):
+        await ctx.reply('service_deafen')
+
+
+
 
 
 ########################################################################################################
