@@ -108,7 +108,6 @@ class Bot:
 
     async def service_server_mute(self, ctx: commands.context, product):
         """Handle service purchase of server mute"""
-
         # NOTE(LIAM):
         #       Maybe use nickname and real name? then fuzzy match?
         await ctx.reply('Who is the target? (use the targets server nickname)')
@@ -129,9 +128,6 @@ class Bot:
 
     async def service_server_deafen(self, ctx: commands.context, product):
         await ctx.reply('service_deafen')
-
-
-
 
 
 ########################################################################################################
