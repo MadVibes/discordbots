@@ -21,5 +21,7 @@ pyproject.toml
 bank.log
 chameleon.log
 shop.log
+sample1.log
+sample2.log
 output.log
 
