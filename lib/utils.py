@@ -2,7 +2,7 @@
 #
 ########################################################################################################
 from time import sleep
-import threading, os
+import threading, os, inspect, asyncio
 
 
 class Utils:
@@ -47,21 +47,23 @@ class Utils:
     @staticmethod
     def future_call(seconds: float, func_to_call, func_args=None):
         """Call a function on a different thread in X seconds"""
-        def future_call(*args):
+        async def future_call(*args):
             if len(args) < 2:
                 print('FATAL ERROR: INSUFFICIENT ARGS IN MULTITHREADED FUTURE_CALL UTIL METHOD')
                 os._exit(1)
-            sleep(float(args[0]))
-            if len(args) > 2:
-                args[1](2)
+            await asyncio.sleep(float(args[0]))
+            if inspect.iscoroutinefunction(args[1]):
+                if len(args) > 2:
+                    await args[1](args[2])
+                else:
+                    await args[1]()
             else:
-                args[1]()
-        if func_args is None:
-            thread = threading.Thread(target=future_call, args=(seconds, func_to_call))
-        else:
-            thread = threading.Thread(target=future_call, args=(seconds, func_to_call, func_args))
+                if len(args) > 2:
+                    args[1](args[2])
+                else:
+                    args[1]()
 
-        thread.start()
+        asyncio.get_event_loop().create_task(future_call(seconds, func_to_call, func_args))
 
 
 ########################################################################################################
