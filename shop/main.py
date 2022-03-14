@@ -26,7 +26,7 @@ TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
 ########################################################################################################
 
-# Bot perms (1644364822870)
+# Bot perms (1643092901702)
 intents = discord.Intents.default()
 intents.members = True #pylint: disable=E0237
 intents.dm_messages = True #pylint: disable=E0237
