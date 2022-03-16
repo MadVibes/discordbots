@@ -189,6 +189,7 @@ class Bot:
 
     async def service_server_deafen(self, ctx: commands.context, product):
         """Handle service purchase of server deafen"""
+        all_active = await self.all_channel_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
             await ctx.add_reaction('❌')
