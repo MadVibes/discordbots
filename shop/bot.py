@@ -14,6 +14,8 @@ from lib.bank_interface import Bank #pylint: disable=E0401
 from lib.utils import Utils #pylint: disable=E0401
 
 class Bot:
+# NOTE(LIAM):
+#       Maybe use nickname and real name for fuzzy matches?
 
 
     def __init__(self, logger: Logger, config, bank: Bank, client: discord.Client):
@@ -39,6 +41,12 @@ class Bot:
                     'description': 'Deafen someone on the server for 1 minute',
                     'price': 1440,
                     'function': self.service_server_deafen
+                },
+                {
+                    'name': 'Server disconnect',
+                    'description': 'Disconnect someone on the server',
+                    'price': 1440,
+                    'function': self.service_server_disconnect
                 }
             ]
         }
@@ -112,9 +120,6 @@ class Bot:
 
     async def service_server_mute(self, ctx: commands.context, product):
         """Handle service purchase of server mute"""
-        # NOTE(LIAM):
-        #       Maybe use nickname and real name? then fuzzy match?
-
         all_active = await self.all_channel_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
@@ -130,7 +135,6 @@ class Bot:
             return (message.channel == ctx.channel) and (message.author.id == ctx.author.id)
         message = await self.client.wait_for('message', check=user_match)
 
-        member: discord.Member # NOTE(Liam): Delete me, i'm only here for intellisense purposes.
         all_active_names = map(lambda member: member.display_name, all_active)
         # Get fuzzy search
         fuzzy = process.extract(message.content, all_active_names)
@@ -161,7 +165,7 @@ class Bot:
         # Actually perform action, and spend currency
         user_currency = self.bank.getBalance(ctx.author.id)
         if user_currency < product['price']:
-            await message.reply(f'Insufficient balance, current balance is {user_currency} vbc')
+            await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
@@ -185,10 +189,6 @@ class Bot:
 
     async def service_server_deafen(self, ctx: commands.context, product):
         """Handle service purchase of server deafen"""
-        # NOTE(LIAM):
-        #       Maybe use nickname and real name? then fuzzy match?
-
-        all_active = await self.all_channel_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
             await ctx.add_reaction('❌')
@@ -203,7 +203,6 @@ class Bot:
             return (message.channel == ctx.channel) and (message.author.id == ctx.author.id)
         message = await self.client.wait_for('message', check=user_match)
 
-        member: discord.Member # NOTE(Liam): Delete me, i'm only here for intellisense purposes.
         all_active_names = map(lambda member: member.display_name, all_active)
         # Get fuzzy search
         fuzzy = process.extract(message.content, all_active_names)
@@ -234,7 +233,7 @@ class Bot:
         # Actually perform action, and spend currency
         user_currency = self.bank.getBalance(ctx.author.id)
         if user_currency < product['price']:
-            await message.reply(f'Insufficient balance, current balance is {user_currency} vbc')
+            await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
@@ -249,6 +248,69 @@ class Bot:
             await member.edit(deafen = False, reason=f'Service purchase: {author_name}')
 
         Utils.future_call(30.0, unmuteFunc, [target, ctx.author.display_name])
+        # Return info about service purchase
+        return {
+            "user_id": ctx.author.id,
+            "target_name": target.id
+            }
+
+
+    async def service_server_disconnect(self, ctx: commands.context, product):
+        """Handle service purchase of server disconnect"""
+        all_active = await self.all_channel_members(self.guild_id)
+        if len(all_active) == 0:
+            await ctx.reply('No users are online!')
+            await ctx.add_reaction('❌')
+            return {
+                "user_id": ctx.author.id,
+                "error": 'No users online'
+            }
+        await ctx.reply('Who is the target? (use the targets server nickname)')
+
+        # Function is parsed into wait_for for validation
+        def user_match(message: discord.Message):
+            return (message.channel == ctx.channel) and (message.author.id == ctx.author.id)
+        message = await self.client.wait_for('message', check=user_match)
+
+        all_active_names = map(lambda member: member.display_name, all_active)
+        # Get fuzzy search
+        fuzzy = process.extract(message.content, all_active_names)
+        matches = []
+        for match in fuzzy:
+            if match[1] == 100:
+                matches = [match]
+                break
+            if match[1] > self.user_fuzzy_percent:
+                matches.append(match[0])
+        if len(matches) == 0:
+            await message.reply('No users match that name')
+            await message.add_reaction('❌')
+            return
+        # 1+ matches
+        elif len(matches) > 1:
+            items = []
+            for item in matches:
+                items.append(' \n - '+item)
+            await message.reply('User name was to generic, did you mean?' + ''.join(items))
+            await message.add_reaction('❌')
+            return
+        target: discord.Member = None
+        for active in all_active:
+            if active.display_name == matches[0][0]:
+                target = active
+
+        # Actually perform action, and spend currency
+        user_currency = self.bank.getBalance(ctx.author.id)
+        if user_currency < product['price']:
+            await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
+            await message.add_reaction('❌')
+            return {
+                "user_id": ctx.author.id,
+                "error": f'Insufficient balance, current balance is {user_currency}'
+                }
+        await message.add_reaction('✔️')
+        self.bank.spendCurrency(ctx.author.id, product['price'])
+        await target.edit(voice_channel=None, reason=f'Service purchase: {ctx.author.display_name}')
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
