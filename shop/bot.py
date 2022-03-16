@@ -50,7 +50,7 @@ class Bot:
                 },
                 {
                     'name': 'Change nickname',
-                    'description': 'Change someones nickname',
+                    'description': 'Change target nickname',
                     'price': 3600,
                     'function': self.service_rename
                 }
