@@ -369,7 +369,7 @@ class Bot:
             if active.display_name == matches[0][0]:
                 target = active
 
-        await ctx.reply('What shall their new name be?')
+        await message_user.reply('What shall their new name be?')
         message_name = await self.client.wait_for('message', check=user_match)
 
         # Actually perform action, and spend currency
