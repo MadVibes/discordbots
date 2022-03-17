@@ -1,7 +1,17 @@
+# Misc
 __pycache__
+git-redate
+
+# Configs
 config.ini
+
+# Data
 data.json
 data-bets.json
+
+# VIM
+*.swp
+*.swo
 
 # Replit
 .replit
@@ -11,5 +21,8 @@ pyproject.toml
 # Logs
 bank.log
 chameleon.log
-output.log
+shop.log
 croupier.log
+sample1.log
+sample2.log
+output.log

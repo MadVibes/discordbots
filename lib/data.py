@@ -5,11 +5,11 @@ import json
 import os, sys, time
 
 sys.path.insert(0, '../')
-from lib.logger import Logger
+from lib.logger import Logger #pylint: disable=E0401
 
 class Database:
-    
-    
+
+
     def __init__(self, logger, output_file, init_schema):
         self.logger = logger
         self.output = output_file
@@ -17,6 +17,10 @@ class Database:
 
         # Create file if it does not exist
         if not os.path.exists(self.output):
+            with open(self.output, 'w') as file:
+                json.dump(init_schema, file)
+        # If file is empty
+        if os.stat(self.output).st_size == 0:
             with open(self.output, 'w') as file:
                 json.dump(init_schema, file)
 
@@ -31,7 +35,7 @@ class Database:
         # Create data lock
         with open(target + lock_suffix, 'w') as lock_file:
             json.dump({'file':'is_locked'}, lock_file)
-            
+
         # Write data
         with open(target, 'w') as output_file:
             json.dump(data, output_file)
