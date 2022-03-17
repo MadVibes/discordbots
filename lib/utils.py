@@ -1,6 +1,9 @@
 # Lib of generic functions to make life easier
 #
 ########################################################################################################
+from time import sleep
+import threading, os, inspect, asyncio
+
 
 class Utils:
 
@@ -39,6 +42,29 @@ class Utils:
             return '9️⃣'
         elif char == '-':
             return '➖'
+
+
+    @staticmethod
+    def future_call(seconds: float, func_to_call, func_args=None):
+        """Call a function on a different thread in X seconds"""
+        async def future_call(*args):
+            if len(args) < 2:
+                print('FATAL ERROR: INSUFFICIENT ARGS IN MULTITHREADED FUTURE_CALL UTIL METHOD')
+                os._exit(1)
+            await asyncio.sleep(float(args[0]))
+            if inspect.iscoroutinefunction(args[1]):
+                if len(args) > 2:
+                    await args[1](args[2])
+                else:
+                    await args[1]()
+            else:
+                if len(args) > 2:
+                    args[1](args[2])
+                else:
+                    args[1]()
+
+        asyncio.get_event_loop().create_task(future_call(seconds, func_to_call, func_args))
+
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper
