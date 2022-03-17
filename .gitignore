@@ -14,7 +14,6 @@ data-bets.json
 *.swo
 
 # Replit
-.replit
 poetry.lock
 pyproject.toml
 
