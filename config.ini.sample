@@ -50,5 +50,5 @@ COMMS_TARGET = http://127.0.0.1:7101
 COMMS_DELIM = |
 DEFAULT_NAME = VibeBot Shop
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer
+IGNORE_COMMANDS = balance,transfer,tts
 STATUS_START_ONLINE = True
