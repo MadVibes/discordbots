@@ -179,7 +179,7 @@ class Bot:
                 }
         self.bank.spendCurrency(ctx.author.id, product['price'])
         await target.edit(mute = True, reason=f'Service purchase: {ctx.author.display_name}')
-        await message.add_reaction('✔️')
+        await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
             author_name = args[0][1]
@@ -248,7 +248,7 @@ class Bot:
                 }
         self.bank.spendCurrency(ctx.author.id, product['price'])
         await target.edit(deafen = True, reason=f'Service purchase: {ctx.author.display_name}')
-        await message.add_reaction('✔️')
+        await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
             author_name = args[0][1]
@@ -317,7 +317,7 @@ class Bot:
                 }
         self.bank.spendCurrency(ctx.author.id, product['price'])
         await target.edit(voice_channel=None, reason=f'Service purchase: {ctx.author.display_name}')
-        await message.add_reaction('✔️')
+        await message.add_reaction('✅')
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -383,7 +383,7 @@ class Bot:
                 }
         self.bank.spendCurrency(ctx.author.id, product['price'])
         await target.edit(nick=message_name.content, reason=f'Service purchase: {ctx.author.display_name}')
-        await message_name.add_reaction('✔️')
+        await message_name.add_reaction('✅')
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
