@@ -1,15 +1,1 @@
-{
-    "bets": [{
-        "ID": 0,
-        "title": ["liam", "smells?"],
-        "for": {
-            "users": [],
-            "pool": 0
-        },
-        "against": {
-            "users": [],
-            "pool": 0
-        },
-        "user_ids": []
-    }]
-}
+{"bets": []}
