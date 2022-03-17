@@ -1,5 +1,6 @@
-# Shop Bot
-# Handles TTS messages
+# Sample user
+# Sits in channel from config file
+# Relays DMs to chat
 ####################################################################################################
 import discord
 import os, sys, json
@@ -19,7 +20,7 @@ config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
 
-VERSION = 'v0.1'
+VERSION = 'v1.0'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
