@@ -8,7 +8,8 @@ import discord
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.logger import Logger
+from lib.logger import Logger #pylint: disable=E0401
+from lib.utils import Utils #pylint: disable=E0401
 
 class Bot:
 
@@ -25,7 +26,20 @@ class Bot:
         to_say = ' '.join(args)
         await ctx.guild.get_member(self.client.user.id).edit(nick=ctx.author.name)
         message = await ctx.send(to_say, tts=True)
-        await message.delete()
+
+        async def cleanupFunc(*args):
+            message: discord.Message = args[0][0]
+            await message.delete()
+
+        # Calculate cleanup 
+        # | 4.7 AvgWordLen * 100 AvgWordPerMin
+        # | 470 Chars / 60 seconds
+        padding = 8.0
+        rate = 60.0/470.0
+        time = (rate * len(to_say)) + padding
+
+        Utils.future_call(time, cleanupFunc, [message])
+
         await ctx.guild.get_member(self.client.user.id).edit(nick=self.config['DEFAULT_NAME'])
 
 ########################################################################################################

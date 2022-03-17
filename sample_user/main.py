@@ -1,5 +1,6 @@
-# Chameleon Bot
-# Handles TTS messages
+# Sample user
+# Sits in channel from config file
+# Relays DMs to chat
 ####################################################################################################
 import discord
 import os, sys, json
@@ -11,11 +12,10 @@ sys.path.insert(0, '../')
 sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
-from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
-bot_type = 'chameleon'
+bot_type = sys.argv[1]
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
@@ -26,11 +26,11 @@ TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
 ########################################################################################################
 
-# Bot perms (534790879296)
+# Bot perms (1644972474359)
 intents = discord.Intents.default()
-intents.members = True
-intents.dm_messages = True
-intents.messages = True
+intents.members = True #pylint: disable=E0237
+intents.dm_messages = True #pylint: disable=E0237
+intents.messages = True #pylint: disable=E0237
 
 logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
@@ -39,58 +39,40 @@ if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
 logger.log(f'Starting {bot_type} - ' + VERSION)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
-bot = Bot(logger, config, client)
 bank = Bank(logger, config)
+guild_id = 0
 
 
 @client.event
 async def on_ready():
     logger.log(f'Connected to Discord! uid:{client.user.id}')
+    guild_temp = None
     for guild in client.guilds:
         if guild.name == GUILD:
-            bot.guild_id = guild.id
+            guild_id = guild.id
+            guild_temp = guild
             break
         else:
             logger.error('Failed to find guild from config! shutting down :(')
             exit(1)
-
-    # Restore defaults
-    await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
-    if config['STATUS_START_ONLINE'] == 'True':
-        await client.change_presence(status=discord.Status.online)
-    else:
-        await client.change_presence(status=discord.Status.invisible)
+    for channel in guild_temp.channels:
+        if channel.name == config['JOIN_CHANNEL']:
+            await channel.connect()
 
 
-@client.command(name='tts')
-async def command_tts(ctx: commands.Context, *args):
-    """Execute tts command""" 
-
-    user_balance = bank.getBalance(ctx.author.id)
-    # insufficient balance
-    if int(config['TTS_COST']) >= user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
-        return
-    # Perform tts and spend currency
+@client.event
+async def on_message(message: discord.Message):
+    """DM Relay - forwards DMs to guild chat"""
     try:
-        await bot.send_tts(ctx, args)
-        bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
-
+        if message.author.id != client.user.id and message.channel.type is discord.ChannelType.private:
+            # Handle normal on_message event
+            for guild in client.guilds:
+                for channel in guild.text_channels:
+                    await channel.send(message.content)
     except Exception as e:
-        logger.warn('Failed to execute tts:')
-        logger.warn(str(e))
+        logger.error(f'{bot_type} failed')
+        logger.error(str(e))
 
-
-@client.command(name='version')
-async def command_version(ctx: commands.Context, *args):
-    """View bot version"""
-    if len(args) == 0 or args[0] == bot_type:
-        await ctx.message.reply(VERSION)
-
-
-@client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
-async def command_nothing(ctx: commands.Context, *args):
-    """"""# Catch to do nothing. Used for overlapping bot prefix
 
 # Start the bot using TOKEN
 client.run(TOKEN)
