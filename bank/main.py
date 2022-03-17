@@ -29,9 +29,9 @@ GUILD = config['DISCORD_GUILD']
 
 # Bot perms (534790879296)
 intents = discord.Intents.default()
-intents.members = True
-intents.dm_messages = True
-intents.messages = True
+intents.members = True #pylint: disable=E0237
+intents.dm_messages = True #pylint: disable=E0237
+intents.messages = True #pylint: disable=E0237
 
 logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
