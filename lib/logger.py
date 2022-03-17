@@ -29,7 +29,7 @@ class Logger:
     def get_prefix(level):
 
         prefix = ""
-        
+
         if(level == 0):
             prefix = '[ERROR]'
         elif (level == 1):
@@ -46,7 +46,7 @@ class Logger:
 
     @staticmethod
     def _write(content, level):
-    
+
         prefix = Logger.get_prefix(level)
 
         output = Logger.timestamp() + prefix + ' ' + content
@@ -74,9 +74,9 @@ class Logger:
     # Instance
     ####################################################################################################
     def write(self, content, level):
-        
+
         prefix = Logger.get_prefix(level)
-        
+
         # Add custom prefix
         # These attributes have to be populated by the instantiator
         if hasattr(self, 'custom_prefix') and hasattr(self, 'custom_prefix_size'):
