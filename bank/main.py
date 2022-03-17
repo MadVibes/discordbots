@@ -136,7 +136,7 @@ async def command_balance(ctx: commands.Context, *args):
         bot.create_user(int(ctx.author.id), ctx.author.display_name)
 
     balance = bot.get_balance(ctx.author.id)
-    await ctx.send(f'Your current balance is {balance} vbc')
+    await ctx.send(f'Your current balance is {balance} VBC')
 
 
 @client.command(name='transfer')

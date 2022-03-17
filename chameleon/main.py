@@ -69,7 +69,7 @@ async def command_tts(ctx: commands.Context, *args):
     user_balance = bank.getBalance(ctx.author.id)
     # insufficient balance
     if int(config['TTS_COST']) >= user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} vbc')
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
         return
     # Perform tts and spend currency
     try:
