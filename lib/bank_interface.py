@@ -5,7 +5,7 @@ import requests, sys
 from json import dumps, loads
 
 sys.path.insert(0, '../')
-from lib.logger import Logger #pylint: disable=E0401
+from lib.logger import Logger
 
 class Bank:
 
