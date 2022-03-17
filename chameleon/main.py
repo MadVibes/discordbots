@@ -9,8 +9,9 @@ from discord.ext import commands
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.logger import Logger #pylint: disable=E0401
-from lib.bank_interface import Bank #pylint: disable=E0401
+from lib.utils import Utils
+from lib.logger import Logger
+from lib.bank_interface import Bank
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -32,7 +33,7 @@ intents.members = True
 intents.dm_messages = True
 intents.messages = True
 
-logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
+logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
@@ -69,7 +70,7 @@ async def command_tts(ctx: commands.Context, *args):
     user_balance = bank.getBalance(ctx.author.id)
     # insufficient balance
     if int(config['TTS_COST']) >= user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} vbc')
         return
     # Perform tts and spend currency
     try:
@@ -82,8 +83,8 @@ async def command_tts(ctx: commands.Context, *args):
 
 
 @client.command(name='version')
-async def command_version(ctx: commands.Context, *args):
-    """View bot version"""
+async def command_tts(ctx: commands.Context, *args):
+    """View bot version""" 
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
 

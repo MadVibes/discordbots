@@ -12,7 +12,7 @@ import configparser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 sys.path.insert(0, '../')
-from lib.logger import Logger #pylint: disable=E0401
+from lib.logger import Logger
 
 class Handler(BaseHTTPRequestHandler):
 
