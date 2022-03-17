@@ -1,6 +1,16 @@
+# Misc
 __pycache__
+git-redate
+
+# Configs
 config.ini
+
+# Data
 data.json
+
+# VIM
+*.swp
+*.swo
 
 # Replit
 .replit
@@ -10,4 +20,8 @@ pyproject.toml
 # Logs
 bank.log
 chameleon.log
+shop.log
+sample1.log
+sample2.log
 output.log
+

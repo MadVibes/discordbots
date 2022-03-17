@@ -1,3 +1,5 @@
 # Packages required by code
 discord
 requests
+fuzzywuzzy
+python-Levenshtein
