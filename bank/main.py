@@ -10,8 +10,8 @@ from discord.ext import commands
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.logger import Logger #pylint: disable=E0401
-from lib.server import Web_Server #pylint: disable=E0401
+from lib.logger import Logger
+from lib.server import Web_Server
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -29,11 +29,11 @@ GUILD = config['DISCORD_GUILD']
 
 # Bot perms (534790879296)
 intents = discord.Intents.default()
-intents.members = True #pylint: disable=E0237
-intents.dm_messages = True #pylint: disable=E0237
-intents.messages = True #pylint: disable=E0237
+intents.members = True
+intents.dm_messages = True
+intents.messages = True
 
-logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
+logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
@@ -92,7 +92,7 @@ async def balance_accrue():
                 # Skip giving coin on conditions
                 #   1. deafened
                 #   2. only 1 person in channel
-                if not(member.voice.self_deaf
+                if not(member.voice.self_deaf 
                     and len(channel.members)==1):
                     online_users.append(member)
 
@@ -108,12 +108,12 @@ async def balance_fade():
     afk_users = []
 
     guild: discord.Guild = client.get_guild(bot.guild_id)
-
+    
     # Afk channel
     for channel in guild.voice_channels:
         for member in channel.members:
             afk_users.append(member)
-
+    
     for channel in guild.voice_channels:
         # Skip afk channel
         if channel.name != guild.afk_channel.name:
@@ -136,7 +136,7 @@ async def command_balance(ctx: commands.Context, *args):
         bot.create_user(int(ctx.author.id), ctx.author.display_name)
 
     balance = bot.get_balance(ctx.author.id)
-    await ctx.send(f'Your current balance is {balance} VBC')
+    await ctx.send(f'Your current balance is {balance} vbc')
 
 
 @client.command(name='transfer')

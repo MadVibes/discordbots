@@ -24,22 +24,8 @@ services:
         bot: chameleon
     volumes:
       - ./config.ini:/app/config.ini:ro
+      - ./data.json:/app/data.json:rw
       - ./output.log:/app/chameleon.log:rw
     depends_on:
       - bank
     network_mode: host
-
-  shop:
-    container_name: VibeBot-Shop
-    build:
-      dockerfile: ./Dockerfile
-      context: .
-      args:
-        bot: shop
-    volumes:
-      - ./config.ini:/app/config.ini:ro
-      - ./output.log:/app/shop.log:rw
-    depends_on:
-      - bank
-    network_mode: host
-
