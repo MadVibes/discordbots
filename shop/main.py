@@ -1,4 +1,4 @@
-# Chameleon Bot
+# Shop Bot
 # Handles TTS messages
 ####################################################################################################
 import discord
@@ -15,7 +15,7 @@ from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
-bot_type = 'chameleon'
+bot_type = 'shop'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
@@ -26,10 +26,11 @@ TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
 ########################################################################################################
 
-# Bot perms (534790879296)
+# Bot perms (1643898208064)
 intents = discord.Intents.default()
-intents.members = True
-intents.messages = True
+intents.members = True #pylint: disable=E0237
+intents.dm_messages = True #pylint: disable=E0237
+intents.messages = True #pylint: disable=E0237
 
 logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
@@ -38,8 +39,8 @@ if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
 logger.log(f'Starting {bot_type} - ' + VERSION)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
-bot = Bot(logger, config, client)
 bank = Bank(logger, config)
+bot = Bot(logger, config, bank, client)
 
 
 @client.event
@@ -61,23 +62,10 @@ async def on_ready():
         await client.change_presence(status=discord.Status.invisible)
 
 
-@client.command(name='tts')
-async def command_tts(ctx: commands.Context, *args):
-    """Execute tts command""" 
-
-    user_balance = bank.getBalance(ctx.author.id)
-    # insufficient balance
-    if int(config['TTS_COST']) >= user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
-        return
-    # Perform tts and spend currency
-    try:
-        await bot.send_tts(ctx, args)
-        bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
-
-    except Exception as e:
-        logger.warn('Failed to execute tts:')
-        logger.warn(str(e))
+@client.command(name='shop')
+async def command_shop(ctx: commands.Context, *args):
+    """Access the store"""
+    await bot.handle_input(ctx, *args)
 
 
 @client.command(name='version')

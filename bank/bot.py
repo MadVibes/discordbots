@@ -6,8 +6,8 @@ import discord
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.data import Database
-from lib.logger import Logger
+from lib.data import Database #pylint: disable=E0401
+from lib.logger import Logger #pylint: disable=E0401
 
 class Bot:
 
@@ -23,7 +23,7 @@ class Bot:
         }
 
         self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
-    
+
 
     def user_id_exists(self, user_id: int):
         """Does user name exist"""
@@ -67,6 +67,9 @@ class Bot:
 
     def get_balance(self, user_id: int):
         """Get the balance of a user id"""
+        if not(self.user_id_exists(user_id)):
+            self.create_user(user_id, str(user_id))
+
         data = self.data.read()
         balance = -1
         for user in data['users']:
@@ -81,7 +84,7 @@ class Bot:
 
         if action == 'getBalance':
             # Validate required parameters
-            if ('parameters' not in json_in 
+            if ('parameters' not in json_in
                 or 'user_id' not in json_in['parameters']):
                 self.logger.warn('Request for getBalance is missing parameters')
                 return {
@@ -93,7 +96,7 @@ class Bot:
 
         if action == 'moveCurrency':
             # Validate required parameters
-            if ('parameters' not in json_in 
+            if ('parameters' not in json_in
                 or 'user_id_sender' not in json_in['parameters']
                 or 'user_id_receiver' not in json_in['parameters']):
                 self.logger.warn('Request for getBalance is missing parameters')
@@ -116,6 +119,7 @@ class Bot:
                 'balance': balance
             }
         else:
+            # Currently, the get_balance function will create a missing user. So this should never happen
             response = {
                 'request': 'Failure',
                 'message': 'user_id does not exist',
