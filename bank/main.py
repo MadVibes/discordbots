@@ -2,9 +2,7 @@
 # Handles the moving/maintaining of VibeCoin
 ####################################################################################################
 import discord
-import os, sys, json
-import configparser
-import discord
+import os, sys, json, math, configparser
 from discord.ext import tasks
 from discord.ext import commands
 
@@ -59,6 +57,11 @@ async def on_ready():
     # Create it's own user in bank
     if not bot.user_id_exists(client.user.id):
         bot.create_user(client.user.id, client.user.name)
+    # Tax account creation
+    if not(bot.user_id_exists(int(config['TAX_ACCOUNT_ID']))):
+        success = bot.create_user(int(config['TAX_ACCOUNT_ID']), 'TAX_ACCOUNT')
+        if not(success):
+            logger.warn('Failed to create new user TAX_ACCOUNT')
     # Restore defaults
     await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
     if config['STATUS_START_ONLINE'] == 'True':
@@ -74,12 +77,6 @@ async def on_message(message: discord.Message):
         success = bot.create_user(int(message.author.id), message.author.display_name)
         if not(success):
             logger.warn(f'Failed to create new user {message.author.display_name}')
-
-    # Tax account creation
-    if not(bot.user_id_exists(int(config['TAX_ACCOUNT_ID']))):
-        success = bot.create_user(int(config['TAX_ACCOUNT_ID']), 'TAX_ACCOUNT')
-        if not(success):
-            logger.warn('Failed to create new user TAX_ACCOUNT')
 
     # Handle normal on_message event
     await client.process_commands(message)
@@ -152,7 +149,7 @@ async def command_transfer(ctx: commands.Context, *args):
 
 @client.command(name='version')
 async def command_tts(ctx: commands.Context, *args):
-    """View bot version""" 
+    """View bot version"""
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
 
@@ -209,12 +206,26 @@ def withdrawCurrency(service: Servlet, parameters: json):
     return service.bot.req_move_currency(user_id_sender=service.client.user.id, user_id_receiver=parameters['user_id'], amount=parameters['amount'])
 
 
+def spendCurrencyTaxed(service: Servlet, parameters: json):
+    """Spend balance of user, split amount into tax account based on band"""
+    if ('user_id' not in parameters
+        or 'amount' not in parameters
+        or 'tax_band' not in parameters):
+        raise Exception('user_id, amount, tax_band were not all included in parameters')
+
+    tax_amount = math.floor(parameters['amount'] * float(service.bot.tax_bands[parameters['tax_band']])/100)
+    bank_amount = int(parameters['amount']) - tax_amount
+    service.bot.req_move_currency(user_id_sender=parameters['user_id'], user_id_receiver=int(service.bot.config['TAX_ACCOUNT_ID']), amount=tax_amount)
+
+    return service.bot.req_move_currency(user_id_sender=parameters['user_id'], user_id_receiver=service.client.user.id, amount=bank_amount)
+
 # Mapping of possible functions that the web server can call
 actions = {
     'getBalance': getBalance,
     'moveCurrency': moveCurrency,
     'spendCurrency': spendCurrency,
-    'withdrawCurrency': withdrawCurrency
+    'withdrawCurrency': withdrawCurrency,
+    'spendCurrencyTaxed': spendCurrencyTaxed
 }
 servlet = Servlet(client, bot)
 
