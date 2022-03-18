@@ -49,6 +49,39 @@ class Bank:
         return int(content['response']['balance'])
 
 
+    def moveCurrency(self, user_id_sender: int, user_id_receiver: int, amount: int):
+        """Moves balance from one user id to another. Returns users balance afterwards as int"""
+        # Create payload/request for bank server
+        payload = dumps({
+            'action': 'moveCurrency',
+            'parameters': {
+                'user_id_sender': user_id_sender,
+                'user_id_receiver': user_id_receiver,
+                'amount': amount
+            }
+        })
+        # Create headers
+        headers = self.default_headers
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
+                data=payload,
+                headers=headers,
+                timeout=10
+            )
+        content = loads(r.content)
+        # If the code is not 200, raise an error with the response of the bank
+        if r.status_code != 200:
+            self.logger.warn('Bank response was a non 200')
+            self.logger.warn(content)
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
+            self.logger.warn(content)
+        return int(content['response'])
+
+
     def spendCurrency(self, user_id: int, amount: int):
         """Spend users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
@@ -81,14 +114,13 @@ class Bank:
         return int(content['response']['balance_sender'])
 
 
-    def moveCurrency(self, user_id_sender: int, user_id_receiver: int, amount: int):
-        """Moves balance from one user id to another. Returns users balance afterwards as int"""
+    def withdrawCurrency(self, user_id: int, amount: int):
+        """Withdraw from bank to users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
         payload = dumps({
-            'action': 'moveCurrency',
+            'action': 'withdrawCurrency',
             'parameters': {
-                'user_id_sender': user_id_sender,
-                'user_id_receiver': user_id_receiver,
+                'user_id': user_id,
                 'amount': amount
             }
         })
@@ -111,7 +143,7 @@ class Bank:
         if content['request'] != 'Accepted':
             self.logger.warn('Bank response was not Accepted')
             self.logger.warn(content)
-        return int(content['response'])
+        return int(content['response']['balance_sender'])
 
 
 ########################################################################################################
