@@ -5,6 +5,8 @@ import configparser
 import sys
 import discord
 import re
+import math
+import numpy as np
 
 
 sys.path.insert(0, '../')
@@ -28,30 +30,37 @@ class Bot:
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
 
   # Embed for bets
-  async def bet_embed(self, ctx, data):
+  async def bet_embed(self, ctx, data, json_len):
     embed = discord.Embed(
-      title='All Bets',
+      title='Active Bets',
       description='-------',
       colour=discord.Colour.green()
     )
+    if int(json_len) > 12:
+      for i in data["bets"]:
+        id = i['ID']
+        title = str(i['title'])
+        title = re.sub("[,'\[\]]", "", title)
+        for_pool = i['for']['pool']
+        against_pool = i['against']['pool']
 
-    for i in data["bets"]:
-      id = i['ID']
-      title = str(i['title'])
-      title = re.sub("[,'\[\]]", "", title)
-      wager = i['wagers']
-
-      complete = f"**Title:** \n {title.title()} \n" + f"**Bet Wager:** \n {wager}"
+        complete = f"**Title:** \n {title.title()} \n" + f"**For Pool:** \n {for_pool} VBC \n" + f"**Against Pool:** \n {against_pool} VBC"
+        
+        embed.add_field(name=f'Bet ID: {id}', value=f'{complete}' ,inline=True)
+        
+    else:
+      embed.add_field(name='No Bets :(', value='What are you waiting for? Create a bet dummy!' ,inline=True)
       
-      embed.add_field(name=f'Bet ID: {id}', value=f'{complete}' ,inline=True)
     await ctx.send(embed=embed)
 
   # Bet command function
   async def bet(self, ctx, args):
+    user_id = ctx.message.author.id
     data = self.data.read()
     args = list(args)
     if not len(args):
-      await self.bet_embed(ctx, data)
+      json_len = len(str(data))
+      await self.bet_embed(ctx, data, json_len)
 
     elif args[0].lower() == "create":
       args.pop(0)
@@ -72,40 +81,111 @@ class Bot:
         if bet['ID'] == int(args[0]):
           active_bet = bet
           break
-
+      # Bet doesn't exist
       if active_bet is None:
         await ctx.send("This bet doesn't exist, try again.")
         await ctx.message.add_reaction('❌')
-          
-      if user_id not in active_bet['user_ids']:
-        if args[1].isdigit():
-          wager = int(args[1])
-          await self.check_and_spend(ctx, wager)
-          if choice.lower() == "for":
-            title = re.sub("[,'\[\]]", "", str(active_bet['title']))
-            active_bet['for']['pool'] += wager
-            users = active_bet['for']['users']
-            active_bet['user_ids'].append(user_id)
-            users.append(user_id)
-            self.data.write(data)
-            await ctx.send(f"You have bet {wager} VBC **FOR** {title}!")
-            await ctx.message.add_reaction('✅')
 
-          elif choice.lower() == "against":
-            title = re.sub("[,'\[\]]", "", str(active_bet['title']))
-            active_bet['against']['pool'] += wager
-            users = active_bet['against']['users']
-            active_bet['user_ids'].append(user_id)
-            users.append(user_id)
-            self.data.write(data)
-            await ctx.send(f"You have bet {wager} VBC **AGAINST** {title}!")
-            await ctx.message.add_reaction('✅')
+      else:
+        if user_id not in active_bet['user_ids']:
+          if args[1].isdigit():
+            wager = int(args[1])
+            answer = await self.check_and_spend(ctx, wager)
+            if answer == 1:
+              userid_wager = [user_id, wager]
+              if choice.lower() == "for": # Betting FOR Logic
+                title = re.sub("[,'\[\]]", "", str(active_bet['title']))
+                active_bet['for']['pool'] += wager
+                users = active_bet['for']['users']
+                active_bet['user_ids'].append(user_id)
+                users.append(userid_wager)
+                self.data.write(data)
+                await ctx.send(f"You have bet {wager} VBC **FOR** {title}!")
+                await ctx.message.add_reaction('✅')
+    
+              elif choice.lower() == "against": # Betting AGAINST Logic
+                title = re.sub("[,'\[\]]", "", str(active_bet['title']))
+                active_bet['against']['pool'] += wager
+                users = active_bet['against']['users']
+                active_bet['user_ids'].append(user_id)
+                users.append(userid_wager)
+                self.data.write(data)
+                await ctx.send(f"You have bet {wager} VBC **AGAINST** {title}!")
+                await ctx.message.add_reaction('✅')
+        else:
+          await ctx.send(f"You have bet on bet ID \"{active_bet['ID']}\" already, chill out.")
+          await ctx.message.add_reaction('❌')
 
+  # Payout function for bets
   async def pay(self, ctx, arg, arg2):
-    pass
-            
+    data = self.data.read()
+    active_bet = None
+    for bet in data['bets']:
+      if bet['ID'] == int(arg):
+        active_bet = bet
+        break
+    if active_bet is None:
+        await ctx.send("This bet doesn't exist, try again.")
+        await ctx.message.add_reaction('❌')
+      
+    else:
+      for_pool = active_bet['for']['pool']
+      against_pool = active_bet['against']['pool']
+      
+      if arg2.lower() == "for": # FOR wins
+        winners, wagers, percentages, win_amounts= [], [], [], []
+        for user, wager in active_bet['for']['users']:
+          winners.append(user)
+          wagers.append(wager)
+        for wager in wagers:
+          equation = math.floor(wager / for_pool * 100)
+          percentages.append(int(equation))
+        for percent in percentages:
+          equation = math.floor(against_pool * percent / 100)
+          win_amounts.append(equation)
+        final_wins = np.add(wagers, win_amounts)
+        final = {winners[i]: final_wins[i] for i in range(len(winners))} 
+        print(winners, wagers, percentages, win_amounts)
+        print(final)
+        ''' 
+        for id, winnings in final.items():
+        self.bank.update_balance_bet(winnings, id) # Fix with Liam
+        '''
+      elif arg2.lower() == "against": # AGAINST wins
+        winners, wagers, percentages, win_amounts = [], [], [], []
+        for user, wager in active_bet['against']['users']:
+          winners.append(user)
+          wagers.append(wager)
+        for wager in wagers:
+          equation = math.floor(wager / against_pool * 100)
+          percentages.append(int(equation))
+        for percent in percentages:
+          equation = math.floor(for_pool * percent / 100)
+          win_amounts.append(equation)
+        final_wins = np.add(wagers, win_amounts)
+        final = {winners[i]: final_wins[i] for i in range(len(winners))} 
+        print(winners, wagers, percentages, win_amounts)
+        print(final)
+        '''
+        for id, winnings in final.items():
+          self.bank.update_balance_bet(winnings, id) # Fix with Liam
+        '''
+      elif arg2.lower() == "stalemate": # STALEMATE - No one wins
+        for_users, against_users, for_wagers, against_wagers = [], [], [], [] 
+        
+        for user, wager in active_bet['for']['users']:
+          for_users.append(user)
+          for_wagers.append(wager)
+        for user, wager in active_bet['against']['users']:
+          against_users.append(user)
+          against_wagers.append(wager)
           
-          
+        for_final = {for_users[i]: for_wagers[i] for i in range(len(for_users))}
+        against_final = {against_users[i]: against_wagers[i] for i in range(len(against_users))}
+  
+        print(for_final)
+        print(against_final)
+      
   # Writing bet to DB
   async def make_bet(self, ctx, args, pro, against):
     data = self.data.read()
@@ -133,6 +213,7 @@ class Bot:
         return
     try:
         self.bank.spendCurrency(ctx.author.id, int(wager))
+        return 1
         
     except Exception as e:
         self.logger.warn('Failed to execute bet:')
