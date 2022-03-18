@@ -21,7 +21,7 @@ config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
 
-VERSION = 'v0.1'
+VERSION = 'v1.0'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -71,7 +71,7 @@ async def bet(ctx: commands.Context, *args):
   await bot.bet(ctx, args)
 
 @client.command(name='pay')
-async def pay(ctx, arg, arg2):
+async def pay(ctx, arg, arg2=None):
   await bot.pay(ctx, arg, arg2)
 
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
