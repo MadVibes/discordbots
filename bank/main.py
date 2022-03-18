@@ -75,6 +75,12 @@ async def on_message(message: discord.Message):
         if not(success):
             logger.warn(f'Failed to create new user {message.author.display_name}')
 
+    # Tax account creation
+    if not(bot.user_id_exists(int(config['TAX_ACCOUNT_ID']))):
+        success = bot.create_user(int(config['TAX_ACCOUNT_ID']), 'TAX_ACCOUNT')
+        if not(success):
+            logger.warn('Failed to create new user TAX_ACCOUNT')
+
     # Handle normal on_message event
     await client.process_commands(message)
 
