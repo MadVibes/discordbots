@@ -70,6 +70,9 @@ async def command_tts(ctx: commands.Context, *args):
 async def bet(ctx: commands.Context, *args):
   await bot.bet(ctx, args)
 
+@client.command(name='pay')
+async def pay(ctx, arg, arg2):
+  await bot.pay(ctx, arg, arg2)
 
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):
