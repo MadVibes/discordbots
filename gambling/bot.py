@@ -7,6 +7,9 @@ import discord
 import re
 import math
 import numpy as np
+import asyncio
+import threading
+import random
 
 
 sys.path.insert(0, '../')
@@ -17,7 +20,8 @@ from lib.bank_interface import Bank
 
 
 db_schema = {
-  "bets": []
+  "bets": [],
+  "deathrolls": []
 }
 
 
@@ -36,7 +40,7 @@ class Bot:
       description='-------',
       colour=discord.Colour.green()
     )
-    if data != db_schema:
+    if data['bets'] != db_schema['bets']:
       for i in data["bets"]:
         id = i['ID']
         title = str(i['title'])
@@ -243,6 +247,9 @@ class Bot:
   
     elif type == "pay":
       title = "Pay Command Help"
+
+    elif type == "deathroll":
+      title = "Deathroll Command Help"
       
     embed = discord.Embed(
       title=f'{title}',
@@ -251,13 +258,20 @@ class Bot:
     )
     
     if type == "bet":
-      embed.add_field(name='!bet', value='Displays all active bets.' ,inline=False)
-      embed.add_field(name='!bet [create] [name]', value='Creates a bet with a custom name and gives it a unique ID used in the commands listed below.' ,inline=False)
-      embed.add_field(name='!bet [for] [ID] [wager]', value='Adds your wager to the **FOR** pool. ' ,inline=False)
-      embed.add_field(name='!bet [against] [ID] [wager]', value='Adds your wager to the **AGAINST** pool. ' ,inline=False)
+      embed.add_field(name='$bet', value='Displays all active bets.' ,inline=False)
+      embed.add_field(name='$bet [create] [name]', value='Creates a bet with a custom name and gives it a unique ID used in the commands listed below.' ,inline=False)
+      embed.add_field(name='$bet [for] [ID] [wager]', value='Adds your wager to the **FOR** pool. ' ,inline=False)
+      embed.add_field(name='$bet [against] [ID] [wager]', value='Adds your wager to the **AGAINST** pool. ' ,inline=False)
       
     elif type == "pay":
-      embed.add_field(name='!pay [ID] [for | against | stalemate]', value='Use this command to pay the winner(s) of a bet. If the against team won, it would look something like this \"(!pay [ID] [against])\".' ,inline=False)
+      embed.add_field(name='$pay [ID] [for | against | stalemate]', value='Use this command to pay the winner(s) of a bet. If the against team won, it would look something like this \"($pay [ID] [against])\".' ,inline=False)
+
+    elif type == "deathroll":
+      embed.add_field(name='$deathroll', value='Shows all active deathrolls.' ,inline=False)
+      embed.add_field(name='$deathroll [create] [wager].', value='Creates a deathroll game with a custom wager and unique ID.' ,inline=False)
+      embed.add_field(name='$deathroll [join] [ID].', value='Joins a deathroll game.' ,inline=False)
+      embed.add_field(name='$deathroll [start] [ID].', value='Starts the deathroll game, can only be used by the game\'s initiator.' ,inline=False)
+      
       
     await ctx.send(embed=embed)
     
@@ -295,8 +309,191 @@ class Bot:
         self.logger.warn('Failed to execute bet:')
         self.logger.warn(str(e))      
 
-  
+#############################################################################################
+# Deathrolling
+#############################################################################################
 
+  # Active deathroll embed
+  async def deathroll_embed(self, ctx, data):
+    embed = discord.Embed(
+      title='All Active Deathrolls',
+      description='-------',
+      colour=discord.Colour.green()
+    )
+    if data['deathrolls'] != db_schema['deathrolls']:
+      for i in data["deathrolls"]:
+        ID = i['ID']
+        wager = str(i['wager'])
+        winnings = int(wager) * 2
+        player_1 = i['competitors'][0]
+        player_1_obj = await self.client.fetch_user(player_1)
+        if len(i['competitors']) == 2:
+          player_2 = i['competitors'][1]
+          player_2_obj = await self.client.fetch_user(player_2)
+        else:
+          player_2_obj = None
+          
+        complete = f"**Wager:** \n {wager} VBC \n" + f"**Amount to win:** \n {winnings} VBC \n" + f"**Initiator / Player 1:** \n {player_1_obj} \n" + f"**Player 2:** \n {player_2_obj}"
+        
+        embed.add_field(name=f'Deathroll ID: {ID}', value=f'{complete}' ,inline=True)
+        
+    else:
+      embed.add_field(name='No Bets :(', value='What are you waiting for? Create a bet dummy!' ,inline=True)
+      
+    await ctx.send(embed=embed)
+    
+  
+  async def create_dr(self, ctx, wager, initiator, data):
+    answer = await self.check_and_spend(ctx, wager)
+    if answer == 1:
+      length = len(data["deathrolls"])
+      while length in data["deathrolls"]:
+        length += 1
+
+      deathroll_data = {
+        "ID": length,
+        "wager": wager,
+        "initiator": initiator,
+        "competitors": [initiator]
+      }
+
+      data["deathrolls"].append(deathroll_data)
+      self.data.write(data)
+      return length
+
+  # Deathroll game starts
+  async def deathroll_game(self, ctx, wager, player1, player2, data, active_bet_index):
+    wager1 = int(wager)
+    wager2 = int(wager)
+    turn = 0
+    while wager1 != 1:
+      if turn == 0:
+        rolled_num = random.randint(1, wager1)
+        wager1 = rolled_num
+        await ctx.send(f"<@{player1}> rolled a {rolled_num}!")
+        if wager1 != 1:
+          turn = 1
+          await asyncio.sleep(1)
+        
+      elif turn == 1:
+        rolled_num = random.randint(1, wager1)
+        wager1 = rolled_num
+        await ctx.send(f"<@{player2}> rolled a {rolled_num}!")
+        if wager1 != 1:
+          turn = 0
+          await asyncio.sleep(1)
+
+    wager2 *= 2
+    if turn == 1: # Player 1 wins
+      self.bank.withdrawCurrency(int(player1), int(wager2))
+      del data['deathrolls'][active_bet_index]
+      self.data.write(data)
+      await ctx.send(f"<@{player1}> wins {wager2} VBC!")
+      
+    elif turn == 0: # Player 2 wins
+      self.bank.withdrawCurrency(int(player2), int(wager2))
+      del data['deathrolls'][active_bet_index]
+      self.data.write(data)
+      await ctx.send(f"<@{player2}> wins {wager2} VBC!")
+
+  # Deathroll prep before game
+  async def prep_deathroll(self, ctx, data, arg2, user):
+    active_bet = None
+    active_bet_index = None
+    for j, bet in enumerate(data['deathrolls']):
+      if bet['ID'] == int(arg2):
+        active_bet = bet
+        active_bet_index = j
+        break
+    
+    if active_bet == None:
+      await ctx.send(f"No deathroll game found with the id of \"{arg2}\", please try again.")
+
+    if int(user) == active_bet['initiator']:
+      wager = active_bet["wager"]
+      if len(active_bet["competitors"]) == 2:
+        player1 = int(active_bet["competitors"][0])
+        player2 = int(active_bet["competitors"][1])
+        await ctx.send(f"The deathroll will begin in 5 seconds, good luck to <@{player1}> & <@{player2}>!")
+        await asyncio.sleep(5)
+        
+        await self.deathroll_game(ctx, wager, player1, player2, data, active_bet_index)
+
+      else:
+        await ctx.send("This deathroll doesn't have two players yet, come back when someone accepts your challenge")
+      
+    else: 
+      await ctx.send(f"<@{user}>, if you didn't initiate the deathroll, you can't start it.")
+
+  # Deathroll main command
+  async def deathroll(self, ctx, arg, arg2):
+    data = self.data.read()
+    if arg == None:
+      await self.deathroll_embed(ctx, data)
+
+      
+    else:
+      user = ctx.message.author.id
+      if arg.lower() == "create" and arg2.isdigit():
+        if int(arg2) > 1:
+          ID = await self.create_dr(ctx, int(arg2), int(user), data)
+          if ID != None:
+            await ctx.send(f"Deathroll created, it's ID is \"{ID}\".")
+        else:
+          await ctx.send("The wager must be more than 1 VBC dummy.")
+          
+      elif arg.lower() == "join":
+        active_bet = None
+        for bet in data['deathrolls']:
+          if bet['ID'] == int(arg2):
+            active_bet = bet
+            break
+
+        if active_bet == None:
+          await ctx.send(f"No deathroll game found with the id of \"{arg2}\", please try again.")
+          
+        else:
+          competitors = active_bet['competitors']
+          if len(competitors) < 2:
+            wager = active_bet['wager']
+            answer = await self.check_and_spend(ctx, wager)
+            if answer == 1:
+              competitors.append(int(user))
+              self.data.write(data)
+              await ctx.send(f"You have spent {wager} VBC and joined the deathroll! The initator can start it when you are both ready.")
+          else:
+            await ctx.send("This deathroll already has two players... Sorry :(")
+
+      elif arg.lower() == "start":
+        await self.prep_deathroll(ctx, data, arg2, user)
+
+      elif arg.lower() == "delete":
+        active_bet = None
+        active_bet_index = None
+        for j, bet in enumerate(data['deathrolls']):
+          if bet['ID'] == int(arg2):
+            active_bet = bet
+            active_bet_index = j
+            break
+
+        if active_bet == None:
+          await ctx.send(f"No deathroll game found with the ID of \"{arg2}\", please try again.")
+        else:
+          if int(user) == active_bet['initiator']:
+            del data['deathrolls'][active_bet_index]
+            self.data.write(data)
+            await ctx.send(f"Successfully deleted deathroll ID \"{active_bet_index}\"")
+          else:
+            await ctx.send("You can't delete deathrolls that you didn't initiate.")
+          
+            
+      elif arg.lower() == "help":
+        await self.help_embed(ctx, "deathroll")
+        
+          
+    
+
+      
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper
 #

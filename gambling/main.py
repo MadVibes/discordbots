@@ -74,6 +74,11 @@ async def bet(ctx: commands.Context, *args):
 async def pay(ctx, arg, arg2=None):
   await bot.pay(ctx, arg, arg2)
 
+@client.command(name='deathroll')
+@commands.guild_only()
+async def deathroll(ctx, arg=None, arg2=None):
+  await bot.deathroll(ctx, arg, arg2)
+
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):
     """"""# Catch to do nothing. Used for overlapping bot prefix
