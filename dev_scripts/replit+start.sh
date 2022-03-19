@@ -1,8 +1,9 @@
 #!/bin/bash
-# Dev script to stop docker, build and start again
-docker-compose down
-docker-compose build --no-cache --parallel
-docker-compose up -d
+# Dev script to start services in replit
+python bank/main.py &
+python shop/main.py &
+python chameleon/main.py &
+python gambling/main.py &
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper

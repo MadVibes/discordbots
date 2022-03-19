@@ -9,13 +9,14 @@ from discord.ext import commands
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.logger import Logger #pylint: disable=E0401
-from lib.bank_interface import Bank #pylint: disable=E0401
+from lib.utils import Utils
+from lib.logger import Logger
+from lib.bank_interface import Bank
 from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
-bot_type = 'chameleon'
+bot_type = 'croupier'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
@@ -28,18 +29,19 @@ GUILD = config['DISCORD_GUILD']
 
 # Bot perms (534790879296)
 intents = discord.Intents.default()
-intents.members = True
-intents.messages = True
+#intents.members = True
+#intents.messages = True
 
-logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
+logger = Logger(int(config['LOGGING_LEVEL']), bool(config['WRITE_TO_LOG_FILE']), config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
 logger.log(f'Starting {bot_type} - ' + VERSION)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
-bot = Bot(logger, config, client)
 bank = Bank(logger, config)
+bot = Bot(logger, config, bank, client)
+
 
 
 @client.event
@@ -55,37 +57,27 @@ async def on_ready():
 
     # Restore defaults
     await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
-    if config['STATUS_START_ONLINE'] == 'True':
-        await client.change_presence(status=discord.Status.online)
-    else:
-        await client.change_presence(status=discord.Status.invisible)
-
-
-@client.command(name='tts')
-async def command_tts(ctx: commands.Context, *args):
-    """Execute tts command""" 
-
-    user_balance = bank.getBalance(ctx.author.id)
-    # insufficient balance
-    if int(config['TTS_COST']) >= user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
-        return
-    # Perform tts and spend currency
-    try:
-        await bot.send_tts(ctx, args)
-        bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
-
-    except Exception as e:
-        logger.warn('Failed to execute tts:')
-        logger.warn(str(e))
 
 
 @client.command(name='version')
-async def command_version(ctx: commands.Context, *args):
-    """View bot version"""
+async def command_tts(ctx: commands.Context, *args):
+    """View bot version""" 
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
 
+
+@client.command(name='bet')
+async def bet(ctx: commands.Context, *args):
+  await bot.bet(ctx, args)
+
+@client.command(name='pay')
+async def pay(ctx, arg, arg2=None):
+  await bot.pay(ctx, arg, arg2)
+
+@client.command(name='deathroll')
+@commands.guild_only()
+async def deathroll(ctx, arg=None, arg2=None):
+  await bot.deathroll(ctx, arg, arg2)
 
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):
