@@ -268,9 +268,10 @@ class Bot:
 
     elif type == "deathroll":
       embed.add_field(name='$deathroll', value='Shows all active deathrolls.' ,inline=False)
-      embed.add_field(name='$deathroll [create] [wager].', value='Creates a deathroll game with a custom wager and unique ID.' ,inline=False)
-      embed.add_field(name='$deathroll [join] [ID].', value='Joins a deathroll game.' ,inline=False)
-      embed.add_field(name='$deathroll [start] [ID].', value='Starts the deathroll game, can only be used by the game\'s initiator.' ,inline=False)
+      embed.add_field(name='$deathroll [create] [wager]', value='Creates a deathroll game with a custom wager and unique ID.' ,inline=False)
+      embed.add_field(name='$deathroll [join] [ID]', value='Joins a deathroll game.' ,inline=False)
+      embed.add_field(name='$deathroll [start] [ID]', value='Starts the deathroll game, can only be used by the game\'s initiator.' ,inline=False)
+      embed.add_field(name='$deathroll [delete] [ID]', value='Deletes a deathroll game , can only be used by the game\'s initiator.' ,inline=False)
       
       
     await ctx.send(embed=embed)
@@ -330,10 +331,13 @@ class Bot:
         if len(i['competitors']) == 2:
           player_2 = i['competitors'][1]
           player_2_obj = await self.client.fetch_user(player_2)
+          ready = "**Ready to start!**"
         else:
           player_2_obj = None
+          ready = ""
           
-        complete = f"**Wager:** \n {wager} VBC \n" + f"**Amount to win:** \n {winnings} VBC \n" + f"**Initiator / Player 1:** \n {player_1_obj} \n" + f"**Player 2:** \n {player_2_obj}"
+        complete = f"**Wager:** \n {wager} VBC \n" + f"**Amount to win:** \n {winnings} VBC \n" + f"**Initiator / Player 1:** \n {player_1_obj} \n" + f"**Player 2:** \n {player_2_obj} \n" + f"{ready}"
+
         
         embed.add_field(name=f'Deathroll ID: {ID}', value=f'{complete}' ,inline=True)
         
@@ -407,6 +411,7 @@ class Bot:
         break
     
     if active_bet == None:
+      await ctx.message.add_reaction('❌')
       await ctx.send(f"No deathroll game found with the id of \"{arg2}\", please try again.")
 
     else:
@@ -421,9 +426,11 @@ class Bot:
           await self.deathroll_game(ctx, wager, player1, player2, data, active_bet_index)
   
         else:
+          await ctx.message.add_reaction('❌')
           await ctx.send("This deathroll doesn't have two players yet, come back when someone accepts your challenge")
         
       else: 
+        await ctx.message.add_reaction('❌')
         await ctx.send(f"<@{user}>, if you didn't initiate the deathroll, you can't start it.")
 
   # Deathroll main command
@@ -434,66 +441,93 @@ class Bot:
 
     else:
       user = ctx.message.author.id
-      if arg.lower() == "create" and arg2.isdigit():
-        if int(arg2) > 1:
-          ID = await self.create_dr(ctx, int(arg2), int(user), data)
-          if ID != None:
-            await ctx.send(f"Deathroll created, it's ID is \"{ID}\".")
+      
+      if arg.lower() == "create":
+        if arg2 != None:
+          if  arg2.isdigit():
+            if int(arg2) > 1:
+              ID = await self.create_dr(ctx, int(arg2), int(user), data)
+              if ID != None:
+                await ctx.message.add_reaction('✅')
+                await ctx.send(f"Deathroll created, it's ID is \"{ID}\".")
+            
+            else:
+              await ctx.message.add_reaction('❌')
+              await ctx.send("The wager must be more than 1 VBC dummy.")
         else:
-          await ctx.send("The wager must be more than 1 VBC dummy.")
+          await ctx.message.add_reaction('❌')
+          await ctx.send("2nd argument missing \"$deathroll [create] [wager]\".")
           
       elif arg.lower() == "join":
         active_bet = None
-        for bet in data['deathrolls']:
-          if bet['ID'] == int(arg2):
-            active_bet = bet
-            break
-
-        if active_bet == None:
-          await ctx.send(f"No deathroll game found with the id of \"{arg2}\", please try again.")
-          
-        else:
-          competitors = active_bet['competitors']
-          if len(competitors) < 2:
-            wager = active_bet['wager']
-            answer = await self.check_and_spend(ctx, wager)
-            if answer == 1:
-              competitors.append(int(user))
-              self.data.write(data)
-              await ctx.send(f"You have spent {wager} VBC and joined the deathroll! The initator can start it when you are both ready.")
-          else:
-            await ctx.send("This deathroll already has two players... Sorry :(")
-
-      elif arg.lower() == "start":
-        await self.prep_deathroll(ctx, data, arg2, user)
-
-      elif arg.lower() == "delete":
-        active_bet = None
-        active_bet_index = None
-        for j, bet in enumerate(data['deathrolls']):
-          if bet['ID'] == int(arg2):
-            active_bet = bet
-            active_bet_index = j
-            break
-
-        if active_bet == None:
-          await ctx.send(f"No deathroll game found with the ID of \"{arg2}\", please try again.")
-        else:
-          if int(user) == active_bet['initiator']:
-            competitors = active_bet['competitors']
-            wager = active_bet['wager']
-            player1 = competitors[0]
-            self.bank.withdrawCurrency(int(player1), int(wager))
-            if len(competitors) == 2:
-              player2 = competitors[1]
-              self.bank.withdrawCurrency(int(player2), int(wager))
-            del data['deathrolls'][active_bet_index]
-            self.data.write(data)
-            await ctx.send(f"Successfully deleted deathroll ID \"{active_bet_index}\" and refunded all players.")
+        if arg2 != None:
+          for bet in data['deathrolls']:
+            if bet['ID'] == int(arg2):
+              active_bet = bet
+              break
+  
+          if active_bet == None:
+            await ctx.message.add_reaction('❌')
+            await ctx.send(f"No deathroll game found with the id of \"{arg2}\", please try again.")
             
           else:
-            await ctx.send("You can't delete deathrolls that you didn't initiate.")
+            competitors = active_bet['competitors']
+            if len(competitors) < 2:
+              wager = active_bet['wager']
+              answer = await self.check_and_spend(ctx, wager)
+              if answer == 1:
+                competitors.append(int(user))
+                self.data.write(data)
+                await ctx.message.add_reaction('✅')
+                await ctx.send(f"You have spent {wager} VBC and joined the deathroll! The initator can start it when you are both ready.")
+            else:
+              await ctx.message.add_reaction('❌')
+              await ctx.send("This deathroll already has two players... Sorry :(")
+        else:
+          await ctx.message.add_reaction('❌')
+          await ctx.send("2nd argument missing \"$deathroll [join] [ID]\".")
           
+      elif arg.lower() == "start":
+        if arg2 != None:
+          await self.prep_deathroll(ctx, data, arg2, user)
+        else:
+          await ctx.message.add_reaction('❌')
+          await ctx.send("2nd argument missing \"$deathroll [start] [ID]\".")
+
+      elif arg.lower() == "delete":
+        if arg2 != None:
+          active_bet = None
+          active_bet_index = None
+          for j, bet in enumerate(data['deathrolls']):
+            if bet['ID'] == int(arg2):
+              active_bet = bet
+              active_bet_index = j
+              break
+  
+          if active_bet == None:
+            await ctx.message.add_reaction('❌')
+            await ctx.send(f"No deathroll game found with the ID of \"{arg2}\", please try again.")
+          else:
+            if int(user) == active_bet['initiator']:
+              competitors = active_bet['competitors']
+              wager = active_bet['wager']
+              player1 = competitors[0]
+              self.bank.withdrawCurrency(int(player1), int(wager))
+              if len(competitors) == 2:
+                player2 = competitors[1]
+                self.bank.withdrawCurrency(int(player2), int(wager))
+              del data['deathrolls'][active_bet_index]
+              self.data.write(data)
+              await ctx.message.add_reaction('✅')
+              await ctx.send(f"Successfully deleted deathroll ID \"{active_bet_index}\" and refunded all players.")
+              
+            else:
+              await ctx.message.add_reaction('❌')
+              await ctx.send("You can't delete deathrolls that you didn't initiate.")
+              
+        else:
+          await ctx.message.add_reaction('❌')
+          await ctx.send("2nd argument missing \"$deathroll [delete] [ID]\".")
             
       elif arg.lower() == "help":
         await self.help_embed(ctx, "deathroll")

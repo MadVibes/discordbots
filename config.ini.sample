@@ -17,7 +17,7 @@ COMMS_IP = 0.0.0.0
 COMMS_PORT = 7101
 DEFAULT_NAME = VibeBot Bank
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = tts,shop
+IGNORE_COMMANDS = tts,bet,shop,pay,deathroll
 STATUS_START_ONLINE = True
 
 [chameleon]
@@ -34,7 +34,7 @@ COMMS_DELIM = |
 TTS_COST = 600
 DEFAULT_NAME = VibeBot Chameleon
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer,shop
+IGNORE_COMMANDS = balance,transfer,bet,shop,pay,deathroll
 STATUS_START_ONLINE = True
 
 [shop]
@@ -50,5 +50,21 @@ COMMS_TARGET = http://127.0.0.1:7101
 COMMS_DELIM = |
 DEFAULT_NAME = VibeBot Shop
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer,tts
+IGNORE_COMMANDS = balance,transfer,tts,bet,pay,deathroll
 STATUS_START_ONLINE = True
+
+[croupier]
+LOGGING_LEVEL = 2
+LOGGING_PREFIX = CROUPIER
+LOGGING_PREFIX_SIZE = 9
+DATA_STORE = ./data-bets.json
+WRITE_TO_LOG_FILE = True
+LOG_FILE_DIR = ./croupier.log
+DISCORD_TOKEN = TOKEN HERE!
+DISCORD_GUILD = SERVER NAME HERE!
+COMMS_SECRET = secret
+COMMS_TARGET = htttp://127.0.0.1:7101
+COMMS_DELIM = |
+DEFAULT_NAME = VibeBot Croupier
+COMMAND_PREFIX = $
+IGNORE_COMMANDS = balance,transfer,shop
