@@ -338,7 +338,7 @@ class Bot:
         embed.add_field(name=f'Deathroll ID: {ID}', value=f'{complete}' ,inline=True)
         
     else:
-      embed.add_field(name='No Bets :(', value='What are you waiting for? Create a bet dummy!' ,inline=True)
+      embed.add_field(name='No Deathrolls :(', value='What are you waiting for? Create a game of deathroll dummy!' ,inline=True)
       
     await ctx.send(embed=embed)
     
@@ -431,7 +431,6 @@ class Bot:
     if arg == None:
       await self.deathroll_embed(ctx, data)
 
-      
     else:
       user = ctx.message.author.id
       if arg.lower() == "create" and arg2.isdigit():
