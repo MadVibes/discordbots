@@ -177,7 +177,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrency(ctx.author.id, product['price'])
+        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(mute = True, reason=f'Service purchase: {ctx.author.display_name}')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
@@ -246,7 +246,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrency(ctx.author.id, product['price'])
+        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(deafen = True, reason=f'Service purchase: {ctx.author.display_name}')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
@@ -315,7 +315,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrency(ctx.author.id, product['price'])
+        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(voice_channel=None, reason=f'Service purchase: {ctx.author.display_name}')
         await message.add_reaction('✅')
         # Return info about service purchase
@@ -381,7 +381,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrency(ctx.author.id, product['price'])
+        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(nick=message_name.content, reason=f'Service purchase: {ctx.author.display_name}')
         await message_name.add_reaction('✅')
         # Return info about service purchase

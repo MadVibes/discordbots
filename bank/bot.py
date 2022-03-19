@@ -1,7 +1,7 @@
 # This handles the actual bot logic
 ####################################################################################################
 from datetime import datetime
-import sys, json
+import sys, json, re
 import discord
 
 sys.path.insert(0, '../')
@@ -18,11 +18,21 @@ class Bot:
         self.client = client
         self.guild_id = 0
 
+        # Init database
         db_schema = {
             'users': []
         }
 
         self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
+
+        # Create tax bands from configs
+        config_dict = {k:v for k, v in self.config.items()}
+        tax_bands_config = list(filter(lambda conf: re.match('^TAX_BAND_', str(conf).upper()), config_dict.keys()))
+        tax_bands = {}
+        for band in tax_bands_config:
+            if band in config_dict.keys():
+                tax_bands[band.replace("tax_band_", "", 1)] = config_dict[band]
+        self.tax_bands = tax_bands
 
 
     def user_id_exists(self, user_id: int):
