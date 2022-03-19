@@ -7,13 +7,13 @@ config.ini
 
 # Data
 data.json
+data-bets.json
 
 # VIM
 *.swp
 *.swo
 
 # Replit
-.replit
 poetry.lock
 pyproject.toml
 
@@ -21,7 +21,7 @@ pyproject.toml
 bank.log
 chameleon.log
 shop.log
+croupier.log
 sample1.log
 sample2.log
 output.log
-

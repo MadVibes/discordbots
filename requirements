@@ -3,3 +3,4 @@ discord
 requests
 fuzzywuzzy
 python-Levenshtein
+numpy
