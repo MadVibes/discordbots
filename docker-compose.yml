@@ -43,3 +43,16 @@ services:
       - bank
     network_mode: host
 
+  gambling:
+    container_name: VibeBot-Croupier
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+      args:
+        bot: gambling
+    volumes:
+      - ./config.ini:/app/config.ini:ro
+      - ./output.log:/app/croupier.log:rw
+    depends_on:
+      - bank
+    network_mode: host
