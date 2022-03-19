@@ -93,7 +93,7 @@ class Bot:
         if user_id not in active_bet['user_ids']:
           if args[1].isdigit():
             wager = int(args[1])
-            answer = await self.check_and_spend(ctx, wager)
+            answer = await self.check_and_spend_bets(ctx, wager)
             if answer == 1:
               userid_wager = [user_id, wager]
               if choice.lower() == "for": # Betting FOR Logic
@@ -296,19 +296,33 @@ class Bot:
     return length
 
 
-  async def check_and_spend(self, ctx, wager):
+  async def check_and_spend_bets(self, ctx, wager):
     user_balance = self.bank.getBalance(ctx.author.id)
     # Insufficient balance
     if int(wager) > user_balance:
         await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
         return
     try:
-        self.bank.spendCurrency(ctx.author.id, int(wager))
+        self.bank.spendCurrencyTaxed(ctx.author.id, int(wager), self.config['BET_TAX_BAND'])
         return 1
         
     except Exception as e:
         self.logger.warn('Failed to execute bet:')
         self.logger.warn(str(e))      
+
+  async def check_and_spend_deathroll(self, ctx, wager):
+    user_balance = self.bank.getBalance(ctx.author.id)
+    # Insufficient balance
+    if int(wager) > user_balance:
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+        return
+    try:
+        self.bank.spendCurrencyTaxed(ctx.author.id, int(wager), self.config['DEATHROLL_TAX_BAND'])
+        return 1
+        
+    except Exception as e:
+        self.logger.warn('Failed to execute bet:')
+        self.logger.warn(str(e))    
 
 #############################################################################################
 # Deathrolling
@@ -348,7 +362,7 @@ class Bot:
     
   # Creates a deathroll game
   async def create_dr(self, ctx, wager, initiator, data):
-    answer = await self.check_and_spend(ctx, wager)
+    answer = await self.check_and_spend_deathroll(ctx, wager)
     if answer == 1:
       length = len(data["deathrolls"])
       while length in data["deathrolls"]:
@@ -474,7 +488,7 @@ class Bot:
             competitors = active_bet['competitors']
             if len(competitors) < 2:
               wager = active_bet['wager']
-              answer = await self.check_and_spend(ctx, wager)
+              answer = await self.check_and_spend_deathroll(ctx, wager)
               if answer == 1:
                 competitors.append(int(user))
                 self.data.write(data)
