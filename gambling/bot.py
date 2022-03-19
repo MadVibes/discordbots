@@ -64,10 +64,10 @@ class Bot:
       args.pop(0)
       pro = {"users": [], "pool": 0}
       against = {"users": [], "pool": 0}
-      await self.make_bet(ctx, args, pro, against)
+      ID = await self.make_bet(ctx, args, pro, against)
       args = str(args)
       title = re.sub("[,'\[\]]", "", args)
-      await ctx.send(f"Bet \"{title.title()}\" created!")
+      await ctx.send(f"Bet \"{title.title()}\" created, it's ID is \"{ID}\".")
 
     elif args[0].lower() == "for" or args[0].lower() == "against":
       user_id = ctx.message.author.id
@@ -278,6 +278,7 @@ class Bot:
     
     data["bets"].append(wager_obj)
     self.data.write(data)
+    return length
 
 
   async def check_and_spend(self, ctx, wager):
