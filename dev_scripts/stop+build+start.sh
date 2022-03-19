@@ -1,7 +1,7 @@
 #!/bin/bash
 # Dev script to stop docker, build and start again
 docker-compose down
-docker-compose build --no-cache
+docker-compose build --no-cache --parallel
 docker-compose up -d
 
 ########################################################################################################

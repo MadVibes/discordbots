@@ -219,13 +219,47 @@ def spendCurrencyTaxed(service: Servlet, parameters: json):
 
     return service.bot.req_move_currency(user_id_sender=parameters['user_id'], user_id_receiver=service.client.user.id, amount=bank_amount)
 
+
+def withdrawCurrencyTaxed(service: Servlet, parameters: json):
+    """Withdraw balance of bank, split amount but don't pay tax account based on band. PLEASE READ CODE COMMENT FOR withdrawCurrencyTaxed IN bank/main.py """
+    if ('user_id' not in parameters
+        or 'amount' not in parameters
+        or 'tax_band' not in parameters):
+        raise Exception('user_id, amount, tax_band were not all included in parameters')
+
+    tax_amount = math.floor(parameters['amount'] * float(service.bot.tax_bands[parameters['tax_band']])/100)
+    bank_amount = int(parameters['amount']) - tax_amount
+    # NOTE(Liam):
+    #   This is a hard one to think about. So when withdrawing with a tax rate, we need to give a user restricted amount. But we need to be smart when moving money from bank -> tax.
+    #   This could result in a scenarion with the bank has a net loss from it's total funds and the tax account has a net gain.
+    #   for example:
+    #       User1 + User2 spend 1000 in total on a wager that is taxed 10%.
+    #       this means +900 for Bank account, and +100 for Tax account
+    #       When User1 wins, a taxable currency withdraw is made of 1000. (900 to user, 100 to tax)
+    #       This ends in a scenario with:
+    #          +900 for User 1  (CORRECT)
+    #          +200 for Tax     (INCORRECT: should be +100 as it should not be taxed inbound and outbound)
+    #          -100 for Bank    (INCORRECT: should be ~0 as the bank should only be holding the balance temporarily during the bet)
+    #       The correct end scenario should be
+    #          +900 for User 1 
+    #          +100 for Tax
+    #          +/- 0 for Bank
+    #   To work around this issue, the current line below is commented out.
+    #   A real solution to the issue is for the service that is actually calling the withdraw function to calculate the amount to move post tax before ever calling this function via
+    #   the bank interface. Then there should be a call in the bank lib to get the current tax rates for a given band so that it is dynamic, and tax rates are controlled centrally 
+    #   by the bank bot.
+    #service.bot.req_move_currency(user_id_sender=service.client.user.id, user_id_receiver=int(service.bot.config['TAX_ACCOUNT_ID']), amount=tax_amount)
+
+    return service.bot.req_move_currency(user_id_sender=service.client.user.id, user_id_receiver=parameters['user_id'], amount=bank_amount)
+
 # Mapping of possible functions that the web server can call
 actions = {
     'getBalance': getBalance,
     'moveCurrency': moveCurrency,
     'spendCurrency': spendCurrency,
     'withdrawCurrency': withdrawCurrency,
-    'spendCurrencyTaxed': spendCurrencyTaxed
+    'spendCurrencyTaxed': spendCurrencyTaxed,
+    'withdrawCurrencyTaxed': withdrawCurrencyTaxed
 }
 servlet = Servlet(client, bot)
 
