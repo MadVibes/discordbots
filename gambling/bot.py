@@ -160,7 +160,7 @@ class Bot:
           final = {winners[i]: final_wins[i] for i in range(len(winners))} 
         
           for id, winnings in final.items():
-            self.bank.withdrawCurrency(int(id), int(winnings))
+            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "for", final)
@@ -180,7 +180,7 @@ class Bot:
           final = {winners[i]: final_wins[i] for i in range(len(winners))} 
           
           for id, winnings in final.items():
-            self.bank.withdrawCurrency(int(id), int(winnings))
+            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "against", final)
@@ -199,9 +199,9 @@ class Bot:
           against_final = {against_users[i]: against_wagers[i] for i in range(len(against_users))}
   
           for id, winnings in for_final.items():
-            self.bank.withdrawCurrency(int(id), int(winnings))
+            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           for id, winnings in against_final.items():
-            self.bank.withdrawCurrency(int(id), int(winnings))
+            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "stalemate", for_final, against_final)
@@ -228,12 +228,12 @@ class Bot:
     
     for id, winnings in final1.items():
       user_obj = await self.client.fetch_user(int(id))
-      embed.add_field(name=f'{user_obj}:', value=f'+{winnings} VBC' ,inline=False)
+      embed.add_field(name=f'{user_obj}:', value=f'+{winnings} VBC ᵇᵉᶠᵒʳᵉ ᵗᵃˣ' ,inline=False)
 
     if final2 != None:
       for id, winnings in final2.items():
         user_obj = await self.client.fetch_user(int(id))
-        embed.add_field(name=f'{user_obj}:', value=f'+{winnings} VBC' ,inline=False)
+        embed.add_field(name=f'{user_obj}:', value=f'+{winnings} VBC ᵇᵉᶠᵒʳᵉ ᵗᵃˣ' ,inline=False)
 
     embed.add_field(name='For Pool Total:', value=f'{for_pool} VBC' ,inline=True)
     embed.add_field(name='Against Pool Total:', value=f'{against_pool} VBC' ,inline=True)
@@ -403,13 +403,13 @@ class Bot:
 
     wager2 *= 2
     if turn == 1: # Player 1 wins
-      self.bank.withdrawCurrency(int(player1), int(wager2))
+      self.bank.withdrawCurrencyTaxed(int(player1), int(wager2), self.config['DEATHROLL_TAX_BAND'])
       del data['deathrolls'][active_bet_index]
       self.data.write(data)
       await ctx.send(f"<@{player1}> wins {wager2} VBC!")
       
     elif turn == 0: # Player 2 wins
-      self.bank.withdrawCurrency(int(player2), int(wager2))
+      self.bank.withdrawCurrencyTaxed(int(player2), int(wager2), self.config['DEATHROLL_TAX_BAND'])
       del data['deathrolls'][active_bet_index]
       self.data.write(data)
       await ctx.send(f"<@{player2}> wins {wager2} VBC!")
@@ -526,10 +526,10 @@ class Bot:
               competitors = active_bet['competitors']
               wager = active_bet['wager']
               player1 = competitors[0]
-              self.bank.withdrawCurrency(int(player1), int(wager))
+              self.bank.withdrawCurrencyTaxed(int(player1), int(wager), self.config['DEATHROLL_TAX_BAND'])
               if len(competitors) == 2:
                 player2 = competitors[1]
-                self.bank.withdrawCurrency(int(player2), int(wager))
+                self.bank.withdrawCurrencyTaxed(int(player2), int(wager), self.config['DEATHROLL_TAX_BAND'])
               del data['deathrolls'][active_bet_index]
               self.data.write(data)
               await ctx.message.add_reaction('✅')
