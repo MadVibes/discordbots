@@ -316,7 +316,7 @@ class Bot:
   # Active deathroll embed
   async def deathroll_embed(self, ctx, data):
     embed = discord.Embed(
-      title='All Active Deathrolls',
+      title='Active Deathrolls',
       description='-------',
       colour=discord.Colour.green()
     )
@@ -479,9 +479,17 @@ class Bot:
           await ctx.send(f"No deathroll game found with the ID of \"{arg2}\", please try again.")
         else:
           if int(user) == active_bet['initiator']:
+            competitors = active_bet['competitors']
+            wager = active_bet['wager']
+            player1 = competitors[0]
+            self.bank.withdrawCurrency(int(player1), int(wager))
+            if len(competitors) == 2:
+              player2 = competitors[1]
+              self.bank.withdrawCurrency(int(player2), int(wager))
             del data['deathrolls'][active_bet_index]
             self.data.write(data)
-            await ctx.send(f"Successfully deleted deathroll ID \"{active_bet_index}\"")
+            await ctx.send(f"Successfully deleted deathroll ID \"{active_bet_index}\" and refunded all players.")
+            
           else:
             await ctx.send("You can't delete deathrolls that you didn't initiate.")
           
