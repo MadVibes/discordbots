@@ -342,7 +342,7 @@ class Bot:
       
     await ctx.send(embed=embed)
     
-  
+  # Creates a deathroll game
   async def create_dr(self, ctx, wager, initiator, data):
     answer = await self.check_and_spend(ctx, wager)
     if answer == 1:
@@ -409,21 +409,22 @@ class Bot:
     if active_bet == None:
       await ctx.send(f"No deathroll game found with the id of \"{arg2}\", please try again.")
 
-    if int(user) == active_bet['initiator']:
-      wager = active_bet["wager"]
-      if len(active_bet["competitors"]) == 2:
-        player1 = int(active_bet["competitors"][0])
-        player2 = int(active_bet["competitors"][1])
-        await ctx.send(f"The deathroll will begin in 5 seconds, good luck to <@{player1}> & <@{player2}>!")
-        await asyncio.sleep(5)
+    else:
+      if int(user) == active_bet['initiator']:
+        wager = active_bet["wager"]
+        if len(active_bet["competitors"]) == 2:
+          player1 = int(active_bet["competitors"][0])
+          player2 = int(active_bet["competitors"][1])
+          await ctx.send(f"The deathroll will begin in 5 seconds, good luck to <@{player1}> & <@{player2}>!")
+          await asyncio.sleep(5)
+          
+          await self.deathroll_game(ctx, wager, player1, player2, data, active_bet_index)
+  
+        else:
+          await ctx.send("This deathroll doesn't have two players yet, come back when someone accepts your challenge")
         
-        await self.deathroll_game(ctx, wager, player1, player2, data, active_bet_index)
-
-      else:
-        await ctx.send("This deathroll doesn't have two players yet, come back when someone accepts your challenge")
-      
-    else: 
-      await ctx.send(f"<@{user}>, if you didn't initiate the deathroll, you can't start it.")
+      else: 
+        await ctx.send(f"<@{user}>, if you didn't initiate the deathroll, you can't start it.")
 
   # Deathroll main command
   async def deathroll(self, ctx, arg, arg2):
