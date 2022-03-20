@@ -103,6 +103,7 @@ async def balance_accrue():
         if not(bot.user_id_exists(int(online_user.id))):
             bot.create_user(int(online_user.id), online_user.display_name)
         bot.alter_balance(int(config['BALANCE_ACCRUE']), online_user.id)
+        logger.debug(f"Accrue balance for {online_user.display_name}")
 
 
 @tasks.loop(minutes=float(config['BALANCE_FADE_TIME']))
@@ -112,11 +113,6 @@ async def balance_fade():
 
     guild: discord.Guild = client.get_guild(bot.guild_id)
 
-    # Afk channel
-    for channel in guild.voice_channels:
-        for member in channel.members:
-            afk_users.append(member)
-
     for channel in guild.voice_channels:
         # Skip afk channel
         if channel.name != guild.afk_channel.name:
@@ -125,11 +121,16 @@ async def balance_fade():
                 #   1. deafened
                 if member.voice.self_deaf:
                     afk_users.append(member)
+        # Afk channel
+        else:
+            for member in channel.members:
+                afk_users.append(member)
 
     for afk_user in afk_users:
         if not(bot.user_id_exists(int(afk_user.id))):
             bot.create_user(int(afk_user.id), afk_user.display_name)
         bot.alter_balance(-int(config['BALANCE_FADE']), afk_user.id)
+        logger.debug(f"Fade balance for {afk_user.display_name}")
 
 
 @client.command(name='balance')
