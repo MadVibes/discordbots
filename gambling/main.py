@@ -9,9 +9,9 @@ from discord.ext import commands
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.utils import Utils
-from lib.logger import Logger
-from lib.bank_interface import Bank
+from lib.utils import Utils #pylint: disable=E0401
+from lib.logger import Logger #pylint: disable=E0401
+from lib.bank_interface import Bank #pylint: disable=E0401
 from bot import Bot
 
 # CONFIGS/LIBS
