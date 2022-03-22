@@ -12,7 +12,7 @@ COPY shop shop
 COPY gambling gambling
 COPY requirements requirements
 COPY lib lib
-COPY config.ini.sample config.ini
+COPY config.ini config.ini
 
 RUN pip3 install -r requirements
 
