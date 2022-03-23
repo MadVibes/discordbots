@@ -97,8 +97,8 @@ async def balance_accrue():
                 #   2. only 1 person in channel
                 #   3. is another bot
                 if not(member.voice.self_deaf
-                    and len(channel.members)==1
-                    and member.bot):
+                    or len(channel.members)==1
+                    or member.bot):
                     online_users.append(member)
 
     for online_user in online_users:
