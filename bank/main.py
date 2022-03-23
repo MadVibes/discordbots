@@ -95,8 +95,10 @@ async def balance_accrue():
                 # Skip giving coin on conditions
                 #   1. deafened
                 #   2. only 1 person in channel
+                #   3. is another bot
                 if not(member.voice.self_deaf
-                    and len(channel.members)==1):
+                    and len(channel.members)==1
+                    and member.bot):
                     online_users.append(member)
 
     for online_user in online_users:
