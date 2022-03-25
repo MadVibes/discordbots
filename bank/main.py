@@ -3,6 +3,7 @@
 ####################################################################################################
 import discord
 import os, sys, json, math, configparser
+from fuzzywuzzy import process
 from discord.ext import tasks
 from discord.ext import commands
 
@@ -137,12 +138,44 @@ async def balance_fade():
 
 @client.command(name='balance')
 async def command_balance(ctx: commands.Context, *args):
-    """Display a users balance"""
+    """Display a users balance, or a target users balance"""
     if not(bot.user_id_exists(int(ctx.author.id))):
         bot.create_user(int(ctx.author.id), ctx.author.display_name)
 
-    balance = bot.get_balance(ctx.author.id)
-    await ctx.send(f'Your current balance is {balance} VBC')
+    # No target user specified
+    if len(args) == 0:
+        balance = bot.get_balance(ctx.author.id)
+        await ctx.send(f'Your current balance is {balance} VBC')
+
+    # A target was specified
+    else:
+        guild: discord.Guild = client.get_guild(bot.guild_id)
+        all_members = guild.members
+        all_member_names = list(map(lambda member: member.display_name, all_members))
+        fuzzy = process.extract(args[0], all_member_names)
+        matches = []
+        for match in fuzzy:
+            if match[1] > 95:
+                matches.append(match[0])
+        # Handle matches
+        # 0 matches
+        if len(matches) == 0:
+            await ctx.reply('No users match that name')
+            return
+        # 1+ matches
+        elif len(matches) > 1:
+            items = []
+            for item in matches:
+                items.append(' \n - '+item)
+            await ctx.reply('User was too generic, did you mean?' + ''.join(items))
+            return
+        target_id = -1
+        for member in all_members:
+            if member.display_name == matches[0]:
+                target_id = member.id
+                break
+        balance = bot.get_balance(target_id)
+        await ctx.send(f'{matches[0]} current balance is {balance} VBC')
 
 
 @client.command(name='transfer')

@@ -106,7 +106,7 @@ class Bot:
             items = []
             for item in matches:
                 items.append(' \n - '+item)
-            await ctx.reply('Shop purchase request was to generic, did you mean?' + ''.join(items))
+            await ctx.reply('Shop purchase request was too generic, did you mean?' + ''.join(items))
             return
         # Actually execute function attached to shop service/product
         product_to_call = {}
