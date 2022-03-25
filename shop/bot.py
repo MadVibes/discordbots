@@ -229,7 +229,7 @@ class Bot:
             items = []
             for item in matches:
                 items.append(' \n - '+item)
-            await message.reply('User name was to generic, did you mean?' + ''.join(items))
+            await message.reply('User name was too generic, did you mean?' + ''.join(items))
             await message.add_reaction('❌')
             return
         target: discord.Member = None
@@ -298,7 +298,7 @@ class Bot:
             items = []
             for item in matches:
                 items.append(' \n - '+item)
-            await message.reply('User name was to generic, did you mean?' + ''.join(items))
+            await message.reply('User name was too generic, did you mean?' + ''.join(items))
             await message.add_reaction('❌')
             return
         target: discord.Member = None
@@ -361,7 +361,7 @@ class Bot:
             items = []
             for item in matches:
                 items.append(' \n - '+item)
-            await message_user.reply('User name was to generic, did you mean?' + ''.join(items))
+            await message_user.reply('User name was too generic, did you mean?' + ''.join(items))
             await message_user.add_reaction('❌')
             return
         target: discord.Member = None
