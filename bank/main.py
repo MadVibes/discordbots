@@ -178,6 +178,37 @@ async def command_balance(ctx: commands.Context, *args):
         await ctx.send(f'{matches[0]} current balance is {balance} VBC')
 
 
+@client.command(name='leaderboard')
+async def command_leaderboard(ctx: commands.Context, *args):
+    """Display a leaderboard"""
+    if not(bot.user_id_exists(int(ctx.author.id))):
+        bot.create_user(int(ctx.author.id), ctx.author.display_name)
+
+    guild: discord.Guild = client.get_guild(bot.guild_id)
+    all_members = guild.members
+    leaderboard = {}
+    # Populated leaderboard data
+    for member in all_members:
+        if len(leaderboard.keys()) >= 10:
+            break
+        if member.id == client.user.id or member.bot:
+            continue
+        balance = bot.get_balance(member.id)
+        if balance is None:
+            continue
+        if balance == 0:
+            continue
+        if balance in leaderboard:
+            leaderboard[balance].append(member.display_name)
+        else:
+            leaderboard[balance] = [member.display_name]
+    # Create and populate embed
+    embed = discord.Embed(title='**VibeCoin Leaderboard**')
+    for key in sorted(leaderboard, reverse=True):
+        embed.add_field(name=f'{key} VBC', value=f'{", ".join(leaderboard[key])}', inline=False )
+    await ctx.send(embed=embed)
+
+
 @client.command(name='transfer')
 async def command_transfer(ctx: commands.Context, *args):
     """Tansfer money to another player"""
