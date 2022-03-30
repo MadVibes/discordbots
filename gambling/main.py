@@ -42,8 +42,6 @@ client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bank = Bank(logger, config)
 bot = Bot(logger, config, bank, client)
 
-
-
 @client.event
 async def on_ready():
     logger.log(f'Connected to Discord! uid:{client.user.id}')
