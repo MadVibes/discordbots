@@ -20,12 +20,18 @@ class Bot:
         self.client = client
         self.guild_id = 0
         self.clip_list = {
+                    "Skedaddle":"bongo.mp3",
+                    "Careless Whisper":"careless_whisper.mp3",
                     "Emotional Damage":"damage.mp3",
                     "Ding":"ding.mp3",
                     "What the dog doin":"dog.mp3",
+                    "Ooo Friend":"friend.mp3",
+                    "2 Hours later":"later.mp3",
                     "Oow":"minecraft.mp3",
+                    "Noice":"noice.mp3",
                     "Noooo!":"noo.mp3",
                     "Oof":"oof.mp3",
+                    "REEEE":"ree.mp3",
                     "Wow":"wow.mp3",
                 }
 
