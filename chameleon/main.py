@@ -20,7 +20,7 @@ config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
 
-VERSION = 'v1.0'
+VERSION = 'v1.1'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -28,8 +28,8 @@ GUILD = config['DISCORD_GUILD']
 
 # Bot perms (534790879296)
 intents = discord.Intents.default()
-intents.members = True
-intents.messages = True
+intents.members = True #pylint: disable=E0237
+intents.messages = True #pylint: disable=E0237
 
 logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
@@ -63,7 +63,7 @@ async def on_ready():
 
 @client.command(name='tts')
 async def command_tts(ctx: commands.Context, *args):
-    """Execute tts command""" 
+    """Execute tts command"""
 
     user_balance = bank.getBalance(ctx.author.id)
     # insufficient balance
@@ -78,6 +78,56 @@ async def command_tts(ctx: commands.Context, *args):
     except Exception as e:
         logger.warn('Failed to execute tts:')
         logger.warn(str(e))
+
+@client.command(name='sound')
+async def command_sound(ctx: commands.Context, *args):
+    """Play sounds in discord"""
+    if len(args) == 0:
+        await ctx.reply(f'Invalid command, see $sound help')
+        return
+    # Help menu
+    elif args[0] == 'help':
+        embed = discord.Embed(name='Sound Command help',
+                description='-------',
+                inline=True)
+        embed.add_field(
+                name='$sound list',
+                value='List all possible sounds',
+                inline=False)
+        embed.add_field(
+                name='$sound play [name]',
+                value='Play a sound',
+                inline=False)
+        embed.add_field(
+                name='$sound cost',
+                value='Gets the cost to play a sound',
+                inline=False)
+        embed.add_field(
+                name='$sound help',
+                value='This menu',
+                inline=False)
+        await ctx.send(embed=embed)
+        return
+    elif args[0] == 'cost':
+        await ctx.reply(f'Current cost is {config["AUDIO_CLIP_COST"]} VBC')
+        return
+    elif args[0] == 'play':
+        user_balance = bank.getBalance(ctx.author.id)
+        if int(config['AUDIO_CLIP_COST']) >= user_balance:
+            await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+            return
+        # Start handling of sound command
+        try:
+            await bot.handle_sound(ctx, args)
+            return
+
+        except Exception as e:
+            logger.warn('Failed to handle sound:')
+            logger.warn(str(e))
+            return
+    else:
+        ctx.reply('You have reached the world\'s edge, none but devils play past here')
+        return
 
 
 @client.command(name='version')
