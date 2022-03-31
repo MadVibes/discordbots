@@ -119,6 +119,7 @@ async def command_sound(ctx: commands.Context, *args):
         # Start handling of sound command
         try:
             await bot.handle_sound(ctx, args)
+            bank.spendCurrency(ctx.author.id, int(config['AUDIO_CLIP_COST']))
             return
 
         except Exception as e:

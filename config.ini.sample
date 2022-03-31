@@ -37,6 +37,8 @@ DEFAULT_NAME = VibeBot Chameleon
 COMMAND_PREFIX = $
 IGNORE_COMMANDS = balance,transfer,bet,shop,pay,deathroll,leaderboard
 STATUS_START_ONLINE = True
+AUDIO_CLIP_DIR = ./chameleon/audio_clips/
+AUDIO_CLIP_COST = 30
 
 [shop]
 LOGGING_LEVEL = 2
