@@ -108,6 +108,15 @@ async def command_sound(ctx: commands.Context, *args):
                 inline=False)
         await ctx.send(embed=embed)
         return
+    elif args[0] == 'list':
+        embed = discord.Embed(name='Sounds list',
+                description='Available sounds to play, Current cost to play is ' + config['AUDIO_CLIP_COST'] + ' VBC',
+                inline=True)
+        embed.add_field(
+                name='\n'.join(bot.clip_list.keys()),
+                value='E.g. $sound play Ding',
+                inline=False)
+        await ctx.send(embed=embed)
     elif args[0] == 'cost':
         await ctx.reply(f'Current cost is {config["AUDIO_CLIP_COST"]} VBC')
         return
@@ -127,7 +136,7 @@ async def command_sound(ctx: commands.Context, *args):
             logger.warn(str(e))
             return
     else:
-        ctx.reply('You have reached the world\'s edge, none but devils play past here')
+        await ctx.reply('You have reached the world\'s edge, none but devils play past here\nInvalid command, see $sound help')
         return
 
 
