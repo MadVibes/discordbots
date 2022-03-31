@@ -54,40 +54,29 @@ class Bot:
 
     async def handle_sound(self, ctx, args):
         """Handles processing of sound"""
-        if args[0] == 'play':
-            if len(args) > 2:
-                query = ' '.join(args[1:len(args)]) # Get query string by combining anything after 'play' (index 1)
-            else:
-                query = args[1] # Else, get only arguement after 'play'
-            fuzzy = process.extract(query, self.clip_list.keys())
-            matches = []
-            for match in fuzzy:
-                if match[1] > 90:
-                    matches.append(match[0])
-            # Handle matches
-            # 0 matches
-            if len(matches) == 0:
-                await ctx.reply('No sounds match that name')
-                return
-            # 1+ matches
-            elif len(matches) > 1:
-                items = []
-                for item in matches:
-                    items.append(' \n - '+item)
-                await ctx.reply('Sound play request was too generic, did you mean?' + ''.join(items))
-                return
-            # Play sound
-            await self.play_sound(ctx, matches[0])
-        elif args[0] == 'list':
-            embed = discord.Embed(name='Sounds list',
-                    description='Available sounds to play, Current cost to play is ' + self.config['AUDIO_CLIP_COST'] + ' VBC',
-                    inline=True)
-            embed.add_field(
-                    name='\n'.join(self.clip_list.keys()),
-                    value='E.g. $sound play Ding',
-                    inline=False)
-            await ctx.send(embed=embed)
-
+        if len(args) > 2:
+            query = ' '.join(args[1:len(args)]) # Get query string by combining anything after 'play' (index 1)
+        else:
+            query = args[1] # Else, get only arguement after 'play'
+        fuzzy = process.extract(query, self.clip_list.keys())
+        matches = []
+        for match in fuzzy:
+            if match[1] > 90:
+                matches.append(match[0])
+        # Handle matches
+        # 0 matches
+        if len(matches) == 0:
+            await ctx.reply('No sounds match that name')
+            return
+        # 1+ matches
+        elif len(matches) > 1:
+            items = []
+            for item in matches:
+                items.append(' \n - '+item)
+            await ctx.reply('Sound play request was too generic, did you mean?' + ''.join(items))
+            return
+        # Play sound
+        await self.play_sound(ctx, matches[0])
 
 
     async def play_sound(self, ctx, sound):
