@@ -2,8 +2,8 @@
 ####################################################################################################
 from datetime import datetime
 from distutils.command.config import config
-from re import A
-import sys
+from fuzzywuzzy import process
+import sys, time
 import discord
 
 sys.path.insert(0, '../')
@@ -19,6 +19,15 @@ class Bot:
         self.config = config
         self.client = client
         self.guild_id = 0
+        self.clip_list = {
+                    "Emotional Damage":"damage.mp3",
+                    "Ding":"ding.mp3",
+                    "What the dog doin":"dog.mp3",
+                    "Oow":"minecraft.mp3",
+                    "Noooo!":"noo.mp3",
+                    "Oof":"oof.mp3",
+                    "Wow":"wow.mp3",
+                }
 
 
     async def send_tts(self, ctx, args):
@@ -33,7 +42,7 @@ class Bot:
 
         # Calculate cleanup 
         # | 4.7 AvgWordLen * 100 AvgWordPerMin
-        # | 470 Chars / 60 seconds
+        # | 60 seconds / 470 Chars (From above)
         padding = 8.0
         rate = 60.0/470.0
         time = (rate * len(to_say)) + padding
@@ -41,6 +50,61 @@ class Bot:
         Utils.future_call(time, cleanupFunc, [message])
 
         await ctx.guild.get_member(self.client.user.id).edit(nick=self.config['DEFAULT_NAME'])
+
+
+    async def handle_sound(self, ctx, args):
+        """Handles processing of sound"""
+        if args[0] == 'play':
+            if len(args) > 2:
+                query = ' '.join(args[1:len(args)]) # Get query string by combining anything after 'play' (index 1)
+            else:
+                query = args[1] # Else, get only arguement after 'play'
+            fuzzy = process.extract(query, self.clip_list.keys())
+            matches = []
+            for match in fuzzy:
+                if match[1] > 90:
+                    matches.append(match[0])
+            # Handle matches
+            # 0 matches
+            if len(matches) == 0:
+                await ctx.reply('No sounds match that name')
+                return
+            # 1+ matches
+            elif len(matches) > 1:
+                items = []
+                for item in matches:
+                    items.append(' \n - '+item)
+                await ctx.reply('Sound play request was too generic, did you mean?' + ''.join(items))
+                return
+            # Play sound
+            await self.play_sound(ctx, matches[0])
+        elif args[0] == 'list':
+            embed = discord.Embed(name='Sounds list',
+                    description='Available sounds to play, Current cost to play is ' + self.config['AUDIO_CLIP_COST'] + ' VBC',
+                    inline=True)
+            embed.add_field(
+                    name='\n'.join(self.clip_list.keys()),
+                    value='E.g. $sound play Ding',
+                    inline=False)
+            await ctx.send(embed=embed)
+
+
+
+    async def play_sound(self, ctx, sound):
+        """Handles playing of sound"""
+        # Connect to VC and play audio
+        if ctx.author.voice is not None:
+            voice_channel = ctx.message.author.voice.channel
+            active_voice = await voice_channel.connect()
+            active_voice.play(discord.FFmpegPCMAudio(executable='ffmpeg',source=self.config['AUDIO_CLIP_DIR']+sound))
+            # Wait until audio is finished and then leave the VC
+            time.sleep(0.5)
+            while active_voice.is_playing():
+                time.sleep(0.1)
+            await active_voice.disconnect()
+        else:
+            await ctx.reply('You\'re not in a channel!')
+
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper
