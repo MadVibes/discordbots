@@ -207,8 +207,9 @@ async def command_leaderboard(ctx: commands.Context, *args):
             leaderboard[balance] = [member.display_name]
     # Create and populate embed
     embed = discord.Embed(title='**VibeCoin Leaderboard**', colour=discord.Colour.gold())
+    i = 0
     for key in sorted(leaderboard, reverse=True):
-        if len(leaderboard.keys()) >= 10:
+        if i >= 10:
             break
         embed.add_field(name=f'{key} VBC', value=f'{", ".join(leaderboard[key])}', inline=False)
     await ctx.send(embed=embed)
