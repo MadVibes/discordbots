@@ -57,6 +57,7 @@ services:
     volumes:
       - ./config.ini:/app/config.ini:ro
       - ./output.log:/app/croupier.log:rw
+      - ./data-bets.json:/app/data-bets.json:rw
     depends_on:
       - bank
     network_mode: host
