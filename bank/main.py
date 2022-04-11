@@ -152,11 +152,16 @@ async def command_balance(ctx: commands.Context, *args):
         guild: discord.Guild = client.get_guild(bot.guild_id)
         all_members = guild.members
         all_member_names = list(map(lambda member: member.display_name, all_members))
-        fuzzy = process.extract(args[0], all_member_names)
+        args_comb = ' '.join(args)
+        fuzzy = process.extract(args_comb, all_member_names)
+        logger.debug('Fuzzy matches in balance action:')
         matches = []
         for match in fuzzy:
+            logger.debug(f'{match[0]}:{match[1]}')
             if match[1] > 95:
                 matches.append(match[0])
+        logger.debug('Matches within threshold:')
+        logger.debug(', '.join(matches))
         # Handle matches
         # 0 matches
         if len(matches) == 0:
@@ -189,8 +194,6 @@ async def command_leaderboard(ctx: commands.Context, *args):
     leaderboard = {}
     # Populated leaderboard data
     for member in all_members:
-        if len(leaderboard.keys()) >= 10:
-            break
         if member.id == client.user.id or member.bot:
             continue
         balance = bot.get_balance(member.id)
@@ -205,13 +208,15 @@ async def command_leaderboard(ctx: commands.Context, *args):
     # Create and populate embed
     embed = discord.Embed(title='**VibeCoin Leaderboard**', colour=discord.Colour.gold())
     for key in sorted(leaderboard, reverse=True):
+        if len(leaderboard.keys()) >= 10:
+            break
         embed.add_field(name=f'{key} VBC', value=f'{", ".join(leaderboard[key])}', inline=False)
     await ctx.send(embed=embed)
 
 
 @client.command(name='transfer')
 async def command_transfer(ctx: commands.Context, *args):
-    """Tansfer money to another player"""
+    """Tansfer money to another player {NOT WORKING :(}"""
 
 
 @client.command(name='version')

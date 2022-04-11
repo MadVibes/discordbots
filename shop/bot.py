@@ -33,25 +33,25 @@ class Bot:
                 {
                     'name': 'Server mute',
                     'description': 'Mute someone on the server for 30 seconds',
-                    'price': 2160,
+                    'price': 600,
                     'function': self.service_server_mute
                 },
                 {
                     'name': 'Server deafen',
                     'description': 'Deafen someone on the server for 1 minute',
-                    'price': 1440,
+                    'price': 660,
                     'function': self.service_server_deafen
                 },
                 {
                     'name': 'Server disconnect',
                     'description': 'Disconnect someone on the server',
-                    'price': 1440,
+                    'price': 420,
                     'function': self.service_server_disconnect
                 },
                 {
                     'name': 'Change nickname',
                     'description': 'Change target nickname',
-                    'price': 1080,
+                    'price': 800,
                     'function': self.service_rename
                 }
             ]
@@ -92,8 +92,10 @@ class Bot:
             service_names.append(service['name'])
         # Get fuzzy search
         fuzzy = process.extract(query, service_names)
+        self.logger.debug('Fuzzy matches in purchase action:')
         matches = []
         for match in fuzzy:
+            self.logger.debug(f'{match[0]}:{match[1]}')
             if match[1] > self.service_fuzzy_percent:
                 matches.append(match[0])
         # Handle matches
@@ -129,7 +131,7 @@ class Bot:
         all_active = await self.all_channel_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
-            await ctx.add_reaction('❌')
+            await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
                 "error": 'No users online'
@@ -144,8 +146,10 @@ class Bot:
         all_active_names = map(lambda member: member.display_name, all_active)
         # Get fuzzy search
         fuzzy = process.extract(message.content, all_active_names)
+        self.logger.debug('Fuzzy matches in service server mute action:')
         matches = []
         for match in fuzzy:
+            self.logger.debug(f'{match[0]}:{match[1]}')
             if match[1] == 100:
                 matches = [match]
                 break
@@ -198,7 +202,7 @@ class Bot:
         all_active = await self.all_channel_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
-            await ctx.add_reaction('❌')
+            await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
                 "error": 'No users online'
@@ -267,7 +271,7 @@ class Bot:
         all_active = await self.all_channel_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
-            await ctx.add_reaction('❌')
+            await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
                 "error": 'No users online'
@@ -330,7 +334,7 @@ class Bot:
         all_active = await self.all_channel_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
-            await ctx.add_reaction('❌')
+            await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
                 "error": 'No users online'
