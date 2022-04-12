@@ -212,6 +212,7 @@ async def command_leaderboard(ctx: commands.Context, *args):
         if i >= 10:
             break
         embed.add_field(name=f'{key} VBC', value=f'{", ".join(leaderboard[key])}', inline=False)
+        i += 1
     await ctx.send(embed=embed)
 
 
