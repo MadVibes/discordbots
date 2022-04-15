@@ -31,7 +31,7 @@ class Bot:
       colour=discord.Colour.blue()
     )
     embed.add_field(name='$poll', value='Shows all active polls.' ,inline=False)
-    embed.add_field(name='$poll [create] [title]', value='Creates a poll with a custom title.' ,inline=False)
+    embed.add_field(name='$poll create [title]', value='Creates a poll with a custom title.' ,inline=False)
     embed.add_field(name='$poll [id]', value='Shows a poll to either vote on or close.' ,inline=False)
 
     await ctx.send(embed=embed)
@@ -139,7 +139,7 @@ class Bot:
 
       embed = discord.Embed(
         title=f'{title.title()}',
-        description=f'**Poll ID**: {ID}',
+        description=f'**Poll ID**: {ID}\nVote not registering? Type: $poll {ID}',
         colour=colour
       )
       if fors and against:
@@ -171,7 +171,7 @@ class Bot:
         embed.add_field(name='AGAINST THIS NOTION:', value='*cricket sounds*\nI guess no one here.' ,inline=True)
 
       if state == 0:
-        embed.set_footer(text="Open, click the bin emoji close votes.")
+        embed.set_footer(text="Open\nClick the bin emoji to close votes.")
         msg = await ctx.send(embed=embed)
         data['voting on'][0] = msg.id
         data['voting on'][1] = ID
@@ -181,7 +181,7 @@ class Bot:
         await msg.add_reaction('❌')
         await msg.add_reaction('🗑️')
       elif state == 1:
-        embed.set_footer(text="Open, click the bin emoji close votes.")
+        embed.set_footer(text="Open\nClick the bin emoji to close votes.")
         channel = await self.client.fetch_channel(data['voting on'][2])
         msg = data['voting on'][0]
         msg = await channel.fetch_message(msg)
