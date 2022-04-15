@@ -23,7 +23,20 @@ class Bot:
     self.bank = bank
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
 
+  
+  async def poll_help(self, ctx):
+    embed = discord.Embed(
+      title='Polling Help',
+      description='-----',
+      colour=discord.Colour.blue()
+    )
+    embed.add_field(name='$poll', value='Shows all active polls.' ,inline=False)
+    embed.add_field(name='$poll [create] [title]', value='Creates a poll with a custom title.' ,inline=False)
+    embed.add_field(name='$poll [id]', value='Shows a poll to either vote on or close.' ,inline=False)
 
+    await ctx.send(embed=embed)
+
+    
   async def reaction(self, reaction, user):
     data = self.data.read()
     if not user.bot:
@@ -212,6 +225,9 @@ class Bot:
 
     elif args[0].isdigit():
       await self.poll_embed(ctx, args[0], 0)
+
+    elif args[0].lower() == "help":
+      await self.poll_help(ctx)
       
     elif args[0].lower() == "create":
       args = list(args)
