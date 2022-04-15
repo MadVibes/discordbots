@@ -10,6 +10,7 @@ config.ini
 # Data
 data.json
 data-bets.json
+polls.json
 
 # VIM
 *.swp
@@ -27,3 +28,4 @@ croupier.log
 sample1.log
 sample2.log
 output.log
+polls.log
