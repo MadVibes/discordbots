@@ -108,7 +108,7 @@ class Bot:
         embed.add_field(name=f'Poll ID: {id}', value=f'{complete}' ,inline=True)
         
     else:
-      embed.add_field(name='No Bets :(', value='What are you waiting for? Create a bet dummy!' ,inline=True)
+      embed.add_field(name='No polls :(', value='What are you waiting for? Create a poll dummy!' ,inline=True)
       
     await ctx.send(embed=embed)
 
