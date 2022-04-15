@@ -134,8 +134,10 @@ class Bot:
 
       if len(fors) > len(against):
         colour = discord.Colour.blue()
-      else:
+      elif len(against) > len(fors):
         colour = discord.Colour.red()
+      elif len(fors) == len(against):
+        colour = discord.Colour.gold()
 
       embed = discord.Embed(
         title=f'{title.title()}',
@@ -147,7 +149,9 @@ class Bot:
         against_len = len(against)
         total_len = for_len + against_len
         perc_for = str(round(for_len / total_len * 100)) + "%"
+        perc_for = f"**{perc_for}**"
         perc_against = str(round(against_len / total_len * 100)) + "%"
+        perc_against = f"**{perc_against}**"
       else:
         perc_for = ""
         perc_against = ""
@@ -171,7 +175,7 @@ class Bot:
         embed.add_field(name='AGAINST THIS NOTION:', value='*cricket sounds*\nI guess no one here.' ,inline=True)
 
       if state == 0:
-        embed.set_footer(text="Open\nClick the bin emoji to close votes.")
+        embed.set_footer(text="Open\nClick 🗑️ to close votes.")
         msg = await ctx.send(embed=embed)
         data['voting on'][0] = msg.id
         data['voting on'][1] = ID
@@ -181,7 +185,7 @@ class Bot:
         await msg.add_reaction('❌')
         await msg.add_reaction('🗑️')
       elif state == 1:
-        embed.set_footer(text="Open\nClick the bin emoji to close votes.")
+        embed.set_footer(text="Open\nClick 🗑️ to close votes.")
         channel = await self.client.fetch_channel(data['voting on'][2])
         msg = data['voting on'][0]
         msg = await channel.fetch_message(msg)
@@ -197,6 +201,7 @@ class Bot:
         self.data.write(data)
         embed.set_footer(text="Closed")
         await msg.edit(embed=embed)
+        await msg.clear_reactions()
         
         
   async def make_poll(self, ctx, args, pro, against):
