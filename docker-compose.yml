@@ -4,7 +4,7 @@ services:
   
   bank:
     container_name: VibeBot-Bank
-    restart: unless-stopped
+    restart: on-failure
     build:
       dockerfile: ./Dockerfile
       context: .
@@ -18,7 +18,7 @@ services:
 
   chameleon:
     container_name: VibeBot-Chameleon
-    restart: unless-stopped
+    restart: on-failure
     build:
       dockerfile: ./Dockerfile
       context: .
@@ -33,7 +33,7 @@ services:
 
   shop:
     container_name: VibeBot-Shop
-    restart: unless-stopped
+    restart: on-failure
     build:
       dockerfile: ./Dockerfile
       context: .
@@ -48,7 +48,7 @@ services:
 
   gambling:
     container_name: VibeBot-Croupier
-    restart: unless-stopped
+    restart: on-failure
     build:
       dockerfile: ./Dockerfile
       context: .
@@ -64,7 +64,7 @@ services:
 
   polling:
     container_name: VibeBot-Polling
-    restart: unless-stopped
+    restart: on-failure
     build:
       dockerfile: ./Dockerfile
       context: .
@@ -77,3 +77,4 @@ services:
     depends_on:
       - bank
     network_mode: host
+    entrypoint: ["echo", "Bot 'polling' disabled"]
