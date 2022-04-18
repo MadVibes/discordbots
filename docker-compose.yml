@@ -62,7 +62,7 @@ services:
       - bank
     network_mode: host
 
-  gambling:
+  polling:
     container_name: VibeBot-Polling
     restart: unless-stopped
     build:
