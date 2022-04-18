@@ -51,7 +51,7 @@ async def on_ready():
         else:
             logger.error('Failed to find guild from config! shutting down :(')
             exit(1)
-          
+
     # Restore defaults
     await client.get_guild(bot.guild_id).get_member(client.user.id).edit(nick=config['DEFAULT_NAME'])
     if config['STATUS_START_ONLINE'] == 'True':
@@ -61,7 +61,7 @@ async def on_ready():
 
 @client.event
 async def on_reaction_add(reaction, user):
-  await bot.reaction(reaction, user) 
+  await bot.reaction(reaction, user)
 
 
 @client.command(name='version')

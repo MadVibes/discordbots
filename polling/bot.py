@@ -6,8 +6,8 @@ import re
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.logger import Logger
-from lib.data import Database
+from lib.logger import Logger #pylint: disable=E0401
+from lib.data import Database #pylint: disable=E0401
 
 db_schema = {
   "polls": [],
@@ -23,7 +23,7 @@ class Bot:
     self.bank = bank
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
 
-  
+
   async def poll_help(self, ctx):
     embed = discord.Embed(
       title='Polling Help',
@@ -36,7 +36,7 @@ class Bot:
 
     await ctx.send(embed=embed)
 
-    
+
   async def reaction(self, reaction, user):
     data = self.data.read()
     if not user.bot:
@@ -55,7 +55,7 @@ class Bot:
             data['polls'][ID]['user_ids'].pop(pos2)
             self.data.write(data)
           await self.get_context(data['voting on'][0], int(data['voting on'][1]), data['voting on'][2], 1)
-          
+
         elif reaction.emoji == '❌':
           if user.id not in data['polls'][ID]['user_ids']:
             data['polls'][ID]['against'].append(user.id)
@@ -68,14 +68,14 @@ class Bot:
             data['polls'][ID]['user_ids'].pop(pos2)
             self.data.write(data)
           await self.get_context(data['voting on'][0], int(data['voting on'][1]), data['voting on'][2], 1)
-          
+
         elif reaction.emoji == '🗑️':
           if user.id == data['polls'][ID]['initiator']:
             active_poll = await self.get_active_poll(ID, data)
             if active_poll != None:
               await self.get_context(data['voting on'][0], int(data['voting on'][1]), data['voting on'][2], 2)
-          
-    
+
+
   async def get_active_poll(self, ID, data):
     active_poll = None
     for poll in data['polls']:
@@ -87,7 +87,7 @@ class Bot:
     else:
       return None
 
-  
+
   async def all_polls_embed(self, ctx):
     data = self.data.read()
     embed = discord.Embed(
@@ -106,13 +106,13 @@ class Bot:
         complete = f"**Title:** \n {title.title()} \n" + f"**For:** \n {fors}\n" + f"**Against:** \n {against}"
 
         embed.add_field(name=f'Poll ID: {id}', value=f'{complete}' ,inline=True)
-        
+
     else:
       embed.add_field(name='No polls :(', value='What are you waiting for? Create a poll dummy!' ,inline=True)
-      
+
     await ctx.send(embed=embed)
 
-  
+
   async def get_context(self, msg_id, ID, channel_id, state):
     channel = await self.client.fetch_channel(int(channel_id))
     track_id = await channel.fetch_message(int(msg_id))
@@ -155,7 +155,7 @@ class Bot:
       else:
         perc_for = ""
         perc_against = ""
-        
+
       if fors:
         complete_users_for = ""
         for user in fors:
@@ -202,8 +202,8 @@ class Bot:
         embed.set_footer(text="Closed")
         await msg.edit(embed=embed)
         await msg.clear_reactions()
-        
-        
+
+
   async def make_poll(self, ctx, args, pro, against):
     data = self.data.read()
     length = len(data["polls"])
@@ -218,12 +218,12 @@ class Bot:
       "user_ids": [],
       "initiator": ctx.author.id
     }
-    
+
     data["polls"].append(poll_obj)
     self.data.write(data)
     return length
 
-  
+
   async def poll(self, ctx, args):
     if not args:
       await self.all_polls_embed(ctx)
@@ -233,7 +233,7 @@ class Bot:
 
     elif args[0].lower() == "help":
       await self.poll_help(ctx)
-      
+
     elif args[0].lower() == "create":
       args = list(args)
       args.pop(0)
@@ -241,4 +241,19 @@ class Bot:
       against = []
       ID = await self.make_poll(ctx, args, pro, against)
       await self.poll_embed(ctx, ID, 0)
-      
+
+########################################################################################################
+#   Copyright (C) 2022  Liam Coombs, Sam Tipper
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
