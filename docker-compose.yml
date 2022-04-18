@@ -61,3 +61,19 @@ services:
     depends_on:
       - bank
     network_mode: host
+
+  gambling:
+    container_name: VibeBot-Polling
+    restart: unless-stopped
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+      args:
+        bot: polling
+    volumes:
+      - ./config.ini:/app/config.ini:ro
+      - ./output.log:/app/polling.log:rw
+      - ./data-polling.json:/app/data-polling.json:rw
+    depends_on:
+      - bank
+    network_mode: host
