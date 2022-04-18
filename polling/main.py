@@ -1,10 +1,9 @@
-# Croupier Bot
-# Handles Gambling
+# Polling Bot
+# Handles User Polls
 ####################################################################################################
 import discord
-import os, sys, json
 import configparser
-import discord
+import sys, os
 from discord.ext import commands
 
 sys.path.insert(0, '../')
@@ -16,7 +15,7 @@ from bot import Bot
 
 # CONFIGS/LIBS
 ########################################################################################################
-bot_type = 'croupier'
+bot_type = 'polling'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
@@ -60,6 +59,10 @@ async def on_ready():
     else:
         await client.change_presence(status=discord.Status.invisible)
 
+@client.event
+async def on_reaction_add(reaction, user):
+  await bot.reaction(reaction, user)
+
 
 @client.command(name='version')
 async def command_tts(ctx: commands.Context, *args):
@@ -67,22 +70,10 @@ async def command_tts(ctx: commands.Context, *args):
     if len(args) == 0 or args[0] == bot_type:
         await ctx.message.reply(VERSION)
 
-
-@client.command(name='bet')
-async def bet(ctx: commands.Context, *args):
-    """Create and join bets"""
-    await bot.bet(ctx, args)
-
-@client.command(name='pay')
-async def pay(ctx, arg, arg2=None):
-    """Pay out a bet"""
-    await bot.pay(ctx, arg, arg2)
-
-@client.command(name='deathroll')
-@commands.guild_only()
-async def deathroll(ctx, arg=None, arg2=None):
-    """Create and join deathrolls"""
-    await bot.deathroll(ctx, arg, arg2)
+@client.command(name='poll')
+async def command_poll(ctx: commands.Context, *args):
+  """Makes a bet with a custom name"""
+  await bot.poll(ctx, args)
 
 @client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
 async def command_nothing(ctx: commands.Context, *args):

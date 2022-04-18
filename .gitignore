@@ -10,6 +10,7 @@ config.ini
 # Data
 data.json
 data-bets.json
+data-polling.json
 
 # VIM
 *.swp
@@ -24,6 +25,7 @@ bank.log
 chameleon.log
 shop.log
 croupier.log
+polls.log
 sample1.log
 sample2.log
 output.log
