@@ -40,8 +40,8 @@ class Bot:
   async def reaction(self, reaction, user):
     data = self.data.read()
     if not user.bot:
-      await reaction.remove(user)
       if data['voting on'][0] == reaction.message.id:
+        await reaction.remove(user)
         ID = int(data['voting on'][1])
         if reaction.emoji == '✅':
           if user.id not in data['polls'][ID]['user_ids']:
