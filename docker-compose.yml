@@ -77,4 +77,6 @@ services:
     depends_on:
       - bank
     network_mode: host
-    entrypoint: ["echo", "Bot 'polling' disabled"]
+
+    # Use this line to disable a bot
+    # entrypoint: ["echo", "Bot 'polling' disabled"]
