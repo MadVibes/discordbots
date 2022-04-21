@@ -12,6 +12,7 @@ sys.path.insert(0, './')
 from lib.utils import Utils #pylint: disable=E0401
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
+from lib.shared import Shared #pylint: disable=E0401
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -20,8 +21,8 @@ bot_type = 'croupier'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
-
-VERSION = 'v1.0'
+config.bot_type = bot_type
+config.version = 'v1.0'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -36,7 +37,7 @@ logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], confi
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
-logger.log(f'Starting {bot_type} - ' + VERSION)
+logger.log(f'Starting {bot_type} - ' + config.version)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bank = Bank(logger, config)
@@ -61,13 +62,6 @@ async def on_ready():
         await client.change_presence(status=discord.Status.invisible)
 
 
-@client.command(name='version')
-async def command_tts(ctx: commands.Context, *args):
-    """View bot version"""
-    if len(args) == 0 or args[0] == bot_type:
-        await ctx.message.reply(VERSION)
-
-
 @client.command(name='bet')
 async def bet(ctx: commands.Context, *args):
     """Create and join bets"""
@@ -84,9 +78,6 @@ async def deathroll(ctx, arg=None, arg2=None):
     """Create and join deathrolls"""
     await bot.deathroll(ctx, arg, arg2)
 
-@client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
-async def command_nothing(ctx: commands.Context, *args):
-    """"""# Catch to do nothing. Used for overlapping bot prefix
 
 # Start the bot using TOKEN
 client.run(TOKEN)
