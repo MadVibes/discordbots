@@ -11,6 +11,7 @@ sys.path.insert(0, './')
 from lib.utils import Utils #pylint: disable=E0401
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
+from lib.shared import Shared #pylint: disable=E0401
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -19,8 +20,8 @@ bot_type = 'polling'
 config = configparser.ConfigParser()
 config.read('./config.ini') # CHANGE ME
 config = config[bot_type]
-
-VERSION = 'v1.0'
+config.bot_type = bot_type
+config.version = 'v1.0'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -28,14 +29,12 @@ GUILD = config['DISCORD_GUILD']
 
 # Bot perms (534790879296)
 intents = discord.Intents.default()
-#intents.members = True
-#intents.messages = True
 
 logger = Logger(int(config['LOGGING_LEVEL']), config['WRITE_TO_LOG_FILE'], config['LOG_FILE_DIR'])
 if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
     logger.custom_prefix = config['LOGGING_PREFIX']
     logger.custom_prefix_size = int(config['LOGGING_PREFIX_SIZE'])
-logger.log(f'Starting {bot_type} - ' + VERSION)
+logger.log(f'Starting {bot_type} - ' + config.version)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bank = Bank(logger, config)
@@ -58,26 +57,19 @@ async def on_ready():
         await client.change_presence(status=discord.Status.online)
     else:
         await client.change_presence(status=discord.Status.invisible)
+    # Load cogs
+    client.add_cog(Shared(client, config))
 
 @client.event
 async def on_reaction_add(reaction, user):
-  await bot.reaction(reaction, user)
+    await bot.reaction(reaction, user)
 
-
-@client.command(name='version')
-async def command_tts(ctx: commands.Context, *args):
-    """View bot version"""
-    if len(args) == 0 or args[0] == bot_type:
-        await ctx.message.reply(VERSION)
 
 @client.command(name='poll')
 async def command_poll(ctx: commands.Context, *args):
-  """Makes a bet with a custom name"""
-  await bot.poll(ctx, args)
+    """Makes a bet with a custom name"""
+    await bot.poll(ctx, args)
 
-@client.command(name=' ', aliases=config['IGNORE_COMMANDS'].split(','))
-async def command_nothing(ctx: commands.Context, *args):
-    """"""# Catch to do nothing. Used for overlapping bot prefix
 
 # Start the bot using TOKEN
 client.run(TOKEN)
