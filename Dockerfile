@@ -1,7 +1,7 @@
 FROM python:3.8-slim-buster
 
 # GCC is required but a python package
-RUN apt-get update; apt-get install gcc ffmpeg -y
+RUN apt-get update; apt-get install gcc ffmpeg libffi-dev apt-utils make g++ -y
 
 WORKDIR /app
 
