@@ -19,7 +19,7 @@ from bot import Bot
 ########################################################################################################
 bot_type = 'croupier'
 config = configparser.ConfigParser()
-config.read('./config.ini') # CHANGE ME
+config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
 config.version = 'v1.0'
@@ -60,6 +60,8 @@ async def on_ready():
         await client.change_presence(status=discord.Status.online)
     else:
         await client.change_presence(status=discord.Status.invisible)
+    # Load cogs
+    client.add_cog(Shared(client, config))
 
 
 @client.command(name='bet')

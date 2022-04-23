@@ -13,7 +13,8 @@ COPY gambling gambling
 COPY polling polling
 COPY requirements requirements
 COPY lib lib
-COPY config.ini config.ini
+RUN mkdir config
+COPY config.ini config/config.ini
 
 RUN pip3 install -r requirements
 
