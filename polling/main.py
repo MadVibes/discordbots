@@ -18,7 +18,7 @@ from bot import Bot
 ########################################################################################################
 bot_type = 'polling'
 config = configparser.ConfigParser()
-config.read('./config.ini') # CHANGE ME
+config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
 config.version = 'v1.0'
