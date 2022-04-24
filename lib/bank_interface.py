@@ -241,7 +241,7 @@ class Bank:
         if content['request'] != 'Accepted':
             self.logger.warn('Bank response was not Accepted')
             self.logger.warn(content)
-        return int(content['response']['balance_sender'])
+        return int(content['response']['balance_receiver'])
 
 
 ########################################################################################################
