@@ -184,6 +184,32 @@ class Bot:
             }
 
 
+    def req_summon_currency(self, user_id_receiver, amount):
+        """
+        Handle request to summon currency and create response
+        NOTE: This is creating NEW currency out of thin air.
+        """
+        receiver_balance = self.get_balance(user_id_receiver)
+
+        # Try move balance
+        try:
+            receiver_balance = self.alter_balance(amount, user_id_receiver)
+            self.logger.log(f'Summoned -> {user_id_receiver} ({amount})')
+            return {
+                'request': 'Success',
+                'message': 'balance increased',
+                'balance_receiver': receiver_balance
+                }
+        # Handle error
+        except Exception as e:
+            self.logger.warn('Failed to summon currency:' + str(e))
+            self.logger.warn(f'Summon -> {user_id_receiver} ({amount})')
+            return {
+                'request': 'Failure',
+                'message': str(e)
+            }
+
+
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper
 #
