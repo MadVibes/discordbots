@@ -11,9 +11,9 @@ services:
       args:
         bot: bank
     volumes:
-      - ./config.ini:/app/config/config.ini:ro
-      - ./data.json:/app/config/data.json:rw
-      - ./output.log:/app/config/bank.log:rw
+      - ./config/config.ini:/app/config/config.ini:ro
+      - ./config/data.json:/app/config/data.json:rw
+      - ./config/output.log:/app/config/bank.log:rw
     network_mode: host
 
   chameleon:
@@ -25,8 +25,8 @@ services:
       args:
         bot: chameleon
     volumes:
-      - ./config.ini:/app/config/config.ini:ro
-      - ./output.log:/app/config/chameleon.log:rw
+      - ./config/config.ini:/app/config/config.ini:ro
+      - ./config/output.log:/app/config/chameleon.log:rw
     depends_on:
       - bank
     network_mode: host
@@ -40,8 +40,8 @@ services:
       args:
         bot: shop
     volumes:
-      - ./config.ini:/app/config/config.ini:ro
-      - ./output.log:/app/config/shop.log:rw
+      - ./config/config.ini:/app/config/config.ini:ro
+      - ./config/output.log:/app/config/shop.log:rw
     depends_on:
       - bank
     network_mode: host
@@ -55,9 +55,9 @@ services:
       args:
         bot: gambling
     volumes:
-      - ./config.ini:/app/config/config.ini:ro
-      - ./output.log:/app/config/croupier.log:rw
-      - ./data-bets.json:/app/config/data-bets.json:rw
+      - ./config/config.ini:/app/config/config.ini:ro
+      - ./config/output.log:/app/config/croupier.log:rw
+      - ./config/data-bets.json:/app/config/data-bets.json:rw
     depends_on:
       - bank
     network_mode: host
@@ -71,9 +71,9 @@ services:
       args:
         bot: polling
     volumes:
-      - ./config.ini:/app/config/config.ini:ro
-      - ./output.log:/app/config/polling.log:rw
-      - ./data-polling.json:/app/config/data-polling.json:rw
+      - ./config/config.ini:/app/config/config.ini:ro
+      - ./config/output.log:/app/config/polling.log:rw
+      - ./config/data-polling.json:/app/config/data-polling.json:rw
     depends_on:
       - bank
     network_mode: host
