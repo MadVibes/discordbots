@@ -22,7 +22,7 @@ class Logger:
     ####################################################################################################
     @staticmethod
     def timestamp():
-        return datetime.now().strftime("[%H:%M:%S]")
+        return datetime.now().strftime("[%S:%M:%H %d/%m/%Y]")
 
 
     @staticmethod
@@ -45,13 +45,13 @@ class Logger:
 
 
     @staticmethod
-    def _write(content, level):
+    def _write(content, level, file):
 
         prefix = Logger.get_prefix(level)
 
         output = Logger.timestamp() + prefix + ' ' + content
         print(output)
-        Logger.write_file(output)
+        Logger.write_file(output, file)
 
 
     @staticmethod
