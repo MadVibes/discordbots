@@ -1,80 +1,85 @@
 version: '3.3'
 
 services:
-  
-  bank:
-    container_name: VibeBot-Bank
-    restart: on-failure
+ 
+  vibebot_image_build:
+    image: vibebot
+    command: ['echo', 'Build compeleted!']
     build:
       dockerfile: ./Dockerfile
       context: .
       args:
-        bot: bank
+        bot: bank # Any would do as it is overwritten in ENV vars
+
+  bank:
+    container_name: VibeBot-Bank
+    restart: on-failure
+    image: vibebot
+    environment:
+      - bot=bank
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
       - ./config/data.json:/app/config/data.json:rw
       - ./config/output.log:/app/config/bank.log:rw
     network_mode: host
+    depends_on:
+      - vibebot_image_build
 
   chameleon:
     container_name: VibeBot-Chameleon
     restart: on-failure
-    build:
-      dockerfile: ./Dockerfile
-      context: .
-      args:
-        bot: chameleon
+    image: vibebot
+    environment:
+      - bot=chameleon
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
       - ./config/output.log:/app/config/chameleon.log:rw
     depends_on:
+      - vibebot_image_build
       - bank
     network_mode: host
 
   shop:
     container_name: VibeBot-Shop
     restart: on-failure
-    build:
-      dockerfile: ./Dockerfile
-      context: .
-      args:
-        bot: shop
+    image: vibebot
+    environment:
+      - bot=shop
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
       - ./config/output.log:/app/config/shop.log:rw
     depends_on:
+      - vibebot_image_build
       - bank
     network_mode: host
 
   gambling:
     container_name: VibeBot-Croupier
     restart: on-failure
-    build:
-      dockerfile: ./Dockerfile
-      context: .
-      args:
-        bot: gambling
+    image: vibebot
+    environment:
+      - bot=gambling
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
       - ./config/output.log:/app/config/croupier.log:rw
       - ./config/data-bets.json:/app/config/data-bets.json:rw
     depends_on:
+      - vibebot_image_build
       - bank
     network_mode: host
 
   polling:
     container_name: VibeBot-Polling
     restart: on-failure
-    build:
-      dockerfile: ./Dockerfile
-      context: .
-      args:
-        bot: polling
+    image: vibebot
+    environment:
+      - bot=polling
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
       - ./config/output.log:/app/config/polling.log:rw
       - ./config/data-polling.json:/app/config/data-polling.json:rw
     depends_on:
+      - vibebot_image_build
       - bank
     network_mode: host
 
