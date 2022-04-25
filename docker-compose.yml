@@ -4,7 +4,7 @@ services:
  
   vibebot_image_build:
     image: vibebot
-    command: ['echo', 'Build compeleted!']
+    command: ['echo', 'Build completed!']
     build:
       dockerfile: ./Dockerfile
       context: .
@@ -19,8 +19,8 @@ services:
       - bot=bank
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
-      - ./config/data.json:/app/config/data.json:rw
-      - ./config/output.log:/app/config/bank.log:rw
+      - ./data/data.json:/app/data/data.json:rw
+      - ./data/output.log:/app/data/bank.log:rw
     network_mode: host
     depends_on:
       - vibebot_image_build
@@ -33,7 +33,7 @@ services:
       - bot=chameleon
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
-      - ./config/output.log:/app/config/chameleon.log:rw
+      - ./data/output.log:/app/data/chameleon.log:rw
     depends_on:
       - vibebot_image_build
       - bank
@@ -47,7 +47,7 @@ services:
       - bot=shop
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
-      - ./config/output.log:/app/config/shop.log:rw
+      - ./data/output.log:/app/data/shop.log:rw
     depends_on:
       - vibebot_image_build
       - bank
@@ -61,8 +61,8 @@ services:
       - bot=gambling
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
-      - ./config/output.log:/app/config/croupier.log:rw
-      - ./config/data-bets.json:/app/config/data-bets.json:rw
+      - ./data/output.log:/app/data/croupier.log:rw
+      - ./data/data-bets.json:/app/data/data-bets.json:rw
     depends_on:
       - vibebot_image_build
       - bank
@@ -76,8 +76,8 @@ services:
       - bot=polling
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
-      - ./config/output.log:/app/config/polling.log:rw
-      - ./config/data-polling.json:/app/config/data-polling.json:rw
+      - ./data/output.log:/app/data/polling.log:rw
+      - ./data/data-polling.json:/app/data/data-polling.json:rw
     depends_on:
       - vibebot_image_build
       - bank
