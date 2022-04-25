@@ -20,4 +20,4 @@ class Shared(commands.Cog):
     async def shared_version(self, ctx: commands.Context, *args):
         """View bot version"""
         if len(args) == 0 or args[0] == self.config.bot_type:
-            await ctx.message.reply(f'{self.config.version} - {self.config.bot_type}')
+            await ctx.message.reply(f'{self.config.version} - {self.config.bot_type.upper()}')
