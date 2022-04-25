@@ -14,7 +14,7 @@ COPY polling polling
 COPY requirements requirements
 COPY lib lib
 RUN mkdir config
-COPY config.ini config/config.ini
+COPY config/config.ini config/config.ini
 
 RUN pip3 install -r requirements
 
