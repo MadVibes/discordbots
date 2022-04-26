@@ -259,19 +259,19 @@ class Bot:
     
     if type == "bet":
       embed.add_field(name='$bet', value='Displays all active bets.' ,inline=False)
-      embed.add_field(name='$bet [create] [name]', value='Creates a bet with a custom name and gives it a unique ID used in the commands listed below.' ,inline=False)
-      embed.add_field(name='$bet [for] [ID] [wager]', value='Adds your wager to the **FOR** pool. ' ,inline=False)
-      embed.add_field(name='$bet [against] [ID] [wager]', value='Adds your wager to the **AGAINST** pool. ' ,inline=False)
+      embed.add_field(name='$bet create [name]', value='Creates a bet with a custom name and gives it a unique ID used in the commands listed below.' ,inline=False)
+      embed.add_field(name='$bet for [ID] [wager]', value='Adds your wager to the **FOR** pool. ' ,inline=False)
+      embed.add_field(name='$bet against [ID] [wager]', value='Adds your wager to the **AGAINST** pool. ' ,inline=False)
       
     elif type == "pay":
       embed.add_field(name='$pay [ID] [for | against | stalemate]', value='Use this command to pay the winner(s) of a bet. If the against team won, it would look something like this \"($pay [ID] [against])\".' ,inline=False)
 
     elif type == "deathroll":
       embed.add_field(name='$deathroll', value='Shows all active deathrolls.' ,inline=False)
-      embed.add_field(name='$deathroll [create] [wager]', value='Creates a deathroll game with a custom wager and unique ID.' ,inline=False)
-      embed.add_field(name='$deathroll [join] [ID]', value='Joins a deathroll game.' ,inline=False)
-      embed.add_field(name='$deathroll [start] [ID]', value='Starts the deathroll game, can only be used by the game\'s initiator.' ,inline=False)
-      embed.add_field(name='$deathroll [delete] [ID]', value='Deletes a deathroll game , can only be used by the game\'s initiator.' ,inline=False)
+      embed.add_field(name='$deathroll create [wager]', value='Creates a deathroll game with a custom wager and unique ID.' ,inline=False)
+      embed.add_field(name='$deathroll join [ID]', value='Joins a deathroll game.' ,inline=False)
+      embed.add_field(name='$deathroll start [ID]', value='Starts the deathroll game, can only be used by the game\'s initiator.' ,inline=False)
+      embed.add_field(name='$deathroll delete [ID]', value='Deletes a deathroll game , can only be used by the game\'s initiator.' ,inline=False)
       
       
     await ctx.send(embed=embed)
@@ -470,7 +470,7 @@ class Bot:
               await ctx.send("The wager must be more than 1 VBC dummy.")
         else:
           await ctx.message.add_reaction('❌')
-          await ctx.send("2nd argument missing \"$deathroll [create] [wager]\".")
+          await ctx.send("2nd argument missing \"$deathroll create [wager]\".")
           
       elif arg.lower() == "join":
         active_bet = None
@@ -499,14 +499,14 @@ class Bot:
               await ctx.send("This deathroll already has two players... Sorry :(")
         else:
           await ctx.message.add_reaction('❌')
-          await ctx.send("2nd argument missing \"$deathroll [join] [ID]\".")
+          await ctx.send("2nd argument missing \"$deathroll join [ID]\".")
           
       elif arg.lower() == "start":
         if arg2 != None:
           await self.prep_deathroll(ctx, data, arg2, user)
         else:
           await ctx.message.add_reaction('❌')
-          await ctx.send("2nd argument missing \"$deathroll [start] [ID]\".")
+          await ctx.send("2nd argument missing \"$deathroll start [ID]\".")
 
       elif arg.lower() == "delete":
         if arg2 != None:
@@ -541,7 +541,7 @@ class Bot:
               
         else:
           await ctx.message.add_reaction('❌')
-          await ctx.send("2nd argument missing \"$deathroll [delete] [ID]\".")
+          await ctx.send("2nd argument missing \"$deathroll delete [ID]\".")
             
       elif arg.lower() == "help":
         await self.help_embed(ctx, "deathroll")
