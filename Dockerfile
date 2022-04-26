@@ -14,7 +14,9 @@ COPY polling polling
 COPY requirements requirements
 COPY lib lib
 RUN mkdir config
-COPY config.ini config/config.ini
+COPY config/config.ini config/config.ini
+RUN mkdir data
+RUN touch data/data.json data/data-bets.json data/data-polling.json
 
 RUN pip3 install -r requirements
 

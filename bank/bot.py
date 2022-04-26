@@ -51,12 +51,20 @@ class Bot:
             self.logger.warn(f'Attempted to create user "{user_name}" but they already exist')
             return False
         else:
-            user_schema = {
-                'user_id': int(user_id),
-                'created_time': str(datetime.now().strftime("%s")),# In epoch time
-                'balance': 0,
-                'meta': []
-            }
+            try:
+                user_schema = {
+                    'user_id': int(user_id),
+                    'created_time': str(datetime.now().strftime("%s")),  # In epoch time
+                    'balance': 0,
+                    'meta': []
+                }
+            except:
+                user_schema = {
+                    'user_id': int(user_id),
+                    'created_time': str(datetime.now()),  # In windows time because it's broken.
+                    'balance': 0,
+                    'meta': []
+                }
 
             data['users'].append(user_schema)
             self.data.write(data)
