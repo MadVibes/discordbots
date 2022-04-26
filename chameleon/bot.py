@@ -35,6 +35,7 @@ class Bot:
                     "Oof":"oof.mp3",
                     "REEEE":"ree.mp3",
                     "Wow":"wow.mp3",
+                    "Aughhh":"aughhh.mp3"
                 }
 
 
@@ -93,6 +94,7 @@ class Bot:
         if ctx.author.voice is not None:
             voice_channel = ctx.message.author.voice.channel
             active_voice = await voice_channel.connect()
+            time.sleep(0.1)
             active_voice.play(discord.FFmpegPCMAudio(executable='ffmpeg',source=self.config['AUDIO_CLIP_DIR']+self.clip_list[sound]))
             # Wait until audio is finished and then leave the VC
             time.sleep(0.5)
