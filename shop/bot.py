@@ -31,19 +31,19 @@ class Bot:
         self.products = {
             'services': [
                 {
-                    'name': 'Server mute',
+                    'name': 'Mute',
                     'description': 'Mute someone on the server for 30 seconds',
                     'price': 600,
                     'function': self.service_server_mute
                 },
                 {
-                    'name': 'Server deafen',
+                    'name': 'Deafen',
                     'description': 'Deafen someone on the server for 1 minute',
                     'price': 660,
                     'function': self.service_server_deafen
                 },
                 {
-                    'name': 'Server disconnect',
+                    'name': 'Disconnect',
                     'description': 'Disconnect someone on the server',
                     'price': 420,
                     'function': self.service_server_disconnect
