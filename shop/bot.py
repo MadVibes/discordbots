@@ -331,7 +331,7 @@ class Bot:
 
     async def service_rename(self, ctx: commands.context, product):
         """Handle service purchase of server timeout"""
-        all_active = await self.all_channel_members(self.guild_id)
+        all_active = await self.all_server_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
             await ctx.message.add_reaction('❌')
@@ -404,6 +404,14 @@ class Bot:
                 online_users.append(member)
         return online_users
 
+
+    async def all_server_members(self, guild_id: int):
+        """Returns all members on a discord server within a guild"""
+        users = []
+        generator = self.client.get_all_members()
+        for user in generator:
+            users.append(user)
+        return users
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper
