@@ -1,7 +1,6 @@
 name: Docker Image CI
 
 on:
-  workflow_dispatch:
   pull_request_review:
     branches: [ master ]
     types: [ submitted ]
