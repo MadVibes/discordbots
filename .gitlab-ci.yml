@@ -1,9 +1,0 @@
-stages:
-  - test-stage
-
-test-job:
-  stage: test-stage
-  script:
-    - docker ps -a
-  tags:
-    - k3s
