@@ -17,7 +17,9 @@ jobs:
       uses: docker/setup-qemu-action@v1
     - 
       name: Create context
-      run: docker context create builder
+      run: |
+        docker context create builder
+        docker context use builder
     - 
       name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
