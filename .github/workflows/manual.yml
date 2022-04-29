@@ -16,9 +16,9 @@ jobs:
       name: Login to Docker registry
       uses: docker/login-action@v1
       with:
-        registry: ${{ secret.REGISTRY_URL }}
-        username: ${{ secret.REGISTRY_USERNAME }}
-        password: ${{ secret.REGISTRY_PASSWORD }}
+        registry: ${{ secrets.REGISTRY_URL }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
     - 
       name: Set up Docker Buildx
       run:
