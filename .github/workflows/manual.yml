@@ -1,8 +1,6 @@
 name: Docker Image CI - Manual
 
-on:
-  workflow_call:
-    branches: [ master ]
+on: workflow_call
 
 jobs:
   buildx:
