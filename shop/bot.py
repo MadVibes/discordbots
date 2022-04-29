@@ -219,6 +219,7 @@ class Bot:
         fuzzy = process.extract(message.content, all_active_names)
         matches = []
         for match in fuzzy:
+            self.logger.debug(f'{match[0]}:{match[1]}')
             if match[1] == 100:
                 matches = [match]
                 break
@@ -288,6 +289,7 @@ class Bot:
         fuzzy = process.extract(message.content, all_active_names)
         matches = []
         for match in fuzzy:
+            self.logger.debug(f'{match[0]}:{match[1]}')
             if match[1] == 100:
                 matches = [match]
                 break
@@ -351,6 +353,7 @@ class Bot:
         fuzzy = process.extract(message_user.content, all_active_names)
         matches = []
         for match in fuzzy:
+            self.logger.debug(f'{match[0]}:{match[1]}')
             if match[1] == 100:
                 matches = [match]
                 break
