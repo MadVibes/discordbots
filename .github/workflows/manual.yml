@@ -19,7 +19,7 @@ jobs:
       name: Create context
       run: |
         docker context create builder
-        export DOCKER_CONTEXT=builder
+        unset DOCKER_HOST
         docker context use builder
     - 
       name: Set up Docker Buildx
