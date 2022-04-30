@@ -12,6 +12,12 @@ jobs:
     environment: main
     steps:
     - 
+      name: Get current time
+      uses: josStorer/get-current-time@v2
+      id: time
+      with:
+        format: YYYYMMDD-HHmm
+    - 
       name: Checkout
       uses: actions/checkout@v3
     - 
@@ -44,4 +50,4 @@ jobs:
         context: .
         push: true
         platforms: linux/amd64,linux/arm/v7
-        tags: ${{ secrets.REGISTRY_URL }}/discordbot:latest
+        tags: ${{ secrets.REGISTRY_URL }}/discordbot:latest,${{ secrets.REGISTRY_URL }}/discordbot:${{ steps.time.outputs.formattedTime }}
