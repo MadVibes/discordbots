@@ -1,4 +1,4 @@
-name: Docker Build Image
+name: Docker Build Bots Image
 
 on:
   pull_request_review:
@@ -44,4 +44,4 @@ jobs:
         context: .
         push: true
         platforms: linux/amd64,linux/arm/v7
-        tags: ${{ secrets.REGISTRY_URL }}/vibebot:latest
+        tags: ${{ secrets.REGISTRY_URL }}/discordbot:latest
