@@ -1,4 +1,4 @@
-name: Docker Image CI - Manual
+name: Docker Build Image (Manual Trigger)
 
 on: 
   workflow_dispatch:
@@ -37,4 +37,5 @@ jobs:
       with:
         context: .
         push: true
+        platform: linux/amd64,linux/arm/v7
         tags: ${{ secrets.REGISTRY_URL }}/vibebot:latest
