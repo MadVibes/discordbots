@@ -1,4 +1,4 @@
-name: Docker Build Bots Image (Manual Trigger)
+name: Docker Build Base Image
 
 on: 
   workflow_dispatch:
@@ -39,6 +39,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: .
+        file: DockerfileBase
         push: true
         platforms: linux/amd64,linux/arm/v7
-        tags: ${{ secrets.REGISTRY_URL }}/discordbot:latest
+        tags: ${{ secrets.REGISTRY_URL }}/discordbot-base:latest
