@@ -1,7 +1,7 @@
-FROM python:3.8-slim-buster
+FROM registry.coombszy.com/discordbot-base:latest
 
-# GCC is required but a python package
-RUN apt-get update; apt-get install gcc ffmpeg libffi-dev apt-utils make g++ -y
+# NOTE:
+#   Packages and pip packages are installed via DockerfileBase image (discordbot-base)
 
 WORKDIR /app
 
@@ -17,8 +17,6 @@ RUN mkdir config
 COPY config/config.ini.sample config/config.ini
 RUN mkdir data
 RUN touch data/data.json data/data-bets.json data/data-polling.json
-
-RUN pip3 install -r requirements
 
 ARG bot
 ENV bot ${bot}
