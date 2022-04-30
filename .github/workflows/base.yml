@@ -10,6 +10,11 @@ jobs:
     environment: main
     steps:
     - 
+      name: DNS test
+      run: |
+        nslookup security.debian.org
+        nslookup google.com
+    - 
       name: Checkout
       uses: actions/checkout@v3
     - 
