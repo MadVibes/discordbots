@@ -164,7 +164,7 @@ class Bot:
             items = []
             for item in matches:
                 items.append(' \n - '+item)
-            await message.reply('User name was to generic, did you mean?' + ''.join(items))
+            await message.reply('User name was too generic, did you mean?' + ''.join(items))
             await message.add_reaction('❌')
             return
         target: discord.Member = None
@@ -182,14 +182,14 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(mute = True, reason=f'Service purchase: {ctx.author.display_name}')
+        await target.edit(mute = True, reason=f'Service purchase: {ctx.author.id}')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
-            author_name = args[0][1]
-            await member.edit(mute = False, reason=f'Service purchase: {author_name}')
+            author_id = args[0][1]
+            await member.edit(mute = False, reason=f'Service purchase: {author_id}')
 
-        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.display_name])
+        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.id])
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -252,14 +252,14 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(deafen = True, reason=f'Service purchase: {ctx.author.display_name}')
+        await target.edit(deafen = True, reason=f'Service purchase: {ctx.author.id}')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
-            author_name = args[0][1]
-            await member.edit(deafen = False, reason=f'Service purchase: {author_name}')
+            author_id = args[0][1]
+            await member.edit(deafen = False, reason=f'Service purchase: {author_id}')
 
-        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.display_name])
+        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.id])
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
