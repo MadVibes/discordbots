@@ -1,5 +1,8 @@
 FROM registry.coombszy.com/discordbot-base:latest
 
+# NOTE:
+#   Packages and pip packages are installed via DockerfileBase image (discordbot-base)
+
 WORKDIR /app
 
 COPY start.sh start.sh
@@ -14,8 +17,6 @@ RUN mkdir config
 COPY config/config.ini.sample config/config.ini
 RUN mkdir data
 RUN touch data/data.json data/data-bets.json data/data-polling.json
-
-RUN pip3 install -r requirements
 
 ARG bot
 ENV bot ${bot}
