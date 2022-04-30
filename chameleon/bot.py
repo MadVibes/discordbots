@@ -43,7 +43,13 @@ class Bot:
         """Send tts message"""
         to_say = ' '.join(args)
         await ctx.guild.get_member(self.client.user.id).edit(nick=ctx.author.name)
-        message = await ctx.send(to_say, tts=True)
+        self.logger.log(f'Playing TTS for {ctx.author.id}')
+        try:
+            message = await ctx.send(to_say, tts=True)
+        except Exception as e:
+            self.logger.error(f'Error sending tts message:}')
+            self.logger.error(e)
+            return
 
         async def cleanupFunc(*args):
             message: discord.Message = args[0][0]
@@ -85,6 +91,7 @@ class Bot:
             await ctx.reply('Sound play request was too generic, did you mean?' + ''.join(items))
             return
         # Play sound
+        self.logger.log(f'Playing sound {matches[0]} for {ctx.author.id}')
         await self.play_sound(ctx, matches[0])
 
 
@@ -99,7 +106,8 @@ class Bot:
             # Wait until audio is finished and then leave the VC
             time.sleep(0.5)
             while active_voice.is_playing():
-                time.sleep(0.1)
+                time.sleep(0.15)
+            time.sleep(0.1)
             await active_voice.disconnect()
         else:
             await ctx.reply('You\'re not in a channel!')
