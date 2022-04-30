@@ -1,3 +1,4 @@
+# This should only need running vary rarely as the base image is only used to skip steps that never really change
 name: Docker Build Base Image
 
 on: 
