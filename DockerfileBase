@@ -1,6 +1,11 @@
 FROM python:3.8-slim-buster
 
-# GCC is required for a python package
+# GCC is required for a python pip package
 RUN apt-get update; apt-get install gcc ffmpeg libffi-dev apt-utils make g++ -y
+
+# Install pip packages
+WORKDIR /app
+COPY requirements requirements
+RUN pip3 install -r requirements
 
 CMD echo 'Hello World'
