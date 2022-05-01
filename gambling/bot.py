@@ -381,22 +381,25 @@ class Bot:
 
   # Deathroll game starts
   async def deathroll_game(self, ctx, wager, player1, player2, data, active_bet_index):
-    wager1 = int(wager)
-    wager2 = int(wager)
+    wager1, wager2 = int(wager), int(wager)
     turn = 0
     while wager1 != 1:
       if turn == 0:
-        rolled_num = random.randint(1, wager1)
-        wager1 = rolled_num
-        await ctx.send(f"<@{player1}> rolled a {rolled_num}!")
+        if wager1 > 10:
+          wager1 = max(random.randint(1, wager1), random.randint(1, wager1))
+        else:
+          wager1 = random.randint(1, wager1)
+        await ctx.send(f"<@{player1}> rolled a {wager1}!")
         if wager1 != 1:
           turn = 1
           await asyncio.sleep(1)
         
       elif turn == 1:
-        rolled_num = random.randint(1, wager1)
-        wager1 = rolled_num
-        await ctx.send(f"<@{player2}> rolled a {rolled_num}!")
+        if wager1 > 10:
+          wager1 = max(random.randint(1, wager1), random.randint(1, wager1))
+        else:
+          wager1 = random.randint(1, wager1)
+        await ctx.send(f"<@{player2}> rolled a {wager1}!")
         if wager1 != 1:
           turn = 0
           await asyncio.sleep(1)
