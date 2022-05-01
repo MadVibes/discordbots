@@ -68,7 +68,7 @@ async def on_ready():
 async def command_tts(ctx: commands.Context, *args):
     """Execute tts command"""
 
-    user_balance = bank.getBalance(ctx.author.id)
+    user_balance = bank.get_balance(ctx.author.id)
     # insufficient balance
     if int(config['TTS_COST']) >= user_balance:
         await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
@@ -76,7 +76,7 @@ async def command_tts(ctx: commands.Context, *args):
     # Perform tts and spend currency
     try:
         await bot.send_tts(ctx, args)
-        bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
+        bank.spend_currency(ctx.author.id, int(config['TTS_COST']))
 
     except Exception as e:
         logger.warn('Failed to execute tts:')
@@ -124,14 +124,14 @@ async def command_sound(ctx: commands.Context, *args):
         await ctx.reply(f'Current cost is {config["AUDIO_CLIP_COST"]} VBC')
         return
     elif args[0] == 'play':
-        user_balance = bank.getBalance(ctx.author.id)
+        user_balance = bank.get_balance(ctx.author.id)
         if int(config['AUDIO_CLIP_COST']) >= user_balance:
             await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
             return
         # Start handling of sound command
         try:
             await bot.handle_sound(ctx, args)
-            bank.spendCurrency(ctx.author.id, int(config['AUDIO_CLIP_COST']))
+            bank.spend_currency(ctx.author.id, int(config['AUDIO_CLIP_COST']))
             return
 
         except Exception as e:

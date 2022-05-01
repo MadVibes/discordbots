@@ -160,7 +160,7 @@ class Bot:
           final = {winners[i]: final_wins[i] for i in range(len(winners))} 
         
           for id, winnings in final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "for", final)
@@ -180,7 +180,7 @@ class Bot:
           final = {winners[i]: final_wins[i] for i in range(len(winners))} 
           
           for id, winnings in final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "against", final)
@@ -199,9 +199,9 @@ class Bot:
           against_final = {against_users[i]: against_wagers[i] for i in range(len(against_users))}
   
           for id, winnings in for_final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           for id, winnings in against_final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "stalemate", for_final, against_final)
@@ -297,13 +297,13 @@ class Bot:
 
 
   async def check_and_spend_bets(self, ctx, wager):
-    user_balance = self.bank.getBalance(ctx.author.id)
+    user_balance = self.bank.get_balance(ctx.author.id)
     # Insufficient balance
     if int(wager) > user_balance:
         await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
         return
     try:
-        self.bank.spendCurrencyTaxed(ctx.author.id, int(wager), self.config['BET_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, int(wager), self.config['BET_TAX_BAND'])
         return 1
         
     except Exception as e:
@@ -311,13 +311,13 @@ class Bot:
         self.logger.warn(str(e))      
 
   async def check_and_spend_deathroll(self, ctx, wager):
-    user_balance = self.bank.getBalance(ctx.author.id)
+    user_balance = self.bank.get_balance(ctx.author.id)
     # Insufficient balance
     if int(wager) > user_balance:
         await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
         return
     try:
-        self.bank.spendCurrencyTaxed(ctx.author.id, int(wager), self.config['DEATHROLL_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, int(wager), self.config['DEATHROLL_TAX_BAND'])
         return 1
         
     except Exception as e:
@@ -403,13 +403,13 @@ class Bot:
 
     wager2 *= 2
     if turn == 1: # Player 1 wins
-      self.bank.withdrawCurrencyTaxed(int(player1), int(wager2), self.config['DEATHROLL_TAX_BAND'])
+      self.bank.withdraw_currency_taxed(int(player1), int(wager2), self.config['DEATHROLL_TAX_BAND'])
       del data['deathrolls'][active_bet_index]
       self.data.write(data)
       await ctx.send(f"<@{player1}> wins {wager2} VBC!")
       
     elif turn == 0: # Player 2 wins
-      self.bank.withdrawCurrencyTaxed(int(player2), int(wager2), self.config['DEATHROLL_TAX_BAND'])
+      self.bank.withdraw_currency_taxed(int(player2), int(wager2), self.config['DEATHROLL_TAX_BAND'])
       del data['deathrolls'][active_bet_index]
       self.data.write(data)
       await ctx.send(f"<@{player2}> wins {wager2} VBC!")
@@ -526,10 +526,10 @@ class Bot:
               competitors = active_bet['competitors']
               wager = active_bet['wager']
               player1 = competitors[0]
-              self.bank.withdrawCurrencyTaxed(int(player1), int(wager), self.config['DEATHROLL_TAX_BAND'])
+              self.bank.withdraw_currency_taxed(int(player1), int(wager), self.config['DEATHROLL_TAX_BAND'])
               if len(competitors) == 2:
                 player2 = competitors[1]
-                self.bank.withdrawCurrencyTaxed(int(player2), int(wager), self.config['DEATHROLL_TAX_BAND'])
+                self.bank.withdraw_currency_taxed(int(player2), int(wager), self.config['DEATHROLL_TAX_BAND'])
               del data['deathrolls'][active_bet_index]
               self.data.write(data)
               await ctx.message.add_reaction('✅')
