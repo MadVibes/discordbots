@@ -3,6 +3,7 @@
 from datetime import datetime
 from discord.ext import commands
 from discord import Color
+from discord import VoiceChannel
 from fuzzywuzzy import process
 import sys
 import discord
@@ -16,7 +17,6 @@ from lib.utils import Utils #pylint: disable=E0401
 class Bot:
 # NOTE(LIAM):
 #       Maybe use nickname and real name for fuzzy matches?
-
 
     def __init__(self, logger: Logger, config, bank: Bank, client: discord.Client):
         self.logger = logger
@@ -53,6 +53,12 @@ class Bot:
                     'description': 'Change target nickname',
                     'price': 800,
                     'function': self.service_rename
+                },
+                {
+                    'name': 'Exile',
+                    'description': 'Push someone into the AFK channel',
+                    'price': 90,
+                    'function': self.service_afk_move
                 }
             ]
         }
@@ -182,14 +188,13 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(mute = True, reason=f'Service purchase: {ctx.author.id}')
+        await target.edit(mute = True, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
-            author_id = args[0][1]
-            await member.edit(mute = False, reason=f'Service purchase: {author_id}')
+            await member.edit(mute = False, reason=f'Service purchase: Anonymous')
 
-        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.id])
+        Utils.future_call(30.0, unmuteFunc, [target])
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -252,14 +257,13 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(deafen = True, reason=f'Service purchase: {ctx.author.id}')
+        await target.edit(deafen = True, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
-            author_id = args[0][1]
-            await member.edit(deafen = False, reason=f'Service purchase: {author_id}')
+            await member.edit(deafen = False, reason=f'Service purchase: Anonymous')
 
-        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.id])
+        Utils.future_call(30.0, unmuteFunc, [target])
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -322,7 +326,7 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(voice_channel=None, reason=f'Service purchase: {ctx.author.display_name}')
+        await target.edit(voice_channel=None, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         # Return info about service purchase
         return {
@@ -389,8 +393,70 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(nick=message_name.content, reason=f'Service purchase: {ctx.author.display_name}')
+        await target.edit(nick=message_name.content, reason=f'Service purchase: Anonymous')
         await message_name.add_reaction('✅')
+        # Return info about service purchase
+        return {
+            "user_id": ctx.author.id,
+            "target_name": target.id
+            }
+
+    async def service_afk_move(self, ctx: commands.context, product):
+        """Handle service purchase of moving user to AFK channel"""
+        all_active = await self.all_server_members(self.guild_id)
+        if len(all_active) == 0:
+            await ctx.reply('No users are online!')
+            await ctx.message.add_reaction('❌')
+            return {
+                "user_id": ctx.author.id,
+                "error": 'No users online'
+            }
+        await ctx.reply('Who is the target? (use the targets server nickname)')
+
+        # Function is parsed into wait_for for validation
+        def user_match(message: discord.Message):
+            return (message.channel == ctx.channel) and (message.author.id == ctx.author.id)
+        message_user = await self.client.wait_for('message', check=user_match)
+
+        all_active_names = map(lambda member: member.display_name, all_active)
+        # Get fuzzy search
+        fuzzy = process.extract(message_user.content, all_active_names)
+        matches = []
+        for match in fuzzy:
+            self.logger.debug(f'{match[0]}:{match[1]}')
+            if match[1] == 100:
+                matches = [match]
+                break
+            if match[1] > self.user_fuzzy_percent:
+                matches.append(match[0])
+        if len(matches) == 0:
+            await message_user.reply('No users match that name')
+            await message_user.add_reaction('❌')
+            return
+        # 1+ matches
+        elif len(matches) > 1:
+            items = []
+            for item in matches:
+                items.append(' \n - '+item)
+            await message_user.reply('User name was too generic, did you mean?' + ''.join(items))
+            await message_user.add_reaction('❌')
+            return
+        target: discord.Member = None
+        for active in all_active:
+            if active.display_name == matches[0][0]:
+                target = active
+
+        afk_channel: VoiceChannel = ctx.guild.afk_channel
+        if afk_channel is None:
+            await message_user.reply(f'No AFK channel is assigned in this discord!')
+            await message_user.add_reaction('❌')
+            return {
+                "user_id": ctx.author.id,
+                "error": f'No assigned AFK channel'
+                }
+
+        await target.move_to(afk_channel, reason=f'Service purchase: Anonymous')
+        await message_user.add_reaction('✅')
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
