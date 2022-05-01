@@ -17,7 +17,7 @@ from lib.bank_interface import Bank #pylint: disable=E0401
 ########################################################################################################
 bot_type = sys.argv[1]
 config = configparser.ConfigParser()
-config.read('./config.ini') # CHANGE ME
+config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 
 VERSION = 'v1.0'
