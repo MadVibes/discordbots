@@ -188,14 +188,13 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(mute = True, reason=f'Service purchase: {ctx.author.id}')
+        await target.edit(mute = True, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
-            author_id = args[0][1]
-            await member.edit(mute = False, reason=f'Service purchase: {author_id}')
+            await member.edit(mute = False, reason=f'Service purchase: Anonymous')
 
-        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.id])
+        Utils.future_call(30.0, unmuteFunc, [target])
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -258,14 +257,13 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(deafen = True, reason=f'Service purchase: {ctx.author.id}')
+        await target.edit(deafen = True, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
             member: discord.Member = args[0][0]
-            author_id = args[0][1]
-            await member.edit(deafen = False, reason=f'Service purchase: {author_id}')
+            await member.edit(deafen = False, reason=f'Service purchase: Anonymous')
 
-        Utils.future_call(30.0, unmuteFunc, [target, ctx.author.id])
+        Utils.future_call(30.0, unmuteFunc, [target])
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -328,7 +326,7 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(voice_channel=None, reason=f'Service purchase: {ctx.author.id}')
+        await target.edit(voice_channel=None, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         # Return info about service purchase
         return {
@@ -395,7 +393,7 @@ class Bot:
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
-        await target.edit(nick=message_name.content, reason=f'Service purchase: {ctx.author.id}')
+        await target.edit(nick=message_name.content, reason=f'Service purchase: Anonymous')
         await message_name.add_reaction('✅')
         # Return info about service purchase
         return {
@@ -457,7 +455,7 @@ class Bot:
                 "error": f'No assigned AFK channel'
                 }
 
-        await target.move_to(afk_channel, reason=f'Service purchase: {ctx.author.id}')
+        await target.move_to(afk_channel, reason=f'Service purchase: Anonymous')
         await message_user.add_reaction('✅')
         # Return info about service purchase
         return {
