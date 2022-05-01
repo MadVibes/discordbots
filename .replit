@@ -1,2 +1,5 @@
 language = "python"
-run = "python bank/main.py & python shop/main.py & python chameleon/main.py & python gambling/main.py & python polling/main.py"
+run = "python bank/main.py & python gambling/main.py"
+
+
+#python bank/main.py & python shop/main.py & python chameleon/main.py & python gambling/main.py & python polling/main.py

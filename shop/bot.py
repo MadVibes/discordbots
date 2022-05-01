@@ -75,7 +75,7 @@ class Bot:
         # arg = list
         elif args[0] == 'list':
             embed = discord.Embed(name='Shopping list',
-                    description='Available items in the shop',
+                    description='Available items in the shop\n DO NOT DM THE BOT TO PERFORM ACTIONS! (KNOWN BUG)',
                     inline=True)
             for service in self.products['services']:
                 embed.add_field(name=service['name'],
