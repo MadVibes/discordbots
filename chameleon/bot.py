@@ -47,7 +47,7 @@ class Bot:
         try:
             message = await ctx.send(to_say, tts=True)
         except Exception as e:
-            self.logger.error(f'Error sending tts message:}')
+            self.logger.error(f'Error sending tts message:')
             self.logger.error(e)
             return
 
