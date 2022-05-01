@@ -179,7 +179,7 @@ class Bot:
                 target = active
 
         # Actually perform action, and spend currency
-        user_currency = self.bank.getBalance(ctx.author.id)
+        user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
             await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
             await message.add_reaction('❌')
@@ -187,7 +187,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(mute = True, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
@@ -248,7 +248,7 @@ class Bot:
                 target = active
 
         # Actually perform action, and spend currency
-        user_currency = self.bank.getBalance(ctx.author.id)
+        user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
             await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
             await message.add_reaction('❌')
@@ -256,7 +256,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(deafen = True, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         async def unmuteFunc(*args):
@@ -317,7 +317,7 @@ class Bot:
                 target = active
 
         # Actually perform action, and spend currency
-        user_currency = self.bank.getBalance(ctx.author.id)
+        user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
             await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
             await message.add_reaction('❌')
@@ -325,7 +325,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(voice_channel=None, reason=f'Service purchase: Anonymous')
         await message.add_reaction('✅')
         # Return info about service purchase
@@ -384,7 +384,7 @@ class Bot:
         message_name = await self.client.wait_for('message', check=user_match)
 
         # Actually perform action, and spend currency
-        user_currency = self.bank.getBalance(ctx.author.id)
+        user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
             await message_name.reply(f'Insufficient balance, current balance is {user_currency} VBC')
             await message_name.add_reaction('❌')
@@ -392,7 +392,7 @@ class Bot:
                 "user_id": ctx.author.id,
                 "error": f'Insufficient balance, current balance is {user_currency}'
                 }
-        self.bank.spendCurrencyTaxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(nick=message_name.content, reason=f'Service purchase: Anonymous')
         await message_name.add_reaction('✅')
         # Return info about service purchase

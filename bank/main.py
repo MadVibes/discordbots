@@ -235,7 +235,7 @@ class Servlet:
 
 
 # Functions for webserver
-def getBalance(service: Servlet, parameters: json):
+def get_balance(service: Servlet, parameters: json):
     """Return users balance"""
     if 'user_id' not in parameters:
         raise Exception('user_id was not included in parameters')
@@ -243,7 +243,7 @@ def getBalance(service: Servlet, parameters: json):
     return service.bot.req_get_balance(user_id=parameters['user_id'])
 
 
-def moveCurrency(service: Servlet, parameters: json):
+def move_currency(service: Servlet, parameters: json):
     """Move balance from one user to another"""
     if ('user_id_sender' not in parameters
         or 'user_id_receiver' not in parameters
@@ -253,7 +253,7 @@ def moveCurrency(service: Servlet, parameters: json):
     return service.bot.req_move_currency(user_id_sender=parameters['user_id_sender'], user_id_receiver=parameters['user_id_receiver'], amount=parameters['amount'])
 
 
-def spendCurrency(service: Servlet, parameters: json):
+def spend_currency(service: Servlet, parameters: json):
     """Spend balance of user"""
     if ('user_id' not in parameters
         or 'amount' not in parameters):
@@ -262,7 +262,7 @@ def spendCurrency(service: Servlet, parameters: json):
     return service.bot.req_move_currency(user_id_sender=parameters['user_id'], user_id_receiver=service.client.user.id, amount=parameters['amount'])
 
 
-def withdrawCurrency(service: Servlet, parameters: json):
+def withdraw_currency(service: Servlet, parameters: json):
     """Withdraw balance of bank"""
     if ('user_id' not in parameters
         or 'amount' not in parameters):
@@ -271,7 +271,7 @@ def withdrawCurrency(service: Servlet, parameters: json):
     return service.bot.req_move_currency(user_id_sender=service.client.user.id, user_id_receiver=parameters['user_id'], amount=parameters['amount'])
 
 
-def spendCurrencyTaxed(service: Servlet, parameters: json):
+def spend_currency_taxed(service: Servlet, parameters: json):
     """Spend balance of user, split amount into tax account based on band"""
     if ('user_id' not in parameters
         or 'amount' not in parameters
@@ -285,7 +285,7 @@ def spendCurrencyTaxed(service: Servlet, parameters: json):
     return service.bot.req_move_currency(user_id_sender=parameters['user_id'], user_id_receiver=service.client.user.id, amount=bank_amount)
 
 
-def withdrawCurrencyTaxed(service: Servlet, parameters: json):
+def withdraw_currency_taxed(service: Servlet, parameters: json):
     """Withdraw balance of bank, split amount but don't pay tax account based on band. PLEASE READ CODE COMMENT FOR withdrawCurrencyTaxed IN bank/main.py """
     if ('user_id' not in parameters
         or 'amount' not in parameters
@@ -318,7 +318,7 @@ def withdrawCurrencyTaxed(service: Servlet, parameters: json):
     return service.bot.req_move_currency(user_id_sender=service.client.user.id, user_id_receiver=parameters['user_id'], amount=bank_amount)
 
 
-def summonCurrency(service: Servlet, parameters: json):
+def summon_currency(service: Servlet, parameters: json):
     """Summon balance for user"""
     if ('user_id_receiver' not in parameters
         or 'amount' not in parameters):
@@ -329,13 +329,13 @@ def summonCurrency(service: Servlet, parameters: json):
 
 # Mapping of possible functions that the web server can call
 actions = {
-    'getBalance': getBalance,
-    'moveCurrency': moveCurrency,
-    'spendCurrency': spendCurrency,
-    'withdrawCurrency': withdrawCurrency,
-    'summonCurrency': summonCurrency,
-    'spendCurrencyTaxed': spendCurrencyTaxed,
-    'withdrawCurrencyTaxed': withdrawCurrencyTaxed
+    'getBalance': get_balance,
+    'moveCurrency': move_currency,
+    'spendCurrency': spend_currency,
+    'withdrawCurrency': withdraw_currency,
+    'summonCurrency': summon_currency,
+    'spendCurrencyTaxed': spend_currency_taxed,
+    'withdrawCurrencyTaxed': withdraw_currency_taxed
 }
 servlet = Servlet(client, bot)
 
