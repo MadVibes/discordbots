@@ -126,10 +126,10 @@ class Bot:
                 func_to_call = product['function']
         try:
             response = await func_to_call(ctx, product_to_call)
-            self.logger.log(f"Service '{product['name']}' is being purchased by {ctx.author.id}")
+            self.logger.log(f"Service '{product_to_call['name']}' is being purchased by {ctx.author.id}")
             self.logger.log(f'Purchase service info: {response}')
         except Exception as e:
-            self.logger.error(f"Service '{product['name']}' was purchased by {ctx.author.id} and failed:")
+            self.logger.error(f"Service '{product_to_call['name']}' was purchased by {ctx.author.id} and failed:")
             self.logger.error(str(e))
 
 
