@@ -1,13 +1,13 @@
 name: Docker Build Bots Image
 
 on:
-  pull_request:
-    branches: [master]
-    types: [closed]
+  pull_request_review:
+    branches: [ master ]
+    types: [ submitted ]
 
 jobs:
   build:
-    if: github.event.pull_request.merged == true
+    if: github.event.review.state == 'approved'
     runs-on: self-hosted
     environment: main
     steps:
