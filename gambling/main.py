@@ -13,6 +13,8 @@ from lib.utils import Utils #pylint: disable=E0401
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
 from lib.shared import Shared #pylint: disable=E0401
+from lib.coin_manager import CoinManager #pylint: disable=E0401
+from lib.utils import Utils #pylint: disable=E0401
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -42,6 +44,8 @@ logger.log(f'Starting {bot_type} - ' + config.version)
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bank = Bank(logger, config)
 bot = Bot(logger, config, bank, client)
+cm = CoinManager(logger)
+
 
 @client.event
 async def on_ready():
@@ -62,6 +66,13 @@ async def on_ready():
         await client.change_presence(status=discord.Status.invisible)
     # Load cogs
     client.add_cog(Shared(client, config))
+    # Load CoinManager
+    cm.set_guild(client.get_guild(bot.guild_id))
+    async def initCM(*args):
+        cm: CoinManager = args[0][0]
+        await cm.populate_bot_emojis()
+    time = 30 # Seconds
+    Utils.future_call(time, initCM, [cm])
 
 
 @client.command(name='bet')
