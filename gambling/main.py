@@ -43,8 +43,8 @@ logger.log(f'Starting {bot_type} - ' + config.version)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bank = Bank(logger, config)
-bot = Bot(logger, config, bank, client)
 cm = CoinManager(logger)
+bot = Bot(logger, config, bank, client, cm)
 
 
 @client.event
