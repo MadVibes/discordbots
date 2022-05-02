@@ -2,11 +2,8 @@
 #
 ########################################################################################################
 from lib.logger import Logger #pylint: disable=E0401
-from time import sleep
 from discord import Guild, Emoji
 from io import BytesIO
-import discord
-import threading, os, inspect, asyncio
 
 
 class CoinManager:
@@ -74,7 +71,7 @@ class CoinManager:
 
 
     @staticmethod
-    def get_emoji_from_name(name: str, all_emojis: [Emoji]):
+    def get_emoji_from_name(name: str, all_emojis):
         """Gets emoji from emojis list using name string"""
         for emoji in all_emojis:
             if emoji.name == name:
