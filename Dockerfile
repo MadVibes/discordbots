@@ -13,7 +13,7 @@ COPY gambling gambling
 COPY polling polling
 COPY requirements requirements
 COPY lib lib
-COPY emojiis emojis
+COPY emojis emojis
 RUN mkdir config
 COPY config/config.ini.sample config/config.ini
 RUN mkdir data
