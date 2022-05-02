@@ -12,6 +12,7 @@ sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
 from lib.server import Web_Server #pylint: disable=E0401
 from lib.shared import Shared #pylint: disable=E0401
+from lib.coin_manager import CoinManager #pylint: disable=E0401
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -21,7 +22,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
-config.version = 'v1.0'
+config.version = 'v1.1'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -41,6 +42,8 @@ logger.log(f'Starting {bot_type} - ' + config.version)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bot = Bot(logger, config, client)
+cm = CoinManager(logger)
+
 
 @client.event
 async def on_ready():
@@ -72,6 +75,9 @@ async def on_ready():
         await client.change_presence(status=discord.Status.invisible)
     # Load cogs
     client.add_cog(Shared(client, config))
+    # Load CoinManager
+    cm.set_guild(client.get_guild(bot.guild_id))
+    await cm.try_add_coin_emojis(config['EMOJI_SOURCE'])
 
 
 @client.event
@@ -148,7 +154,7 @@ async def command_balance(ctx: commands.Context, *args):
     # No target user specified
     if len(args) == 0:
         balance = bot.get_balance(ctx.author.id)
-        await ctx.send(f'Your current balance is {balance} VBC')
+        await ctx.send(f'Your current balance is {balance} {cm.currency()}')
 
     # A target was specified
     else:
@@ -183,7 +189,7 @@ async def command_balance(ctx: commands.Context, *args):
                 target_id = member.id
                 break
         balance = bot.get_balance(target_id)
-        await ctx.send(f'{matches[0]} current balance is {balance} VBC')
+        await ctx.send(f'{matches[0]} current balance is {balance} {cm.currency()}')
 
 
 @client.command(name='leaderboard')
@@ -214,7 +220,7 @@ async def command_leaderboard(ctx: commands.Context, *args):
     for key in sorted(leaderboard, reverse=True):
         if i >= 10:
             break
-        embed.add_field(name=f'{key} VBC', value=f'{", ".join(leaderboard[key])}', inline=False)
+        embed.add_field(name=f'{key} {cm.currency()}', value=f'{", ".join(leaderboard[key])}', inline=False)
         i += 1
     await ctx.send(embed=embed)
 
