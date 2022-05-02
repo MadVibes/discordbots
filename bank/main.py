@@ -220,7 +220,7 @@ async def command_leaderboard(ctx: commands.Context, *args):
     for key in sorted(leaderboard, reverse=True):
         if i >= 10:
             break
-        embed.add_field(name=f'{key} cm.currency()', value=f'{", ".join(leaderboard[key])}', inline=False)
+        embed.add_field(name=f'{key} {cm.currency()}', value=f'{", ".join(leaderboard[key])}', inline=False)
         i += 1
     await ctx.send(embed=embed)
 
