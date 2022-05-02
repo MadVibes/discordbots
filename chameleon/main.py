@@ -42,7 +42,7 @@ logger.log(f'Starting {bot_type} - ' + config.version)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 cm = CoinManager(logger)
-bot = Bot(logger, config, client, cm)
+bot = Bot(logger, config, client)
 bank = Bank(logger, config)
 
 
