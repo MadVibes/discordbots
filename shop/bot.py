@@ -13,17 +13,19 @@ sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
 from lib.utils import Utils #pylint: disable=E0401
+from lib.coin_manager import CoinManager #pylint: disable=E0401
 
 class Bot:
 # NOTE(LIAM):
 #       Maybe use nickname and real name for fuzzy matches?
 
-    def __init__(self, logger: Logger, config, bank: Bank, client: discord.Client):
+    def __init__(self, logger: Logger, config, bank: Bank, client: discord.Client, coin_manager: CoinManager):
         self.logger = logger
         self.config = config
         self.bank = bank
         self.client = client
         self.guild_id = 0
+        self.cm = coin_manager
         # fuzzy percent required to match services
         self.service_fuzzy_percent = 95
         # fuzzy percent required to match users
@@ -79,7 +81,7 @@ class Bot:
                     inline=True)
             for service in self.products['services']:
                 embed.add_field(name=service['name'],
-                        value=str(service['price']) +  ' VBC\n'  + service['description'],
+                        value=str(service['price']) +  f' {self.cm.currency()}\n'  + service['description'],
                         inline=True)
             await ctx.send(embed=embed)
         # args = buy, and query string provided
@@ -181,7 +183,7 @@ class Bot:
         # Actually perform action, and spend currency
         user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
-            await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
+            await message.reply(f'Insufficient balance, current balance is {user_currency} {self.cm.currency()}')
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
@@ -250,7 +252,7 @@ class Bot:
         # Actually perform action, and spend currency
         user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
-            await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
+            await message.reply(f'Insufficient balance, current balance is {user_currency} {self.cm.currency()}')
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
@@ -319,7 +321,7 @@ class Bot:
         # Actually perform action, and spend currency
         user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
-            await message.reply(f'Insufficient balance, current balance is {user_currency} VBC')
+            await message.reply(f'Insufficient balance, current balance is {user_currency} {self.cm.currency()}')
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
@@ -386,7 +388,7 @@ class Bot:
         # Actually perform action, and spend currency
         user_currency = self.bank.get_balance(ctx.author.id)
         if user_currency < product['price']:
-            await message_name.reply(f'Insufficient balance, current balance is {user_currency} VBC')
+            await message_name.reply(f'Insufficient balance, current balance is {user_currency} {self.cm.currency()}')
             await message_name.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
