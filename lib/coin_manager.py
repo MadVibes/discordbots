@@ -68,6 +68,8 @@ class CoinManager:
         for emoji in CoinManager.CUSTOM_COIN_EMOJIS:
             found_emoji = CoinManager.get_emoji_from_name(emoji, all_emojis)
             self.created_emojis[found_emoji.name] = found_emoji.id
+        self.use_emoji = True
+        self.logger.debug('Loaded emojis!')
 
 
     @staticmethod
