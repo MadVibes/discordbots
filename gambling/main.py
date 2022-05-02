@@ -24,7 +24,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
-config.version = 'v1.1'
+config.version = 'v1.2'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
