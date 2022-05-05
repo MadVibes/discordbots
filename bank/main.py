@@ -154,7 +154,7 @@ async def command_balance(ctx: commands.Context, *args):
     # No target user specified
     if len(args) == 0:
         balance = bot.get_balance(ctx.author.id)
-        await ctx.send(f'Your current balance is {balance} {cm.currency()}')
+        await ctx.send(f'Your current balance is {balance} {cm.currency(animated=True)}')
 
     # A target was specified
     else:
@@ -189,7 +189,7 @@ async def command_balance(ctx: commands.Context, *args):
                 target_id = member.id
                 break
         balance = bot.get_balance(target_id)
-        await ctx.send(f'{matches[0]} current balance is {balance} {cm.currency()}')
+        await ctx.send(f'{matches[0]} current balance is {balance} {cm.currency(animated=True)}')
 
 
 @client.command(name='leaderboard')
