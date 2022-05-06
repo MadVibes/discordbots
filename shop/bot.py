@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord import Color
 from discord import VoiceChannel
 from fuzzywuzzy import process
-import sys
+import sys, math, random
 import discord
 
 sys.path.insert(0, '../')
@@ -70,10 +70,10 @@ class Bot:
         """Handle input for the shop"""
         # If no args are given
         if len(args) == 0:
-            ctx.reply('Invalid arguments, see help menu `!shop help`')
+            await ctx.reply('Invalid arguments, see help menu `$shop help`')
         # arg = help
         elif args[0] == 'help':
-            ctx.reply('Hehe, yeah i\'ll implement this at somepoint :)')
+            await ctx.reply('Hehe, yeah i\'ll implement this at somepoint :) Just do `$shop list`')
         # arg = list
         elif args[0] == 'list':
             embed = discord.Embed(name='Shopping list',
@@ -82,6 +82,11 @@ class Bot:
             for service in self.products['services']:
                 embed.add_field(name=service['name'],
                         value=str(service['price']) +  f' {self.cm.currency()}\n'  + service['description'],
+                        inline=True)
+            # Add random json
+            product_json = self.generate_random_json()
+            embed.add_field(name=product_json['name'],
+                        value=str(product_json['price']) +  f' {self.cm.currency()}\n'  + product_json['description'],
                         inline=True)
             await ctx.send(embed=embed)
         # args = buy, and query string provided
@@ -98,6 +103,7 @@ class Bot:
         service_names = []
         for service in self.products['services']:
             service_names.append(service['name'])
+        service_names.append(self.generate_random_json()['name'])
         # Get fuzzy search
         fuzzy = process.extract(query, service_names)
         self.logger.debug('Fuzzy matches in purchase action:')
@@ -119,19 +125,25 @@ class Bot:
             await ctx.reply('Shop purchase request was too generic, did you mean?' + ''.join(items))
             return
         # Actually execute function attached to shop service/product
-        product_to_call = {}
-        for product in self.products['services']:
-            if product['name'] == matches[0]:
-                product_to_call = product
-                func_to_call = product['function']
+        product_to_call = {}; func_to_call = None
+        if self.generate_random_json()['name'] == matches[0]:
+            product_to_call = self.generate_random_json()
+            func_to_call = product_to_call['function']
+        else:
+            for product in self.products['services']:
+                if product['name'] == matches[0]:
+                    product_to_call = product
+                    func_to_call = product['function']
         try:
             response = await func_to_call(ctx, product_to_call)
+            # If response contains an error, raise exception
+            if 'error' in response:
+                raise Exception(response['error'])
             self.logger.log(f"Service '{product_to_call['name']}' is being purchased by {ctx.author.id}")
             self.logger.log(f'Purchase service info: {response}')
         except Exception as e:
             self.logger.error(f"Service '{product_to_call['name']}' was purchased by {ctx.author.id} and failed:")
             self.logger.error(str(e))
-
 
 
     async def service_server_mute(self, ctx: commands.context, product):
@@ -166,7 +178,10 @@ class Bot:
         if len(matches) == 0:
             await message.reply('No users match that name')
             await message.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'No users matches that name'
+                }
         # 1+ matches
         elif len(matches) > 1:
             items = []
@@ -174,7 +189,10 @@ class Bot:
                 items.append(' \n - '+item)
             await message.reply('User name was too generic, did you mean?' + ''.join(items))
             await message.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'Too many users matches that name'
+                }
         target: discord.Member = None
         for active in all_active:
             if active.display_name == matches[0][0]:
@@ -235,7 +253,10 @@ class Bot:
         if len(matches) == 0:
             await message.reply('No users match that name')
             await message.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'No users matches that name'
+                }
         # 1+ matches
         elif len(matches) > 1:
             items = []
@@ -243,7 +264,10 @@ class Bot:
                 items.append(' \n - '+item)
             await message.reply('User name was too generic, did you mean?' + ''.join(items))
             await message.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'Too many users matches that name'
+                }
         target: discord.Member = None
         for active in all_active:
             if active.display_name == matches[0][0]:
@@ -304,7 +328,10 @@ class Bot:
         if len(matches) == 0:
             await message.reply('No users match that name')
             await message.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'No users matches that name'
+                }
         # 1+ matches
         elif len(matches) > 1:
             items = []
@@ -312,7 +339,10 @@ class Bot:
                 items.append(' \n - '+item)
             await message.reply('User name was too generic, did you mean?' + ''.join(items))
             await message.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'Too many users matches that name'
+                }
         target: discord.Member = None
         for active in all_active:
             if active.display_name == matches[0][0]:
@@ -368,7 +398,10 @@ class Bot:
         if len(matches) == 0:
             await message_user.reply('No users match that name')
             await message_user.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'No users matches that name'
+                }
         # 1+ matches
         elif len(matches) > 1:
             items = []
@@ -376,7 +409,10 @@ class Bot:
                 items.append(' \n - '+item)
             await message_user.reply('User name was too generic, did you mean?' + ''.join(items))
             await message_user.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'Too many users matches that name'
+                }
         target: discord.Member = None
         for active in all_active:
             if active.display_name == matches[0][0]:
@@ -402,6 +438,7 @@ class Bot:
             "user_id": ctx.author.id,
             "target_name": target.id
             }
+
 
     async def service_afk_move(self, ctx: commands.context, product):
         """Handle service purchase of moving user to AFK channel"""
@@ -434,7 +471,10 @@ class Bot:
         if len(matches) == 0:
             await message_user.reply('No users match that name')
             await message_user.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'No users matches that name'
+                }
         # 1+ matches
         elif len(matches) > 1:
             items = []
@@ -442,7 +482,10 @@ class Bot:
                 items.append(' \n - '+item)
             await message_user.reply('User name was too generic, did you mean?' + ''.join(items))
             await message_user.add_reaction('❌')
-            return
+            return {
+                "user_id": ctx.author.id,
+                "error": f'Too many users matches that name'
+                }
         target: discord.Member = None
         for active in all_active:
             if active.display_name == matches[0][0]:
@@ -466,6 +509,16 @@ class Bot:
             }
 
 
+    async def random_service(self, ctx: commands.context, product):
+        """Run a random service using self.products"""
+        services = self.products['services']
+        random_service_index = random.randint(0, len(services))
+        product_to_call = services[random_service_index]
+        function_to_call = product_to_call['function']
+        # Actually call function and return whatever it produces
+        return await function_to_call(ctx, product_to_call)
+
+
     async def all_channel_members(self, guild_id: int):
         """Returns all members currently in a channel within the guild"""
         online_users = []
@@ -483,6 +536,22 @@ class Bot:
         for user in generator:
             users.append(user)
         return users
+
+
+    def generate_random_json(self):
+        """Generate JSON for random option"""
+        count = 0; total = 0
+        for service in self.products['services']:
+            count += 1
+            total += service['price']
+
+        return {
+            'name': 'Random',
+            'description': 'Perform a completely random action',
+            'price': math.floor(total/count),
+            'function': self.random_service
+        }
+
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper
