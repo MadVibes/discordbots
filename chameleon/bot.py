@@ -36,6 +36,7 @@ class Bot:
                     "Noooo!":"noo.mp3",
                     "Oof":"oof.mp3",
                     "REEEE":"ree.mp3",
+                    "Sod it":"sod_it.mp3",
                     "Wow":"wow.mp3"
                 }
 
