@@ -568,8 +568,8 @@ class Bot:
       return 1
 
     except Exception as e:
-      self.logger.error('Failed to execute scratchcard:')
-      self.logger.error(str(e))
+      self.logger.warn('Failed to execute bet:')
+      self.logger.warn(str(e))
 
 # Purchasing a card
   async def purchase_card(self, ctx, amount, user):
@@ -581,6 +581,18 @@ class Bot:
 # Function of the actual game
   async def scratch_card_game(self, ctx, amount, user):
     """Actual scratch card game"""
+    # NOTE(Liam):
+    #   I'm massively against this, this assumes that the EXACT emotes
+    #   and emote IDS match in the server. This makes the bots only
+    #   ever work on this one Server and if people delete an emote,
+    #   bam, code is broken and needs to be altered.
+    #
+    #   I did consider hot loading emotes on bot bootup. It is possible for
+    #   to expand the coin_manager into a emote_manager. This way we can load
+    #   the emojis you want. However, in the event emojis cannot be added, the
+    #   code must 'protect' itself. either replacing the emojis with text, or
+    #   completly disable the the scratch card code.
+    #
     # Ignore the mess \/
     scratch_emotes = [  # List of emotes for the scratch card to use
       '||<:3Head:823900227135078420>||',
@@ -622,7 +634,28 @@ class Bot:
          f'{winning_emote}\nQuick reveal:',
     }
     # Ignore the mess /\
-    x = random.randint(1, 6) # Loss
+    # NOTE(Liam):
+    #   This calculation of the conditions is nuts?
+    #   It should be brokn down to a more simple logic
+    #   maybe something like this:
+    #   
+    #       def get_multiplier():
+    #           """Generate a nice random multiplier"""
+    #           rand = random.randint(1,100)
+    #           multiplier = 2 + ( math.pow( (93/100) , ((0-rand) + 65 )) )
+    #           return multiplier
+    #
+    #       chance_to_win = 35 # -> 35 % chance
+    #       roll = random.randint(1,100)
+    #       if roll <= chance_to_win:
+    #           # You won! gratz!
+    #           print(get_multiplier()) # Maybe return or somin, just an example
+    #       else:
+    #           # Fat luck loser, you won nada!
+    #           print(1) # Multiplier of 1? or even 0 so they get 0 cash back ;)
+    #      
+    #   
+    x = random.randint(1, 30) # Loss
     if x >= 10:
       await ctx.send(scratch_loss)
 
@@ -647,14 +680,29 @@ class Bot:
       await ctx.send(f'||You\'ve won {amount}!||')
       win = 10
 
-    self.bank.summon_currency(user, amount)
+    self.bank.withdraw_currency_taxed(user, amount, self.config['SCRATCHCARD_TAX_BAND'])
 
 
   async def scratchcard(self, ctx, arg, arg2):
     """Main scratch card command"""
+    # NOTE(Liam): 
+    #   There is a lot of if conditions here that should be combined?
+    #   Currently this is hard to read.
+    #   somthing like this instead:
+    #     if (arg != None
+    #       and arg.lower() == "buy"
+    #       and arg2 != None
+    #       and arg2.isdigit()
+    #       and int(arg2) >= 50):
+    #   This way, it is easier to read.
+    #   PS. this `>= 50` controls the min 'bet'?
+    #   If so, it should be a config. Like this:
+    #   self.config['MIN_SCRATCH_CARD_BET']?
+ 
     user = ctx.author.id
     if arg != None:
       if arg.lower() == "buy":
+        await ctx.send(f'{user}') # NOTE(Liam): Remove this
         if arg2 != None:
           if arg2.isdigit():
             if int(arg2) >= 50:
