@@ -12,6 +12,8 @@ sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
 from lib.shared import Shared #pylint: disable=E0401
+from lib.coin_manager import CoinManager #pylint: disable=E0401
+from lib.utils import Utils #pylint: disable=E0401
 from bot import Bot
 
 # CONFIGS/LIBS
@@ -21,7 +23,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
-config.version = 'v1.1'
+config.version = 'v1.2'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -39,6 +41,7 @@ if ('LOGGING_PREFIX' in config and 'LOGGING_PREFIX_SIZE' in config):
 logger.log(f'Starting {bot_type} - ' + config.version)
 
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
+cm = CoinManager(logger)
 bot = Bot(logger, config, client)
 bank = Bank(logger, config)
 
@@ -62,21 +65,28 @@ async def on_ready():
         await client.change_presence(status=discord.Status.invisible)
     # Load cogs
     client.add_cog(Shared(client, config))
+    # Load CoinManager
+    cm.set_guild(client.get_guild(bot.guild_id))
+    async def initCM(*args):
+        cm: CoinManager = args[0][0]
+        await cm.populate_bot_emojis()
+    time = 30 # Seconds
+    Utils.future_call(time, initCM, [cm])
 
 
 @client.command(name='tts')
 async def command_tts(ctx: commands.Context, *args):
     """Execute tts command"""
 
-    user_balance = bank.getBalance(ctx.author.id)
+    user_balance = bank.get_balance(ctx.author.id)
     # insufficient balance
     if int(config['TTS_COST']) >= user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} {cm.currency()}')
         return
     # Perform tts and spend currency
     try:
         await bot.send_tts(ctx, args)
-        bank.spendCurrency(ctx.author.id, int(config['TTS_COST']))
+        bank.spend_currency(ctx.author.id, int(config['TTS_COST']))
 
     except Exception as e:
         logger.warn('Failed to execute tts:')
@@ -113,7 +123,7 @@ async def command_sound(ctx: commands.Context, *args):
         return
     elif args[0] == 'list':
         embed = discord.Embed(name='Sounds list',
-                description='Available sounds to play, Current cost to play is ' + config['AUDIO_CLIP_COST'] + ' VBC',
+                description='Available sounds to play, Current cost to play is ' + config['AUDIO_CLIP_COST'] + f' {cm.currency()}',
                 inline=True)
         embed.add_field(
                 name='\n'.join(bot.clip_list.keys()),
@@ -121,17 +131,17 @@ async def command_sound(ctx: commands.Context, *args):
                 inline=False)
         await ctx.send(embed=embed)
     elif args[0] == 'cost':
-        await ctx.reply(f'Current cost is {config["AUDIO_CLIP_COST"]} VBC')
+        await ctx.reply(f'Current cost is {config["AUDIO_CLIP_COST"]} {cm.currency()}')
         return
     elif args[0] == 'play':
-        user_balance = bank.getBalance(ctx.author.id)
+        user_balance = bank.get_balance(ctx.author.id)
         if int(config['AUDIO_CLIP_COST']) >= user_balance:
-            await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+            await ctx.reply(f'Insufficient balance, current balance is {user_balance} {cm.currency()}')
             return
         # Start handling of sound command
         try:
             await bot.handle_sound(ctx, args)
-            bank.spendCurrency(ctx.author.id, int(config['AUDIO_CLIP_COST']))
+            bank.spend_currency(ctx.author.id, int(config['AUDIO_CLIP_COST']))
             return
 
         except Exception as e:
