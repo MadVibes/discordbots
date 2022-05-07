@@ -91,6 +91,12 @@ async def deathroll(ctx, arg=None, arg2=None):
     """Create and join deathrolls"""
     await bot.deathroll(ctx, arg, arg2)
 
+@client.command(name='scratchcard')
+@commands.guild_only()
+async def scratchcard(ctx, arg=None, arg2=None):
+    """Purchase and use a scratchcard"""
+    await bot.scratchcard(ctx, arg, arg2)
+
 
 # Start the bot using TOKEN
 client.run(TOKEN)
