@@ -10,6 +10,7 @@ import numpy as np
 import asyncio
 import threading
 import random
+from lib.coin_manager import CoinManager #pylint: disable=E0401
 
 
 sys.path.insert(0, '../')
@@ -26,12 +27,13 @@ db_schema = {
 
 
 class Bot:
-  def __init__(self, logger: Logger, config, bank, client: discord.Client):
+  def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager):
     self.logger = logger
     self.config = config
     self.client = client
     self.bank = bank
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
+    self.cm = coin_manager
 
   # Embed for bets
   async def bet_embed(self, ctx, data):
@@ -48,7 +50,7 @@ class Bot:
         for_pool = i['for']['pool']
         against_pool = i['against']['pool']
 
-        complete = f"**Title:** \n {title.title()} \n" + f"**For Pool:** \n {for_pool} VBC \n" + f"**Against Pool:** \n {against_pool} VBC"
+        complete = f"**Title:** \n {title.title()} \n" + f"**For Pool:** \n {for_pool} {self.cm.currency()} \n" + f"**Against Pool:** \n {against_pool} {self.cm.currency()}"
         
         embed.add_field(name=f'Bet ID: {id}', value=f'{complete}' ,inline=True)
         
@@ -103,7 +105,7 @@ class Bot:
                 active_bet['user_ids'].append(user_id)
                 users.append(userid_wager)
                 self.data.write(data)
-                await ctx.send(f"You have bet {wager} VBC **FOR** \"{title.title()}!\"")
+                await ctx.send(f"You have bet {wager} {self.cm.currency()} **FOR** \"{title.title()}!\"")
                 await ctx.message.add_reaction('✅')
     
               elif choice.lower() == "against": # Betting AGAINST Logic
@@ -113,7 +115,7 @@ class Bot:
                 active_bet['user_ids'].append(user_id)
                 users.append(userid_wager)
                 self.data.write(data)
-                await ctx.send(f"You have bet {wager} VBC **AGAINST** \"{title.title()}!\"")
+                await ctx.send(f"You have bet {wager} {self.cm.currency()} **AGAINST** \"{title.title()}!\"")
                 await ctx.message.add_reaction('✅')
         else:
           await ctx.send(f"You have bet on bet ID \"{active_bet['ID']}\" already, chill out.")
@@ -160,7 +162,7 @@ class Bot:
           final = {winners[i]: final_wins[i] for i in range(len(winners))} 
         
           for id, winnings in final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "for", final)
@@ -180,7 +182,7 @@ class Bot:
           final = {winners[i]: final_wins[i] for i in range(len(winners))} 
           
           for id, winnings in final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "against", final)
@@ -199,9 +201,9 @@ class Bot:
           against_final = {against_users[i]: against_wagers[i] for i in range(len(against_users))}
   
           for id, winnings in for_final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           for id, winnings in against_final.items():
-            self.bank.withdrawCurrencyTaxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
+            self.bank.withdraw_currency_taxed(int(id), int(winnings), self.config['BET_TAX_BAND'])
           del data['bets'][active_bet_index]
           self.data.write(data)
           await self.payout_embed(ctx, active_bet, for_pool, against_pool, "stalemate", for_final, against_final)
@@ -228,15 +230,15 @@ class Bot:
     
     for id, winnings in final1.items():
       user_obj = await self.client.fetch_user(int(id))
-      embed.add_field(name=f'{user_obj}:', value=f'+{winnings} VBC ᵇᵉᶠᵒʳᵉ ᵗᵃˣ' ,inline=False)
+      embed.add_field(name=f'{user_obj}:', value=f'+{winnings} {self.cm.currency()} ᵇᵉᶠᵒʳᵉ ᵗᵃˣ' ,inline=False)
 
     if final2 != None:
       for id, winnings in final2.items():
         user_obj = await self.client.fetch_user(int(id))
-        embed.add_field(name=f'{user_obj}:', value=f'+{winnings} VBC ᵇᵉᶠᵒʳᵉ ᵗᵃˣ' ,inline=False)
+        embed.add_field(name=f'{user_obj}:', value=f'+{winnings} {self.cm.currency()} ᵇᵉᶠᵒʳᵉ ᵗᵃˣ' ,inline=False)
 
-    embed.add_field(name='For Pool Total:', value=f'{for_pool} VBC' ,inline=True)
-    embed.add_field(name='Against Pool Total:', value=f'{against_pool} VBC' ,inline=True)
+    embed.add_field(name='For Pool Total:', value=f'{for_pool} {self.cm.currency()}' ,inline=True)
+    embed.add_field(name='Against Pool Total:', value=f'{against_pool} {self.cm.currency()}' ,inline=True)
         
     await ctx.send(embed=embed)
 
@@ -297,13 +299,13 @@ class Bot:
 
 
   async def check_and_spend_bets(self, ctx, wager):
-    user_balance = self.bank.getBalance(ctx.author.id)
+    user_balance = self.bank.get_balance(ctx.author.id)
     # Insufficient balance
     if int(wager) > user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}')
         return
     try:
-        self.bank.spendCurrencyTaxed(ctx.author.id, int(wager), self.config['BET_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, int(wager), self.config['BET_TAX_BAND'])
         return 1
         
     except Exception as e:
@@ -311,13 +313,13 @@ class Bot:
         self.logger.warn(str(e))      
 
   async def check_and_spend_deathroll(self, ctx, wager):
-    user_balance = self.bank.getBalance(ctx.author.id)
+    user_balance = self.bank.get_balance(ctx.author.id)
     # Insufficient balance
     if int(wager) > user_balance:
-        await ctx.reply(f'Insufficient balance, current balance is {user_balance} VBC')
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}')
         return
     try:
-        self.bank.spendCurrencyTaxed(ctx.author.id, int(wager), self.config['DEATHROLL_TAX_BAND'])
+        self.bank.spend_currency_taxed(ctx.author.id, int(wager), self.config['DEATHROLL_TAX_BAND'])
         return 1
         
     except Exception as e:
@@ -350,7 +352,7 @@ class Bot:
           player_2_obj = None
           ready = ""
           
-        complete = f"**Wager:** \n {wager} VBC \n" + f"**Amount to win:** \n {winnings} VBC \n" + f"**Initiator / Player 1:** \n {player_1_obj} \n" + f"**Player 2:** \n {player_2_obj} \n" + f"{ready}"
+        complete = f"**Wager:** \n {wager} {self.cm.currency()} \n" + f"**Amount to win:** \n {winnings} {self.cm.currency()} \n" + f"**Initiator / Player 1:** \n {player_1_obj} \n" + f"**Player 2:** \n {player_2_obj} \n" + f"{ready}"
 
         
         embed.add_field(name=f'Deathroll ID: {ID}', value=f'{complete}' ,inline=True)
@@ -381,38 +383,41 @@ class Bot:
 
   # Deathroll game starts
   async def deathroll_game(self, ctx, wager, player1, player2, data, active_bet_index):
-    wager1 = int(wager)
-    wager2 = int(wager)
+    wager1, wager2 = int(wager), int(wager)
     turn = 0
     while wager1 != 1:
       if turn == 0:
-        rolled_num = random.randint(1, wager1)
-        wager1 = rolled_num
-        await ctx.send(f"<@{player1}> rolled a {rolled_num}!")
+        if wager1 > 10:
+          wager1 = max(random.randint(1, wager1), random.randint(1, wager1))
+        else:
+          wager1 = random.randint(1, wager1)
+        await ctx.send(f"<@{player1}> rolled a {wager1}!")
         if wager1 != 1:
           turn = 1
           await asyncio.sleep(1)
         
       elif turn == 1:
-        rolled_num = random.randint(1, wager1)
-        wager1 = rolled_num
-        await ctx.send(f"<@{player2}> rolled a {rolled_num}!")
+        if wager1 > 10:
+          wager1 = max(random.randint(1, wager1), random.randint(1, wager1))
+        else:
+          wager1 = random.randint(1, wager1)
+        await ctx.send(f"<@{player2}> rolled a {wager1}!")
         if wager1 != 1:
           turn = 0
           await asyncio.sleep(1)
 
     wager2 *= 2
     if turn == 1: # Player 1 wins
-      self.bank.withdrawCurrencyTaxed(int(player1), int(wager2), self.config['DEATHROLL_TAX_BAND'])
+      self.bank.withdraw_currency_taxed(int(player1), int(wager2), self.config['DEATHROLL_TAX_BAND'])
       del data['deathrolls'][active_bet_index]
       self.data.write(data)
-      await ctx.send(f"<@{player1}> wins {wager2} VBC!")
+      await ctx.send(f"<@{player1}> wins {wager2} {self.cm.currency()}!")
       
     elif turn == 0: # Player 2 wins
-      self.bank.withdrawCurrencyTaxed(int(player2), int(wager2), self.config['DEATHROLL_TAX_BAND'])
+      self.bank.withdraw_currency_taxed(int(player2), int(wager2), self.config['DEATHROLL_TAX_BAND'])
       del data['deathrolls'][active_bet_index]
       self.data.write(data)
-      await ctx.send(f"<@{player2}> wins {wager2} VBC!")
+      await ctx.send(f"<@{player2}> wins {wager2} {self.cm.currency()}!")
 
   # Deathroll prep before game
   async def prep_deathroll(self, ctx, data, arg2, user):
@@ -467,7 +472,7 @@ class Bot:
             
             else:
               await ctx.message.add_reaction('❌')
-              await ctx.send("The wager must be more than 1 VBC dummy.")
+              await ctx.send(f"The wager must be more than 1 {self.cm.currency()} dummy.")
         else:
           await ctx.message.add_reaction('❌')
           await ctx.send("2nd argument missing \"$deathroll create [wager]\".")
@@ -493,7 +498,7 @@ class Bot:
                 competitors.append(int(user))
                 self.data.write(data)
                 await ctx.message.add_reaction('✅')
-                await ctx.send(f"You have spent {wager} VBC and joined the deathroll! The initator can start it when you are both ready.")
+                await ctx.send(f"You have spent {wager} {self.cm.currency()} and joined the deathroll! The initator can start it when you are both ready.")
             else:
               await ctx.message.add_reaction('❌')
               await ctx.send("This deathroll already has two players... Sorry :(")
@@ -526,10 +531,10 @@ class Bot:
               competitors = active_bet['competitors']
               wager = active_bet['wager']
               player1 = competitors[0]
-              self.bank.withdrawCurrencyTaxed(int(player1), int(wager), self.config['DEATHROLL_TAX_BAND'])
+              self.bank.withdraw_currency_taxed(int(player1), int(wager), self.config['DEATHROLL_TAX_BAND'])
               if len(competitors) == 2:
                 player2 = competitors[1]
-                self.bank.withdrawCurrencyTaxed(int(player2), int(wager), self.config['DEATHROLL_TAX_BAND'])
+                self.bank.withdraw_currency_taxed(int(player2), int(wager), self.config['DEATHROLL_TAX_BAND'])
               del data['deathrolls'][active_bet_index]
               self.data.write(data)
               await ctx.message.add_reaction('✅')

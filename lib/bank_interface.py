@@ -18,7 +18,7 @@ class Bank:
         }
 
 
-    def getBalance(self, user_id: int):
+    def get_balance(self, user_id: int):
         """Get users balance using user_id. Returns user balance as int"""
         # Create payload/request for bank server
         payload = dumps({
@@ -49,7 +49,7 @@ class Bank:
         return int(content['response']['balance'])
 
 
-    def moveCurrency(self, user_id_sender: int, user_id_receiver: int, amount: int):
+    def move_currency(self, user_id_sender: int, user_id_receiver: int, amount: int):
         """Moves balance from one user id to another. Returns users balance afterwards as int"""
         # Create payload/request for bank server
         payload = dumps({
@@ -82,7 +82,7 @@ class Bank:
         return int(content['response'])
 
 
-    def spendCurrency(self, user_id: int, amount: int):
+    def spend_currency(self, user_id: int, amount: int):
         """Spend users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
         payload = dumps({
@@ -114,7 +114,7 @@ class Bank:
         return int(content['response']['balance_sender'])
 
 
-    def withdrawCurrency(self, user_id: int, amount: int):
+    def withdraw_currency(self, user_id: int, amount: int):
         """Withdraw from bank to users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
         payload = dumps({
@@ -146,7 +146,7 @@ class Bank:
         return int(content['response']['balance_sender'])
 
 
-    def spendCurrencyTaxed(self, user_id: int, amount: int, tax_band: str):
+    def spend_currency_taxed(self, user_id: int, amount: int, tax_band: str):
         """Spend users balance using user_id, and tax the transfer. Returns users balance afterwards as int"""
         # Create payload/request for bank server
         payload = dumps({
@@ -179,7 +179,7 @@ class Bank:
         return int(content['response']['balance_sender'])
 
 
-    def withdrawCurrencyTaxed(self, user_id: int, amount: int, tax_band: str):
+    def withdraw_currency_taxed(self, user_id: int, amount: int, tax_band: str):
         """Withdraw from bank to users balance using user_id, and tax the transfer. Returns users balance afterwards as int. PLEASE READ CODE COMMENT FOR withdrawCurrencyTaxed IN bank/main.py"""
         # Create payload/request for bank server
         payload = dumps({
@@ -212,7 +212,7 @@ class Bank:
         return int(content['response']['balance_sender'])
 
 
-    def summonCurrency(self, user_id: int, amount: int):
+    def summon_currency(self, user_id: int, amount: int):
         """Summon currency and add to users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
         payload = dumps({
