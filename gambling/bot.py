@@ -568,8 +568,8 @@ class Bot:
       return 1
 
     except Exception as e:
-      self.logger.warn('Failed to execute bet:')
-      self.logger.warn(str(e))
+      self.logger.error('Failed to execute scratchcard:')
+      self.logger.error(str(e))
 
 # Purchasing a card
   async def purchase_card(self, ctx, amount, user):
@@ -622,7 +622,7 @@ class Bot:
          f'{winning_emote}\nQuick reveal:',
     }
     # Ignore the mess /\
-    x = random.randint(1, 30) # Loss
+    x = random.randint(1, 6) # Loss
     if x >= 10:
       await ctx.send(scratch_loss)
 
@@ -647,7 +647,7 @@ class Bot:
       await ctx.send(f'||You\'ve won {amount}!||')
       win = 10
 
-    self.bank.withdraw_currency_taxed(user, amount, self.config['SCRATCHCARD_TAX_BAND'])
+    self.bank.summon_currency(user, amount)
 
 
   async def scratchcard(self, ctx, arg, arg2):
@@ -655,7 +655,6 @@ class Bot:
     user = ctx.author.id
     if arg != None:
       if arg.lower() == "buy":
-        await ctx.send(f'{user}')
         if arg2 != None:
           if arg2.isdigit():
             if int(arg2) >= 50:
