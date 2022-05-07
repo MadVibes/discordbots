@@ -533,7 +533,7 @@ class Bot:
     async def random_service(self, ctx: commands.context, product):
         """Run a random service using self.products"""
         services = self.products['services']
-        random_service_index = random.randint(0, len(services))
+        random_service_index = random.randint(0, len(services)-1)
         product_to_call = services[random_service_index]
         function_to_call = product_to_call['function']
         # Actually call function and return whatever it produces
