@@ -1,11 +1,9 @@
 # This handles the actual bot logic
 ####################################################################################################
-from datetime import datetime
 from discord.ext import commands
-from discord import Color
 from discord import VoiceChannel
 from fuzzywuzzy import process
-import sys, math, random
+import sys, math, random, time
 import discord
 
 sys.path.insert(0, '../')
@@ -58,9 +56,10 @@ class Bot:
                 },
                 {
                     'name': 'Exile',
-                    'description': 'Push someone into the AFK channel',
+                    'description': 'Push someone into the AFK channel, Has cooldown',
                     'price': 90,
-                    'function': self.service_afk_move
+                    'function': self.service_afk_move,
+                    'timeout': 600
                 }
             ]
         }
@@ -139,8 +138,12 @@ class Bot:
             # If response contains an error, raise exception
             if 'error' in response:
                 raise Exception(response['error'])
-            self.logger.log(f"Service '{product_to_call['name']}' is being purchased by {ctx.author.id}")
-            self.logger.log(f'Purchase service info: {response}')
+            elif 'warning' in response:
+                self.logger.log(f"Service '{product_to_call['name']}' is being purchased by {ctx.author.id}")
+                self.logger.log(f'Attempted purchase service info: {response}')
+            else:
+                self.logger.log(f"Service '{product_to_call['name']}' was purchased by {ctx.author.id} and cancelled:")
+                self.logger.log(f'Purchased service info: {response}')
         except Exception as e:
             self.logger.error(f"Service '{product_to_call['name']}' was purchased by {ctx.author.id} and failed:")
             self.logger.error(str(e))
@@ -154,7 +157,7 @@ class Bot:
             await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": 'No users online'
+                "warning": 'No users online'
             }
         await ctx.reply('Who is the target? (use the targets server nickname)')
 
@@ -180,7 +183,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'No users matches that name'
+                "warning": f'No users matches that name'
                 }
         # 1+ matches
         elif len(matches) > 1:
@@ -191,7 +194,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Too many users matches that name'
+                "warning": f'Too many users matches that name'
                 }
         target: discord.Member = None
         for active in all_active:
@@ -205,7 +208,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Insufficient balance, current balance is {user_currency}'
+                "warning": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(mute = True, reason=f'Service purchase: Anonymous')
@@ -230,7 +233,7 @@ class Bot:
             await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": 'No users online'
+                "warning": 'No users online'
             }
         await ctx.reply('Who is the target? (use the targets server nickname)')
 
@@ -255,7 +258,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'No users matches that name'
+                "warning": f'No users matches that name'
                 }
         # 1+ matches
         elif len(matches) > 1:
@@ -266,7 +269,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Too many users matches that name'
+                "warning": f'Too many users matches that name'
                 }
         target: discord.Member = None
         for active in all_active:
@@ -280,7 +283,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Insufficient balance, current balance is {user_currency}'
+                "warning": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(deafen = True, reason=f'Service purchase: Anonymous')
@@ -305,7 +308,7 @@ class Bot:
             await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": 'No users online'
+                "warning": 'No users online'
             }
         await ctx.reply('Who is the target? (use the targets server nickname)')
 
@@ -330,7 +333,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'No users matches that name'
+                "warning": f'No users matches that name'
                 }
         # 1+ matches
         elif len(matches) > 1:
@@ -341,7 +344,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Too many users matches that name'
+                "warning": f'Too many users matches that name'
                 }
         target: discord.Member = None
         for active in all_active:
@@ -355,7 +358,7 @@ class Bot:
             await message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Insufficient balance, current balance is {user_currency}'
+                "warning": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(voice_channel=None, reason=f'Service purchase: Anonymous')
@@ -375,7 +378,7 @@ class Bot:
             await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": 'No users online'
+                "warning": 'No users online'
             }
         await ctx.reply('Who is the target? (use the targets server nickname)')
 
@@ -400,7 +403,7 @@ class Bot:
             await message_user.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'No users matches that name'
+                "warning": f'No users matches that name'
                 }
         # 1+ matches
         elif len(matches) > 1:
@@ -411,7 +414,7 @@ class Bot:
             await message_user.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Too many users matches that name'
+                "warning": f'Too many users matches that name'
                 }
         target: discord.Member = None
         for active in all_active:
@@ -428,7 +431,7 @@ class Bot:
             await message_name.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Insufficient balance, current balance is {user_currency}'
+                "warning": f'Insufficient balance, current balance is {user_currency}'
                 }
         self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.edit(nick=message_name.content, reason=f'Service purchase: Anonymous')
@@ -442,13 +445,20 @@ class Bot:
 
     async def service_afk_move(self, ctx: commands.context, product):
         """Handle service purchase of moving user to AFK channel"""
+        if self.timeout_active(product):
+            time_left = int(product['timeout'] - (time.time()-product['timeout_start']))
+            await ctx.reply(f'Timeout is active! {time_left} seconds remaining...')
+            return {
+                "user_id": ctx.author.id,
+                "warning": f'Timeout is active, time left: {time_left}'
+            }
         all_active = await self.all_server_members(self.guild_id)
         if len(all_active) == 0:
             await ctx.reply('No users are online!')
             await ctx.message.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": 'No users online'
+                "warning": 'No users online'
             }
         await ctx.reply('Who is the target? (use the targets server nickname)')
 
@@ -473,7 +483,7 @@ class Bot:
             await message_user.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'No users matches that name'
+                "warning": f'No users matches that name'
                 }
         # 1+ matches
         elif len(matches) > 1:
@@ -484,7 +494,7 @@ class Bot:
             await message_user.add_reaction('❌')
             return {
                 "user_id": ctx.author.id,
-                "error": f'Too many users matches that name'
+                "warning": f'Too many users matches that name'
                 }
         target: discord.Member = None
         for active in all_active:
@@ -500,8 +510,19 @@ class Bot:
                 "error": f'No assigned AFK channel'
                 }
 
+        # Actually perform action, and spend currency
+        user_currency = self.bank.get_balance(ctx.author.id)
+        if user_currency < product['price']:
+            await message_user.reply(f'Insufficient balance, current balance is {user_currency} {self.cm.currency()}')
+            await message_user.add_reaction('❌')
+            return {
+                "user_id": ctx.author.id,
+                "warning": f'Insufficient balance, current balance is {user_currency}'
+                }
+        self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.move_to(afk_channel, reason=f'Service purchase: Anonymous')
         await message_user.add_reaction('✅')
+        self.timeout_init(product)
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -551,6 +572,25 @@ class Bot:
             'price': math.floor(total/count),
             'function': self.random_service
         }
+
+
+    def timeout_active(self, product):
+        """Checks if a timeout has expired on product"""
+        # No active timeout
+        if 'timeout_start' not in product:
+            return False
+        # Timeout has now expired
+        elif (time.time()-product['timeout_start']) >= product['timeout']:
+            product.pop('timeout_start')
+            return False
+        # Timeout must be active
+        else:
+            return True
+
+
+    def timeout_init(self, product):
+        """Start a timeout on a product"""
+        product['timeout_start'] = time.time()
 
 
 ########################################################################################################
