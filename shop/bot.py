@@ -28,6 +28,7 @@ class Bot:
         self.service_fuzzy_percent = 95
         # fuzzy percent required to match users
         self.user_fuzzy_percent = 90
+        self.timeouts = {}
         self.products = {
             'services': [
                 {
@@ -445,8 +446,9 @@ class Bot:
 
     async def service_afk_move(self, ctx: commands.context, product):
         """Handle service purchase of moving user to AFK channel"""
-        if self.timeout_active(product):
-            time_left = int(product['timeout'] - (time.time()-product['timeout_start']))
+        timeout_id = 'service_afk_move'
+        if self.timeout_active(product, timeout_id):
+            time_left = int(product['timeout'] - (time.time()-self.timeouts['service_afk_move']))
             await ctx.reply(f'Timeout is active! {time_left} seconds remaining...')
             return {
                 "user_id": ctx.author.id,
@@ -522,7 +524,7 @@ class Bot:
         self.bank.spend_currency_taxed(ctx.author.id, product['price'], self.config['SERVICE_TAX_BAND'])
         await target.move_to(afk_channel, reason=f'Service purchase: Anonymous')
         await message_user.add_reaction('✅')
-        self.timeout_init(product)
+        self.timeout_init(timeout_id)
         # Return info about service purchase
         return {
             "user_id": ctx.author.id,
@@ -537,7 +539,8 @@ class Bot:
         product_to_call = services[random_service_index]
         function_to_call = product_to_call['function']
         # Actually call function and return whatever it produces
-        return await function_to_call(ctx, product_to_call)
+        # Parse in the random product, this means it'll use the correct price
+        return await function_to_call(ctx, product)
 
 
     async def all_channel_members(self, guild_id: int):
@@ -574,23 +577,25 @@ class Bot:
         }
 
 
-    def timeout_active(self, product):
-        """Checks if a timeout has expired on product"""
-        # No active timeout
-        if 'timeout_start' not in product:
+    def timeout_active(self, product, id):
+        """Checks if a timeout has expired on id"""
+        if self.timeouts == {}:
+            return False
+        # No active timeout for id
+        elif id not in self.timeouts:
             return False
         # Timeout has now expired
-        elif (time.time()-product['timeout_start']) >= product['timeout']:
-            product.pop('timeout_start')
+        elif (time.time()-self.timeouts[id]) >= product['timeout']:
+            self.timeouts.pop(id)
             return False
         # Timeout must be active
         else:
             return True
 
 
-    def timeout_init(self, product):
-        """Start a timeout on a product"""
-        product['timeout_start'] = time.time()
+    def timeout_init(self, id):
+        """Start a timeout on a id"""
+        self.timeouts[id] = time.time()
 
 
 ########################################################################################################
