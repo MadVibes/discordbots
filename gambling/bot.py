@@ -463,7 +463,7 @@ class Bot:
       
       if arg.lower() == "create":
         if arg2 != None:
-          if  arg2.isdigit():
+          if arg2.isdigit():
             if int(arg2) > 1:
               ID = await self.create_dr(ctx, int(arg2), int(user), data)
               if ID != None:
@@ -550,11 +550,124 @@ class Bot:
             
       elif arg.lower() == "help":
         await self.help_embed(ctx, "deathroll")
-        
-          
-    
 
-      
+
+#############################################################################################
+# Scratch cards
+#############################################################################################
+
+# Making sure user has enough money to purchase card
+  async def check_and_spend_scratchcard(self, ctx, amount):
+    user_balance = self.bank.get_balance(ctx.author.id)
+    # Insufficient balance
+    if int(amount) > user_balance:
+      await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}')
+      return
+    try:
+      self.bank.spend_currency_taxed(ctx.author.id, int(amount), self.config['SCRATCHCARD_TAX_BAND'])
+      return 1
+
+    except Exception as e:
+      self.logger.warn('Failed to execute bet:')
+      self.logger.warn(str(e))
+
+# Purchasing a card
+  async def purchase_card(self, ctx, amount, user):
+    """Handling purchase of a scratch card"""
+    ans = await self.check_and_spend_scratchcard(ctx, amount)
+    if ans == 1:
+      self.bank.withdraw_currency_taxed(int(user), int(amount), self.config['SCRATCHCARD_TAX_BAND'])
+
+# Function of the actual game
+  async def scratch_card_game(self, ctx, amount, user):
+    """Actual scratch card game"""
+    # Ignore the mess \/
+    scratch_emotes = [  # List of emotes for the scratch card to use
+      '||<:3Head:823900227135078420>||',
+      '||<:BatChest:916017305316655124>||',
+      '||<:EZ:833484841663725578>||',
+      '||<:KEKW:777259349084209172>||',
+      '||<:POGGERS:499010181561057283>||',
+      '||<:NoBitches:966336631068041247>||',
+      '||<:Pepega:656550626049785866>||',
+      '||<:Kreygasm:822577225458253845>||',
+      '||<:WICKED:863436330410704936>||',
+      '||<:monkaStare:878761085707104286>||',
+    ]
+    scratch_loss = (  # If it's a loss then this will be an all random card ** SHOULDN'T HAVE ANY MATCHING 3 IN LINE **
+      f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
+      f'{random.choice(scratch_emotes)}\n{random.choice(scratch_emotes)}  '
+      f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}\n'
+      f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
+      f'{random.choice(scratch_emotes)}\nQuick reveal:\n'
+      f'||You lost and are awarded nothing!||'
+    )
+    winning_emote = random.choice(scratch_emotes)  # Choosing a random emote to display as the winning emote
+
+    scratch_win = {  # The 3 outcomes of a winning card
+      1: f'{winning_emote}  {winning_emote}  '
+         f'{winning_emote}\n{random.choice(scratch_emotes)}  '
+         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}\n'
+         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
+         f'{random.choice(scratch_emotes)}\nQuick reveal:',
+      2: f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
+         f'{random.choice(scratch_emotes)}\n{winning_emote}  '
+         f'{winning_emote}  {winning_emote}\n'
+         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
+         f'{random.choice(scratch_emotes)}\nQuick reveal:',
+      3: f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
+         f'{random.choice(scratch_emotes)}\n{random.choice(scratch_emotes)}  '
+         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}\n'
+         f'{winning_emote}  {winning_emote}  '
+         f'{winning_emote}\nQuick reveal:',
+    }
+    # Ignore the mess /\
+    x = random.randint(1, 30) # Loss
+    if x >= 10:
+      await ctx.send(scratch_loss)
+
+    elif x < 10 and x >= 5: # Win with a 4x multiplier
+      j = random.randint(1, 3)
+      amount *= 4
+      await ctx.send(scratch_win[j])
+      await ctx.send(f'||You\'ve won {amount}!||')
+      win = 4
+
+    elif x < 5 and x >= 2: # Win with a 6x multiplier
+      j = random.randint(1, 3)
+      amount *= 6
+      await ctx.send(scratch_win[j])
+      await ctx.send(f'||You\'ve won {amount}!||')
+      win = 6
+
+    else: # Win with a 10x multiplier
+      j = random.randint(1, 3)
+      amount *= 10
+      await ctx.send(f'{scratch_win[j]}')
+      await ctx.send(f'||You\'ve won {amount}!||')
+      win = 10
+
+    self.bank.withdraw_currency_taxed(user, amount, self.config['SCRATCHCARD_TAX_BAND'])
+
+
+  async def scratchcard(self, ctx, arg, arg2):
+    """Main scratch card command"""
+    user = ctx.author.id
+    if arg != None:
+      if arg.lower() == "buy":
+        await ctx.send(f'{user}')
+        if arg2 != None:
+          if arg2.isdigit():
+            if int(arg2) >= 50:
+              await ctx.message.add_reaction('✅')
+              await asyncio.sleep(3)
+              amount = int(arg2)
+              await self.scratch_card_game(ctx, amount, user)
+            else:
+              await ctx.message.add_reaction('❌')
+              await ctx.send(f'You need to wager atleast 50!')
+
+
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper
 #
