@@ -11,7 +11,7 @@ sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
 from lib.utils import Utils #pylint: disable=E0401
-from lib.coin_manager import CoinManager #pylint: disable=E0401
+from lib.emote_manager import CoinManager #pylint: disable=E0401
 
 class Bot:
 # NOTE(LIAM):
