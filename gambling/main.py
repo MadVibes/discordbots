@@ -13,7 +13,7 @@ from lib.utils import Utils #pylint: disable=E0401
 from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
 from lib.shared import Shared #pylint: disable=E0401
-from lib.emote_manager import CoinManager #pylint: disable=E0401
+from lib.emote_manager import CoinManager, ScratchManager #pylint: disable=E0401
 from lib.utils import Utils #pylint: disable=E0401
 from bot import Bot
 
@@ -24,7 +24,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
-config.version = 'v1.2'
+config.version = 'v1.3'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -44,7 +44,8 @@ logger.log(f'Starting {bot_type} - ' + config.version)
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bank = Bank(logger, config)
 cm = CoinManager(logger)
-bot = Bot(logger, config, bank, client, cm)
+sm = ScratchManager(logger)
+bot = Bot(logger, config, bank, client, cm, sm)
 
 
 @client.event
@@ -73,7 +74,10 @@ async def on_ready():
         await cm.populate_bot_emojis()
     time = 30 # Seconds
     Utils.future_call(time, initCM, [cm])
-
+    # Load ScratchManager
+    sm.set_guild(client.get_guild(bot.guild_id))
+    await sm.try_add_emojis(config['EMOJI_SOURCE'])
+    print(sm.active_emojis)
 
 @client.command(name='bet')
 async def bet(ctx: commands.Context, *args):
@@ -91,12 +95,22 @@ async def deathroll(ctx, arg=None, arg2=None):
     """Create and join deathrolls"""
     await bot.deathroll(ctx, arg, arg2)
 
+@client.command(name='scratchcard')
+@commands.guild_only()
+async def scratchcard(ctx, arg=None, arg2=None):
+    """Purchase and use a scratchcard"""
+    try:
+        await bot.scratchcard(ctx, arg, arg2)
+    except Exception as e:
+      logger.error('Failed to handle Scratchcard:')
+      logger.error(str(e))
+
 
 # Start the bot using TOKEN
 client.run(TOKEN)
 
 ########################################################################################################
-#   Copyright (C) 2022  Liam Coombs, Sam Tipper
+#   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by

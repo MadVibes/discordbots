@@ -10,7 +10,7 @@ import numpy as np
 import asyncio
 import threading
 import random
-from lib.emote_manager import CoinManager #pylint: disable=E0401
+from lib.emote_manager import CoinManager, ScratchManager #pylint: disable=E0401
 
 
 sys.path.insert(0, '../')
@@ -27,13 +27,14 @@ db_schema = {
 
 
 class Bot:
-  def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager):
+  def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager, scratch_manager: ScratchManager):
     self.logger = logger
     self.config = config
     self.client = client
     self.bank = bank
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     self.cm = coin_manager
+    self.sm = scratch_manager
 
   # Embed for bets
   async def bet_embed(self, ctx, data):
@@ -252,6 +253,9 @@ class Bot:
 
     elif type == "deathroll":
       title = "Deathroll Command Help"
+
+    elif type == "scratchcard":
+      title = "Scratchcard Command Help"
       
     embed = discord.Embed(
       title=f'{title}',
@@ -274,8 +278,10 @@ class Bot:
       embed.add_field(name='$deathroll join [ID]', value='Joins a deathroll game.' ,inline=False)
       embed.add_field(name='$deathroll start [ID]', value='Starts the deathroll game, can only be used by the game\'s initiator.' ,inline=False)
       embed.add_field(name='$deathroll delete [ID]', value='Deletes a deathroll game , can only be used by the game\'s initiator.' ,inline=False)
-      
-      
+
+    elif type == "scratchcard":
+      embed.add_field(name='$scratchcard buy [Amount]', value='Starts a scratchcard for the amount specified', inline=False)
+
     await ctx.send(embed=embed)
     
   # Writing bet to DB
@@ -463,7 +469,7 @@ class Bot:
       
       if arg.lower() == "create":
         if arg2 != None:
-          if  arg2.isdigit():
+          if arg2.isdigit():
             if int(arg2) > 1:
               ID = await self.create_dr(ctx, int(arg2), int(user), data)
               if ID != None:
@@ -550,13 +556,144 @@ class Bot:
             
       elif arg.lower() == "help":
         await self.help_embed(ctx, "deathroll")
-        
-          
-    
 
-      
+
+#############################################################################################
+# Scratch cards
+#############################################################################################
+
+# Making sure user has enough money to purchase card
+  async def check_and_spend_scratchcard(self, ctx, amount):
+    user_balance = self.bank.get_balance(ctx.author.id)
+    # Insufficient balance
+    if int(amount) > user_balance:
+      await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}') # If balance insf
+      return
+    try:
+      self.bank.spend_currency_taxed(ctx.author.id, int(amount), self.config['SCRATCHCARD_TAX_BAND']) # Spending the amount
+      return 1
+
+    except Exception as e:
+      self.logger.warn('Failed to execute bet:')
+      self.logger.warn(str(e))
+
+
+# Purchasing a card
+  async def purchase_card(self, ctx, amount, user):
+    """Handling purchase of a scratch card"""
+    ans = await self.check_and_spend_scratchcard(ctx, amount)
+    if ans == 1:
+      return 1
+
+# Fair multiplier
+  def get_multiplier(self):
+    rand = random.randint(1, 100)
+    multiplier = 2 + (math.pow((93 / 100), ((0 - rand) + 65)))
+    return multiplier
+
+# Creaing the actual card
+  def get_card(self, win):
+    scratch_emotes = self.sm.get_scratch_emojis()
+    winning_emote = random.choice(scratch_emotes)  # Choosing a random emote to display as the winning emote
+    if win == True:
+      scratch_card_win = [' '] # Listing the emotes
+      for i in range(3):
+        rnd_emote = random.choice(scratch_emotes)
+        if not scratch_card_win:
+          scratch_card_win.append(random.choice(scratch_emotes))
+        elif rnd_emote != scratch_card_win[i - 1]:
+          scratch_card_win.append(rnd_emote)
+        elif rnd_emote == scratch_card_win[i - 1]:
+          while rnd_emote == scratch_card_win[i - 1]:
+            rnd_emote = random.choice(scratch_emotes)
+          scratch_card_win.append(rnd_emote)
+      scratch_card_win += '\n'
+
+      for i in range(3):
+        scratch_card_win.append(winning_emote) # Making first line the winning line
+      scratch_card_win += '\n'
+
+      for i in range(3):
+        rnd_emote = random.choice(scratch_emotes)
+        if not scratch_card_win:
+          scratch_card_win.append(random.choice(scratch_emotes))
+        elif rnd_emote != scratch_card_win[i - 1]:
+          scratch_card_win.append(rnd_emote)
+        elif rnd_emote == scratch_card_win[i - 1]:
+          while rnd_emote == scratch_card_win[i - 1]:
+            rnd_emote = random.choice(scratch_emotes)
+          scratch_card_win.append(rnd_emote)
+      scratch_card_win += '\n'
+      scratch_card_win = "-".join(scratch_card_win)
+      return scratch_card_win
+
+
+    elif win == False:
+      scratch_card_loss = [' ']
+
+      for j in range(3): # Randomizing emotes and not allowing for an accidental win but ensuring emote before != match
+        for i in range(3):
+          rnd_emote = random.choice(scratch_emotes)
+          if not scratch_card_loss:
+            scratch_card_loss.append(random.choice(scratch_emotes))
+          elif rnd_emote != scratch_card_loss[i-1]:
+            scratch_card_loss.append(rnd_emote)
+          elif rnd_emote == scratch_card_loss[i-1]:
+            while rnd_emote == scratch_card_loss[i-1]:
+              rnd_emote = random.choice(scratch_emotes)
+            scratch_card_loss.append(rnd_emote)
+
+        scratch_card_loss += '\n'
+
+      scratch_card_loss = "-".join(scratch_card_loss)
+      return scratch_card_loss
+
+
+
+  # Function of the actual game
+  async def scratch_card_game(self, ctx, amount, user):
+    """Actual scratch card game"""
+
+    x = random.randint(1, 5) # 20% chance to be a win
+    winning_amount = math.floor(amount * self.get_multiplier()) # Using the predefined math equation to give multipier
+    blank = ' ' * (len(str(winning_amount))+1)
+    if x == 1:
+      scratch_card = self.get_card(True)
+      await ctx.send(scratch_card) # Winning scratchcard
+      await ctx.send(f'||`   You win!   `||')
+      self.bank.summon_currency(user, winning_amount) # Payout
+      await ctx.send(f'||{winning_amount}||')
+    else:
+      await ctx.send(self.get_card(False)) # Losing scratchcard
+      await ctx.send(f'||`  You lost...   `||')
+      await ctx.send(f'||`{blank}`||')
+
+
+  async def scratchcard(self, ctx, arg, arg2):
+    """Main scratch card command"""
+    user = ctx.author.id
+    if (arg != None
+        and arg.lower() == "buy" # Initiator command
+        and arg2 != None
+        and arg2.isdigit()
+        and int(arg2) >= int(self.config['SCRATCHCARD_MIN_BET'])):
+      amount = int(arg2)
+      ans = await self.purchase_card(ctx, amount, user) # Purchasing and withdrawing amount from their balance
+      if ans == 1:
+        await ctx.message.add_reaction('✅')
+        await asyncio.sleep(2)
+        await self.scratch_card_game(ctx, amount, user) # Starting the scratchcard
+
+    elif arg.lower() == "help": # Help embed
+      await self.help_embed(ctx, "scratchcard")
+
+    else:
+      await ctx.message.add_reaction('❌')
+      await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast 50 {self.cm.currency()}!')
+
+
 ########################################################################################################
-#   Copyright (C) 2022  Liam Coombs, Sam Tipper
+#   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
