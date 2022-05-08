@@ -252,6 +252,9 @@ class Bot:
 
     elif type == "deathroll":
       title = "Deathroll Command Help"
+
+    elif type == "scratchcard":
+      title = "Scratchcard Command Help"
       
     embed = discord.Embed(
       title=f'{title}',
@@ -274,8 +277,10 @@ class Bot:
       embed.add_field(name='$deathroll join [ID]', value='Joins a deathroll game.' ,inline=False)
       embed.add_field(name='$deathroll start [ID]', value='Starts the deathroll game, can only be used by the game\'s initiator.' ,inline=False)
       embed.add_field(name='$deathroll delete [ID]', value='Deletes a deathroll game , can only be used by the game\'s initiator.' ,inline=False)
-      
-      
+
+    elif type == "scratchcard":
+      embed.add_field(name='$scratchcard buy [Amount]', value='Starts a scratchcard for the amount specified', inline=False)
+
     await ctx.send(embed=embed)
     
   # Writing bet to DB
@@ -556,6 +561,7 @@ class Bot:
 # Scratch cards
 #############################################################################################
 
+
 # Making sure user has enough money to purchase card
   async def check_and_spend_scratchcard(self, ctx, amount):
     user_balance = self.bank.get_balance(ctx.author.id)
@@ -571,14 +577,81 @@ class Bot:
       self.logger.warn('Failed to execute bet:')
       self.logger.warn(str(e))
 
+
 # Purchasing a card
   async def purchase_card(self, ctx, amount, user):
     """Handling purchase of a scratch card"""
     ans = await self.check_and_spend_scratchcard(ctx, amount)
     if ans == 1:
-      self.bank.withdraw_currency_taxed(int(user), int(amount), self.config['SCRATCHCARD_TAX_BAND'])
+      return 1
 
-# Function of the actual game
+
+
+
+  def get_multiplier(self):
+    rand = random.randint(1, 100)
+    multiplier = 2 + (math.pow((93 / 100), ((0 - rand) + 65)))
+    return multiplier
+
+  def get_card(self, win):
+    scratch_emotes = [  # List of emotes for the scratch card to use
+      '||<:3Head:823900227135078420>||',
+      '||<:BatChest:916017305316655124>||',
+      '||<:EZ:833484841663725578>||',
+      '||<:KEKW:777259349084209172>||',
+      '||<:POGGERS:499010181561057283>||',
+      '||<:NoBitches:966336631068041247>||',
+      '||<:Pepega:656550626049785866>||',
+      '||<:Kreygasm:822577225458253845>||',
+      '||<:WICKED:863436330410704936>||',
+      '||<:monkaStare:878761085707104286>||',
+    ]
+    winning_emote = random.choice(scratch_emotes)  # Choosing a random emote to display as the winning emote
+    if win == True:
+      scratch_card_win = []
+      for i in range(3):
+        scratch_card_win.append(winning_emote)
+      scratch_card_win += '\n'
+
+      for j in range(2):
+        for i in range(3):
+          rnd_emote = random.choice(scratch_emotes)
+          if not scratch_card_win:
+            scratch_card_win.append(random.choice(scratch_emotes))
+          elif rnd_emote != scratch_card_win[i - 1]:
+            scratch_card_win.append(rnd_emote)
+          elif rnd_emote == scratch_card_win[i - 1]:
+            while rnd_emote == scratch_card_win[i - 1]:
+              rnd_emote = random.choice(scratch_emotes)
+            scratch_card_win.append(rnd_emote)
+        scratch_card_win += '\n'
+      scratch_card_win = "".join(scratch_card_win)
+      return scratch_card_win
+
+
+    elif win == False:
+      scratch_card_loss = []
+
+      for j in range(3):
+        for i in range(3):
+          rnd_emote = random.choice(scratch_emotes)
+          if not scratch_card_loss:
+            scratch_card_loss.append(random.choice(scratch_emotes))
+          elif rnd_emote != scratch_card_loss[i-1]:
+            scratch_card_loss.append(rnd_emote)
+          elif rnd_emote == scratch_card_loss[i-1]:
+            while rnd_emote == scratch_card_loss[i-1]:
+              rnd_emote = random.choice(scratch_emotes)
+            scratch_card_loss.append(rnd_emote)
+
+        scratch_card_loss += '\n'
+
+      scratch_card_loss = "".join(scratch_card_loss)
+      return scratch_card_loss
+
+
+
+  # Function of the actual game
   async def scratch_card_game(self, ctx, amount, user):
     """Actual scratch card game"""
     # NOTE(Liam):
@@ -593,126 +666,41 @@ class Bot:
     #   code must 'protect' itself. either replacing the emojis with text, or
     #   completly disable the the scratch card code.
     #
-    # Ignore the mess \/
-    scratch_emotes = [  # List of emotes for the scratch card to use
-      '||<:3Head:823900227135078420>||',
-      '||<:BatChest:916017305316655124>||',
-      '||<:EZ:833484841663725578>||',
-      '||<:KEKW:777259349084209172>||',
-      '||<:POGGERS:499010181561057283>||',
-      '||<:NoBitches:966336631068041247>||',
-      '||<:Pepega:656550626049785866>||',
-      '||<:Kreygasm:822577225458253845>||',
-      '||<:WICKED:863436330410704936>||',
-      '||<:monkaStare:878761085707104286>||',
-    ]
-    scratch_loss = (  # If it's a loss then this will be an all random card ** SHOULDN'T HAVE ANY MATCHING 3 IN LINE **
-      f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
-      f'{random.choice(scratch_emotes)}\n{random.choice(scratch_emotes)}  '
-      f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}\n'
-      f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
-      f'{random.choice(scratch_emotes)}\nQuick reveal:\n'
-      f'||You lost and are awarded nothing!||'
-    )
-    winning_emote = random.choice(scratch_emotes)  # Choosing a random emote to display as the winning emote
 
-    scratch_win = {  # The 3 outcomes of a winning card
-      1: f'{winning_emote}  {winning_emote}  '
-         f'{winning_emote}\n{random.choice(scratch_emotes)}  '
-         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}\n'
-         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
-         f'{random.choice(scratch_emotes)}\nQuick reveal:',
-      2: f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
-         f'{random.choice(scratch_emotes)}\n{winning_emote}  '
-         f'{winning_emote}  {winning_emote}\n'
-         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
-         f'{random.choice(scratch_emotes)}\nQuick reveal:',
-      3: f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}  '
-         f'{random.choice(scratch_emotes)}\n{random.choice(scratch_emotes)}  '
-         f'{random.choice(scratch_emotes)}  {random.choice(scratch_emotes)}\n'
-         f'{winning_emote}  {winning_emote}  '
-         f'{winning_emote}\nQuick reveal:',
-    }
-    # Ignore the mess /\
-    # NOTE(Liam):
-    #   This calculation of the conditions is nuts?
-    #   It should be brokn down to a more simple logic
-    #   maybe something like this:
-    #   
-    #       def get_multiplier():
-    #           """Generate a nice random multiplier"""
-    #           rand = random.randint(1,100)
-    #           multiplier = 2 + ( math.pow( (93/100) , ((0-rand) + 65 )) )
-    #           return multiplier
-    #
-    #       chance_to_win = 35 # -> 35 % chance
-    #       roll = random.randint(1,100)
-    #       if roll <= chance_to_win:
-    #           # You won! gratz!
-    #           print(get_multiplier()) # Maybe return or somin, just an example
-    #       else:
-    #           # Fat luck loser, you won nada!
-    #           print(1) # Multiplier of 1? or even 0 so they get 0 cash back ;)
-    #      
-    #   
-    x = random.randint(1, 30) # Loss
-    if x >= 10:
-      await ctx.send(scratch_loss)
-
-    elif x < 10 and x >= 5: # Win with a 4x multiplier
-      j = random.randint(1, 3)
-      amount *= 4
-      await ctx.send(scratch_win[j])
-      await ctx.send(f'||You\'ve won {amount}!||')
-      win = 4
-
-    elif x < 5 and x >= 2: # Win with a 6x multiplier
-      j = random.randint(1, 3)
-      amount *= 6
-      await ctx.send(scratch_win[j])
-      await ctx.send(f'||You\'ve won {amount}!||')
-      win = 6
-
-    else: # Win with a 10x multiplier
-      j = random.randint(1, 3)
-      amount *= 10
-      await ctx.send(f'{scratch_win[j]}')
-      await ctx.send(f'||You\'ve won {amount}!||')
-      win = 10
-
-    self.bank.withdraw_currency_taxed(user, amount, self.config['SCRATCHCARD_TAX_BAND'])
+    x = random.randint(1, 2)
+    if x == 1:
+      scratch_card = self.get_card(True)
+      winning_amount = math.floor(amount * self.get_multiplier())
+      await ctx.send(scratch_card)
+      await ctx.send(f'|| You\'ve won and have been awarded {winning_amount}!||')
+      await self.bank.summon_currency(user, winning_amount)
+    else:
+      await ctx.send(self.get_card(False))
+      await ctx.send(f'||You\'ve unforntunately lost and have been awarded nothing!||')
 
 
   async def scratchcard(self, ctx, arg, arg2):
     """Main scratch card command"""
-    # NOTE(Liam): 
-    #   There is a lot of if conditions here that should be combined?
-    #   Currently this is hard to read.
-    #   somthing like this instead:
-    #     if (arg != None
-    #       and arg.lower() == "buy"
-    #       and arg2 != None
-    #       and arg2.isdigit()
-    #       and int(arg2) >= 50):
-    #   This way, it is easier to read.
-    #   PS. this `>= 50` controls the min 'bet'?
-    #   If so, it should be a config. Like this:
-    #   self.config['MIN_SCRATCH_CARD_BET']?
- 
     user = ctx.author.id
-    if arg != None:
-      if arg.lower() == "buy":
-        await ctx.send(f'{user}') # NOTE(Liam): Remove this
-        if arg2 != None:
-          if arg2.isdigit():
-            if int(arg2) >= 50:
-              await ctx.message.add_reaction('✅')
-              await asyncio.sleep(3)
-              amount = int(arg2)
-              await self.scratch_card_game(ctx, amount, user)
-            else:
-              await ctx.message.add_reaction('❌')
-              await ctx.send(f'You need to wager atleast 50!')
+    if (arg != None
+        and arg.lower() == "buy"
+        and arg2 != None
+        and arg2.isdigit()
+        and int(arg2) >= int(self.config['SCRATCHCARD_MIN_BET'])):
+      amount = int(arg2)
+      ans = await self.purchase_card(ctx, amount, user)
+      if ans == 1:
+        await ctx.message.add_reaction('✅')
+        await asyncio.sleep(2)
+        await self.scratch_card_game(ctx, amount, user)
+
+    elif arg.lower() == "help":
+      await self.help_embed(ctx, "scratchcard")
+
+    else:
+      await ctx.message.add_reaction('❌')
+      await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast 50!')
+
 
 
 ########################################################################################################
