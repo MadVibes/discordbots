@@ -135,7 +135,10 @@ class ScratchManager(EmoteManager):
         else:
             scratch_emojis = []
             for emoji_string in self.custom_emojis:
-                scratch_emojis.append(f'||<:{emoji_string}:{str(self.active_emojis[emoji_string])}>||')
+                if '_ANIM' in emoji_string:
+                    scratch_emojis.append(f'||<a:{emoji_string}:{str(self.active_emojis[emoji_string])}>||')
+                else:
+                    scratch_emojis.append(f'||<:{emoji_string}:{str(self.active_emojis[emoji_string])}>||')
             return scratch_emojis
 
 
