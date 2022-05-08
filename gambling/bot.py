@@ -662,11 +662,9 @@ class Bot:
       await ctx.send(scratch_card) # Winning scratchcard
       await ctx.send(f'||`   You win!   `||')
       self.bank.summon_currency(user, winning_amount) # Payout
-      await ctx.send(f'||{winning_amount}||')
     else:
       await ctx.send(self.get_card(False)) # Losing scratchcard
       await ctx.send(f'||`  You lost...   `||')
-      await ctx.send(f'||`{blank}`||')
 
 
   async def scratchcard(self, ctx, arg, arg2):
