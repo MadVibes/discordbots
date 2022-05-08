@@ -692,7 +692,6 @@ class Bot:
       await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast 50 {self.cm.currency()}!')
 
 
-
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
 #
