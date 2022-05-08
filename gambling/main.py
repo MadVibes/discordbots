@@ -24,7 +24,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
-config.version = 'v1.2'
+config.version = 'v1.3'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -110,7 +110,7 @@ async def scratchcard(ctx, arg=None, arg2=None):
 client.run(TOKEN)
 
 ########################################################################################################
-#   Copyright (C) 2022  Liam Coombs, Sam Tipper
+#   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
