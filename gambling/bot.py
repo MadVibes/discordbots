@@ -655,17 +655,18 @@ class Bot:
     """Actual scratch card game"""
 
     x = random.randint(1, 5) # 20% chance to be a win
+    winning_amount = math.floor(amount * self.get_multiplier()) # Using the predefined math equation to give multipier
+    blank = ' ' * (len(str(winning_amount))+1)
     if x == 1:
       scratch_card = self.get_card(True)
-      winning_amount = math.floor(amount * self.get_multiplier()) # Using the predefined math equation to give multipier
       await ctx.send(scratch_card) # Winning scratchcard
-      await ctx.send(f'||---You win!---||')
+      await ctx.send(f'||`   You win!   `||')
       self.bank.summon_currency(user, winning_amount) # Payout
-      await asyncio.sleep(10)
-      # await ctx.send(f'You won {winning_amount} {self.cm.currency(animated=True)}')
+      await ctx.send(f'||{winning_amount}||')
     else:
       await ctx.send(self.get_card(False)) # Losing scratchcard
-      await ctx.send(f'||--You lost....--||')
+      await ctx.send(f'||`  You lost...   `||')
+      await ctx.send(f'||`{blank}`||')
 
 
   async def scratchcard(self, ctx, arg, arg2):
