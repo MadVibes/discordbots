@@ -10,7 +10,7 @@ import numpy as np
 import asyncio
 import threading
 import random
-from lib.coin_manager import CoinManager #pylint: disable=E0401
+from lib.emote_manager import CoinManager #pylint: disable=E0401
 
 
 sys.path.insert(0, '../')
