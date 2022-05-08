@@ -230,6 +230,14 @@ async def command_transfer(ctx: commands.Context, *args):
     """Tansfer money to another player {NOT WORKING :(}"""
 
 
+@client.command(name='bank')
+async def command_balance(ctx: commands.Context, *args):
+    """Display a users balance, or a target users balance"""
+    embed = discord.Embed(title='**VibeCoin Bank Stats**', colour=discord.Colour.gold())
+    embed.add_field(value=f'Bank currently holds {bot.get_balance(client.user.id)} {cm.currency()}\n and the Tax account holds {bot.get_balance(int(config["TAX_ACCOUNT_ID"]))} {cm.currency()}', name='-------', inline=False)
+    await ctx.send(embed=embed)
+
+
 # WEB SERVER INIT
 ########################################################################################################
 
@@ -247,6 +255,16 @@ def get_balance(service: Servlet, parameters: json):
         raise Exception('user_id was not included in parameters')
 
     return service.bot.req_get_balance(user_id=parameters['user_id'])
+
+
+def get_bank_balance(service: Servlet, parameters: json):
+    """Return bank balance"""
+    return service.bot.req_get_balance(user_id=service.client.user.id)
+
+
+def get_tax_balance(service: Servlet, parameters: json):
+    """Return tax balance"""
+    return service.bot.req_get_balance(user_id=int(service.bot.config['TAX_ACCOUNT_ID']))
 
 
 def move_currency(service: Servlet, parameters: json):
@@ -345,6 +363,8 @@ def withdraw_tax_currency(service: Servlet, parameters: json):
 # Mapping of possible functions that the web server can call
 actions = {
     'getBalance': get_balance,
+    'getBankBalance': get_bank_balance,
+    'getTaxBalance': get_tax_balance,
     'moveCurrency': move_currency,
     'spendCurrency': spend_currency,
     'withdrawCurrency': withdraw_currency,
