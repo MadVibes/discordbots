@@ -146,6 +146,38 @@ class Bank:
         return int(content['response']['balance_sender'])
 
 
+    def withdraw_tax_currency(self, user_id: int, amount: int):
+        """Withdraw from tax account to users balance using user_id. Returns users balance afterwards as int"""
+        # Create payload/request for bank server
+        payload = dumps({
+            'action': 'withdrawTaxCurrency',
+            'parameters': {
+                'user_id': user_id,
+                'amount': amount
+            }
+        })
+        # Create headers
+        headers = self.default_headers
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
+                data=payload,
+                headers=headers,
+                timeout=10
+            )
+        content = loads(r.content)
+        # If the code is not 200, raise an error with the response of the bank
+        if r.status_code != 200:
+            self.logger.warn('Bank response was a non 200')
+            self.logger.warn(content)
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
+            self.logger.warn(content)
+        return int(content['response']['balance_sender'])
+
+
     def spend_currency_taxed(self, user_id: int, amount: int, tax_band: str):
         """Spend users balance using user_id, and tax the transfer. Returns users balance afterwards as int"""
         # Create payload/request for bank server

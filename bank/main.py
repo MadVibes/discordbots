@@ -333,12 +333,22 @@ def summon_currency(service: Servlet, parameters: json):
     return service.bot.req_summon_currency(user_id_receiver=parameters['user_id_receiver'], amount=parameters['amount'])
 
 
+def withdraw_tax_currency(service: Servlet, parameters: json):
+    """Withdraw balance of tax account"""
+    if ('user_id' not in parameters
+        or 'amount' not in parameters):
+        raise Exception('user_id, amount were not all included in parameters')
+
+    return service.bot.req_move_currency(user_id_sender=int(service.bot.config['TAX_ACCOUNT_ID']), user_id_receiver=parameters['user_id'], amount=parameters['amount'])
+
+
 # Mapping of possible functions that the web server can call
 actions = {
     'getBalance': get_balance,
     'moveCurrency': move_currency,
     'spendCurrency': spend_currency,
     'withdrawCurrency': withdraw_currency,
+    'withdrawTaxCurrency': withdraw_tax_currency,
     'summonCurrency': summon_currency,
     'spendCurrencyTaxed': spend_currency_taxed,
     'withdrawCurrencyTaxed': withdraw_currency_taxed
