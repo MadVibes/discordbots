@@ -21,6 +21,7 @@ STATUS_START_ONLINE = True
 TAX_ACCOUNT_ID = 1000000001
 TAX_BAND_1 = 2.0
 TAX_BAND_2 = 10.0
+EMOJI_SOURCE = ./emojis
 
 [chameleon]
 LOGGING_LEVEL = 2
@@ -35,7 +36,7 @@ COMMS_TARGET = http://127.0.0.1:7101
 TTS_COST = 600
 DEFAULT_NAME = VibeBot Chameleon
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer,bet,shop,pay,deathroll,leaderboard,poll
+IGNORE_COMMANDS = balance,bank,transfer,bet,shop,pay,deathroll,leaderboard,poll
 STATUS_START_ONLINE = True
 AUDIO_CLIP_DIR = ./chameleon/audio_clips/
 AUDIO_CLIP_COST = 30
@@ -52,7 +53,7 @@ COMMS_SECRET = secret
 COMMS_TARGET = http://127.0.0.1:7101
 DEFAULT_NAME = VibeBot Shop
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer,tts,bet,pay,deathroll,leaderboard,poll,sound
+IGNORE_COMMANDS = balance,bank,transfer,tts,bet,pay,deathroll,leaderboard,poll,sound
 STATUS_START_ONLINE = True
 SERVICE_TAX_BAND = 1
 
@@ -69,7 +70,7 @@ COMMS_SECRET = secret
 COMMS_TARGET = http://127.0.0.1:7101
 DEFAULT_NAME = VibeBot Croupier
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer,tts,shop,leaderboard,poll,sound
+IGNORE_COMMANDS = balance,bank,transfer,tts,shop,leaderboard,poll,sound
 BET_TAX_BAND = 2
 DEATHROLL_TAX_BAND = 1
 
@@ -86,6 +87,6 @@ COMMS_SECRET = secret
 COMMS_TARGET = http://127.0.0.1:7101
 DEFAULT_NAME = VibeBot Polling
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer,tts,bet,pay,deathroll,shop,sound
+IGNORE_COMMANDS = balance,bank,transfer,tts,bet,pay,deathroll,shop,sound
 STATUS_START_ONLINE = True
 
