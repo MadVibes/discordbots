@@ -95,7 +95,11 @@ async def deathroll(ctx, arg=None, arg2=None):
 @commands.guild_only()
 async def scratchcard(ctx, arg=None, arg2=None):
     """Purchase and use a scratchcard"""
-    await bot.scratchcard(ctx, arg, arg2)
+    try:
+        await bot.scratchcard(ctx, arg, arg2)
+    except Exception as e:
+      logger.error('Failed to handle Scratchcard:')
+      logger.error(str(e))
 
 
 # Start the bot using TOKEN
