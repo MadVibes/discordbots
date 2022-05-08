@@ -10,7 +10,7 @@ import numpy as np
 import asyncio
 import threading
 import random
-from lib.emote_manager import CoinManager #pylint: disable=E0401
+from lib.emote_manager import CoinManager, ScratchManager #pylint: disable=E0401
 
 
 sys.path.insert(0, '../')
@@ -27,13 +27,14 @@ db_schema = {
 
 
 class Bot:
-  def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager):
+  def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager, scratch_manager: ScratchManager):
     self.logger = logger
     self.config = config
     self.client = client
     self.bank = bank
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     self.cm = coin_manager
+    self.sm = scratch_manager
 
   # Embed for bets
   async def bet_embed(self, ctx, data):
@@ -592,55 +593,43 @@ class Bot:
 
 # Creaing the actual card
   def get_card(self, win):
-    scratch_emotes = [  # List of emotes for the scratch card to use
-      # NOTE(Liam):
-      #   I'm massively against this, this assumes that the EXACT emotes
-      #   and emote IDS match in the server. This makes the bots only
-      #   ever work on this one Server and if people delete an emote,
-      #   bam, code is broken and needs to be altered.
-      #
-      #   I did consider hot loading emotes on bot bootup. It is possible for
-      #   to expand the coin_manager into a emote_manager. This way we can load
-      #   the emojis you want. However, in the event emojis cannot be added, the
-      #   code must 'protect' itself. either replacing the emojis with text, or
-      #   completly disable the the scratch card code.
-
-      '||<:3Head:823900227135078420>||',
-      '||<:BatChest:916017305316655124>||',
-      '||<:EZ:833484841663725578>||',
-      '||<:KEKW:777259349084209172>||',
-      '||<:POGGERS:499010181561057283>||',
-      '||<:NoBitches:966336631068041247>||',
-      '||<:Pepega:656550626049785866>||',
-      '||<:Kreygasm:822577225458253845>||',
-      '||<:WICKED:863436330410704936>||',
-      '||<:monkaStare:878761085707104286>||',
-    ]
+    scratch_emotes = self.sm.get_scratch_emojis()
     winning_emote = random.choice(scratch_emotes)  # Choosing a random emote to display as the winning emote
     if win == True:
-      scratch_card_win = [] # Listing the emotes
+      scratch_card_win = [' '] # Listing the emotes
+      for i in range(3):
+        rnd_emote = random.choice(scratch_emotes)
+        if not scratch_card_win:
+          scratch_card_win.append(random.choice(scratch_emotes))
+        elif rnd_emote != scratch_card_win[i - 1]:
+          scratch_card_win.append(rnd_emote)
+        elif rnd_emote == scratch_card_win[i - 1]:
+          while rnd_emote == scratch_card_win[i - 1]:
+            rnd_emote = random.choice(scratch_emotes)
+          scratch_card_win.append(rnd_emote)
+      scratch_card_win += '\n'
+
       for i in range(3):
         scratch_card_win.append(winning_emote) # Making first line the winning line
       scratch_card_win += '\n'
 
-      for j in range(2): # The rest are randomized but will not allow for another winning line
-        for i in range(3):
-          rnd_emote = random.choice(scratch_emotes)
-          if not scratch_card_win:
-            scratch_card_win.append(random.choice(scratch_emotes))
-          elif rnd_emote != scratch_card_win[i - 1]:
-            scratch_card_win.append(rnd_emote)
-          elif rnd_emote == scratch_card_win[i - 1]:
-            while rnd_emote == scratch_card_win[i - 1]:
-              rnd_emote = random.choice(scratch_emotes)
-            scratch_card_win.append(rnd_emote)
-        scratch_card_win += '\n'
-      scratch_card_win = "".join(scratch_card_win)
+      for i in range(3):
+        rnd_emote = random.choice(scratch_emotes)
+        if not scratch_card_win:
+          scratch_card_win.append(random.choice(scratch_emotes))
+        elif rnd_emote != scratch_card_win[i - 1]:
+          scratch_card_win.append(rnd_emote)
+        elif rnd_emote == scratch_card_win[i - 1]:
+          while rnd_emote == scratch_card_win[i - 1]:
+            rnd_emote = random.choice(scratch_emotes)
+          scratch_card_win.append(rnd_emote)
+      scratch_card_win += '\n'
+      scratch_card_win = "-".join(scratch_card_win)
       return scratch_card_win
 
 
     elif win == False:
-      scratch_card_loss = []
+      scratch_card_loss = [' ']
 
       for j in range(3): # Randomizing emotes and not allowing for an accidental win but ensuring emote before != match
         for i in range(3):
@@ -656,7 +645,7 @@ class Bot:
 
         scratch_card_loss += '\n'
 
-      scratch_card_loss = "".join(scratch_card_loss)
+      scratch_card_loss = "-".join(scratch_card_loss)
       return scratch_card_loss
 
 
@@ -670,11 +659,13 @@ class Bot:
       scratch_card = self.get_card(True)
       winning_amount = math.floor(amount * self.get_multiplier()) # Using the predefined math equation to give multipier
       await ctx.send(scratch_card) # Winning scratchcard
-      await ctx.send(f'|| You\'ve won and have been awarded {winning_amount} {self.cm.currency(animated=True)}!||')
+      await ctx.send(f'||---You win!---||')
       self.bank.summon_currency(user, winning_amount) # Payout
+      await asyncio.sleep(10)
+      # await ctx.send(f'You won {winning_amount} {self.cm.currency(animated=True)}')
     else:
       await ctx.send(self.get_card(False)) # Losing scratchcard
-      await ctx.send(f'||You\'ve unforntunately lost and have been awarded nothing!||')
+      await ctx.send(f'||--You lost....--||')
 
 
   async def scratchcard(self, ctx, arg, arg2):
@@ -697,7 +688,7 @@ class Bot:
 
     else:
       await ctx.message.add_reaction('❌')
-      await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast 50!')
+      await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast 50 {self.cm.currency()}!')
 
 
 

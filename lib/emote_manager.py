@@ -5,6 +5,7 @@
 from lib.logger import Logger #pylint: disable=E0401
 from discord import Guild
 from io import BytesIO
+import time
 
 
 class EmoteManager:
@@ -35,11 +36,13 @@ class EmoteManager:
             if emoji in all_emojis_string:
                 to_remove = EmoteManager.get_emoji_from_name(emoji, all_emojis)
                 await to_remove.delete()
+                time.sleep(1.0)
         # Attempt to insert emoji
         for emoji in bot_emojis:
             with open(f'{emoji_source}/{emoji}' + (".gif" if '_ANIM' in emoji else ".png"), 'rb') as image:
                 try:
                     created_emoji = await self.guild.create_custom_emoji(name=emoji, image=BytesIO(image.read()).getvalue(), reason='Bot Bank Emojis')
+                    time.sleep(1.0)
                     self.active_emojis[created_emoji.name] = created_emoji.id
                 except Exception as e:
                     self.logger.error(f'Failed to insert emoji: {emoji}')
@@ -90,6 +93,50 @@ class CoinManager(EmoteManager):
         else:
             return '<:VBC:' + str(self.active_emojis['VBC']) + '>'
 
+
+class ScratchManager(EmoteManager):
+
+
+    def __init__(self, logger: Logger):
+        super().__init__(logger)
+        self.custom_emojis = [
+            'SCRATCH_1',
+            'SCRATCH_2',
+            'SCRATCH_3',
+            'SCRATCH_4',
+            'SCRATCH_5',
+            'SCRATCH_6',
+            'SCRATCH_7',
+            'SCRATCH_8',
+            'SCRATCH_9',
+            'SCRATCH_10_ANIM',
+            'SCRATCH_11',
+        ]
+
+
+    def get_scratch_emojis(self):
+        """Returns scrath emoji string"""
+        if not self.use_emoji:
+            return [  # List of emotes for the scratch card to use
+              f'||:smile:||',
+              f'||:nerd:||',
+              f'||:star_struck:||',
+              f'||:thinking:||',
+              f'||:disguised_face:||',
+              f'||:skull:||',
+              f'||:money_mouth:||',
+              f'||:poop:||',
+              f'||:clown:||',
+              f'||:cowboy:||',
+            ]
+        if len(self.active_emojis) == 0:
+            self.logger.error('Bot emojis have not be loaded, try calling populate_bot_emojis()')
+            exit(1)
+        else:
+            scratch_emojis = []
+            for emoji_string in self.custom_emojis:
+                scratch_emojis.append(f'||<:{emoji_string}:{str(self.active_emojis[emoji_string])}>||')
+            return scratch_emojis
 
 
 ########################################################################################################
