@@ -49,6 +49,64 @@ class Bank:
         return int(content['response']['balance'])
 
 
+    def get_bank_balance(self):
+        """Get bank balance. Returns bank balance as int"""
+        # Create payload/request for bank server
+        payload = dumps({
+            'action': 'getBankBalance',
+            'parameters': {}
+        })
+        # Create headers
+        headers = self.default_headers
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
+                data=payload,
+                headers=headers,
+                timeout=10
+            )
+        content = loads(r.content)
+        # If the code is not 200, raise an error with the response of the bank
+        if r.status_code != 200:
+            self.logger.warn('Bank response was a non 200')
+            self.logger.warn(content)
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
+            self.logger.warn(content)
+        return int(content['response']['balance'])
+
+
+    def get_tax_balance(self):
+        """Get tax balance. Returns tax balance as int"""
+        # Create payload/request for bank server
+        payload = dumps({
+            'action': 'getTaxBalance',
+            'parameters': {}
+        })
+        # Create headers
+        headers = self.default_headers
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
+                data=payload,
+                headers=headers,
+                timeout=10
+            )
+        content = loads(r.content)
+        # If the code is not 200, raise an error with the response of the bank
+        if r.status_code != 200:
+            self.logger.warn('Bank response was a non 200')
+            self.logger.warn(content)
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
+            self.logger.warn(content)
+        return int(content['response']['balance'])
+
+
     def move_currency(self, user_id_sender: int, user_id_receiver: int, amount: int):
         """Moves balance from one user id to another. Returns users balance afterwards as int"""
         # Create payload/request for bank server
@@ -119,6 +177,38 @@ class Bank:
         # Create payload/request for bank server
         payload = dumps({
             'action': 'withdrawCurrency',
+            'parameters': {
+                'user_id': user_id,
+                'amount': amount
+            }
+        })
+        # Create headers
+        headers = self.default_headers
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
+                data=payload,
+                headers=headers,
+                timeout=10
+            )
+        content = loads(r.content)
+        # If the code is not 200, raise an error with the response of the bank
+        if r.status_code != 200:
+            self.logger.warn('Bank response was a non 200')
+            self.logger.warn(content)
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
+            self.logger.warn(content)
+        return int(content['response']['balance_sender'])
+
+
+    def withdraw_tax_currency(self, user_id: int, amount: int):
+        """Withdraw from tax account to users balance using user_id. Returns users balance afterwards as int"""
+        # Create payload/request for bank server
+        payload = dumps({
+            'action': 'withdrawTaxCurrency',
             'parameters': {
                 'user_id': user_id,
                 'amount': amount
