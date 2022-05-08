@@ -561,16 +561,15 @@ class Bot:
 # Scratch cards
 #############################################################################################
 
-
 # Making sure user has enough money to purchase card
   async def check_and_spend_scratchcard(self, ctx, amount):
     user_balance = self.bank.get_balance(ctx.author.id)
     # Insufficient balance
     if int(amount) > user_balance:
-      await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}')
+      await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}') # If balance insf
       return
     try:
-      self.bank.spend_currency_taxed(ctx.author.id, int(amount), self.config['SCRATCHCARD_TAX_BAND'])
+      self.bank.spend_currency_taxed(ctx.author.id, int(amount), self.config['SCRATCHCARD_TAX_BAND']) # Spending the amount
       return 1
 
     except Exception as e:
@@ -585,16 +584,27 @@ class Bot:
     if ans == 1:
       return 1
 
-
-
-
+# Fair multiplier
   def get_multiplier(self):
     rand = random.randint(1, 100)
     multiplier = 2 + (math.pow((93 / 100), ((0 - rand) + 65)))
     return multiplier
 
+# Creaing the actual card
   def get_card(self, win):
     scratch_emotes = [  # List of emotes for the scratch card to use
+      # NOTE(Liam):
+      #   I'm massively against this, this assumes that the EXACT emotes
+      #   and emote IDS match in the server. This makes the bots only
+      #   ever work on this one Server and if people delete an emote,
+      #   bam, code is broken and needs to be altered.
+      #
+      #   I did consider hot loading emotes on bot bootup. It is possible for
+      #   to expand the coin_manager into a emote_manager. This way we can load
+      #   the emojis you want. However, in the event emojis cannot be added, the
+      #   code must 'protect' itself. either replacing the emojis with text, or
+      #   completly disable the the scratch card code.
+
       '||<:3Head:823900227135078420>||',
       '||<:BatChest:916017305316655124>||',
       '||<:EZ:833484841663725578>||',
@@ -608,12 +618,12 @@ class Bot:
     ]
     winning_emote = random.choice(scratch_emotes)  # Choosing a random emote to display as the winning emote
     if win == True:
-      scratch_card_win = []
+      scratch_card_win = [] # Listing the emotes
       for i in range(3):
-        scratch_card_win.append(winning_emote)
+        scratch_card_win.append(winning_emote) # Making first line the winning line
       scratch_card_win += '\n'
 
-      for j in range(2):
+      for j in range(2): # The rest are randomized but will not allow for another winning line
         for i in range(3):
           rnd_emote = random.choice(scratch_emotes)
           if not scratch_card_win:
@@ -632,7 +642,7 @@ class Bot:
     elif win == False:
       scratch_card_loss = []
 
-      for j in range(3):
+      for j in range(3): # Randomizing emotes and not allowing for an accidental win but ensuring emote before != match
         for i in range(3):
           rnd_emote = random.choice(scratch_emotes)
           if not scratch_card_loss:
@@ -654,28 +664,16 @@ class Bot:
   # Function of the actual game
   async def scratch_card_game(self, ctx, amount, user):
     """Actual scratch card game"""
-    # NOTE(Liam):
-    #   I'm massively against this, this assumes that the EXACT emotes
-    #   and emote IDS match in the server. This makes the bots only
-    #   ever work on this one Server and if people delete an emote,
-    #   bam, code is broken and needs to be altered.
-    #
-    #   I did consider hot loading emotes on bot bootup. It is possible for
-    #   to expand the coin_manager into a emote_manager. This way we can load
-    #   the emojis you want. However, in the event emojis cannot be added, the
-    #   code must 'protect' itself. either replacing the emojis with text, or
-    #   completly disable the the scratch card code.
-    #
 
-    x = random.randint(1, 2)
+    x = random.randint(1, 5) # 20% chance to be a win
     if x == 1:
       scratch_card = self.get_card(True)
-      winning_amount = math.floor(amount * self.get_multiplier())
-      await ctx.send(scratch_card)
-      await ctx.send(f'|| You\'ve won and have been awarded {winning_amount}!||')
-      await self.bank.summon_currency(user, winning_amount)
+      winning_amount = math.floor(amount * self.get_multiplier()) # Using the predefined math equation to give multipier
+      await ctx.send(scratch_card) # Winning scratchcard
+      await ctx.send(f'|| You\'ve won and have been awarded {winning_amount} {self.cm.currency(animated=True)}!||')
+      self.bank.summon_currency(user, winning_amount) # Payout
     else:
-      await ctx.send(self.get_card(False))
+      await ctx.send(self.get_card(False)) # Losing scratchcard
       await ctx.send(f'||You\'ve unforntunately lost and have been awarded nothing!||')
 
 
@@ -683,18 +681,18 @@ class Bot:
     """Main scratch card command"""
     user = ctx.author.id
     if (arg != None
-        and arg.lower() == "buy"
+        and arg.lower() == "buy" # Initiator command
         and arg2 != None
         and arg2.isdigit()
         and int(arg2) >= int(self.config['SCRATCHCARD_MIN_BET'])):
       amount = int(arg2)
-      ans = await self.purchase_card(ctx, amount, user)
+      ans = await self.purchase_card(ctx, amount, user) # Purchasing and withdrawing amount from their balance
       if ans == 1:
         await ctx.message.add_reaction('✅')
         await asyncio.sleep(2)
-        await self.scratch_card_game(ctx, amount, user)
+        await self.scratch_card_game(ctx, amount, user) # Starting the scratchcard
 
-    elif arg.lower() == "help":
+    elif arg.lower() == "help": # Help embed
       await self.help_embed(ctx, "scratchcard")
 
     else:
@@ -704,7 +702,7 @@ class Bot:
 
 
 ########################################################################################################
-#   Copyright (C) 2022  Liam Coombs, Sam Tipper
+#   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
