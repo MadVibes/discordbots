@@ -35,6 +35,7 @@ class EmoteManager:
         for emoji in bot_emojis.copy():
             if emoji in all_emojis_string:
                 self.logger.debug(f'Existing emoji found: {emoji}')
+                self.active_emojis[emoji] = (await EmoteManager.fetch_emoji_from_name(emoji, self.guild)).id
                 bot_emojis.remove(emoji)
         # Attempt to insert emoji
         for emoji in bot_emojis:
@@ -67,6 +68,14 @@ class EmoteManager:
     def get_emoji_from_name(name: str, all_emojis):
         """Gets emoji from emojis list using name string"""
         for emoji in all_emojis:
+            if emoji.name == name:
+                return emoji
+        return None
+    
+    @staticmethod
+    async def fetch_emoji_from_name(name: str, guild: Guild):
+        """Gets emoji from emojis list using name string"""
+        for emoji in await guild.fetch_emojis():
             if emoji.name == name:
                 return emoji
         return None
