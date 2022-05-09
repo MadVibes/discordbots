@@ -102,8 +102,8 @@ async def scratchcard(ctx, arg=None, arg2=None):
     try:
         await bot.scratchcard(ctx, arg, arg2)
     except Exception as e:
-      logger.error('Failed to handle Scratchcard:')
-      logger.error(str(e))
+        logger.error('Failed to handle Scratchcard:')
+        logger.error(str(e))
 
 
 # Start the bot using TOKEN
