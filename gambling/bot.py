@@ -8,14 +8,13 @@ import numpy as np
 import asyncio
 import random
 from random import randint, shuffle
-from lib.emote_manager import CoinManager, ScratchManager #pylint: disable=E0401
-
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
-from lib.logger import Logger
-from lib.data import Database
-from lib.bank_interface import Bank
+from lib.logger import Logger #pylint: disable=E0401
+from lib.data import Database #pylint: disable=E0401
+from lib.bank_interface import Bank #pylint: disable=E0401
+from lib.emote_manager import CoinManager, ScratchManager #pylint: disable=E0401
 
 
 db_schema = {
@@ -45,7 +44,7 @@ class Bot:
       for i in data["bets"]:
         id = i['ID']
         title = str(i['title'])
-        title = re.sub("[,'\[\]]", "", title)
+        title = re.sub("[,'\[\]]", "", title) #pylint: disable=W1401
         for_pool = i['for']['pool']
         against_pool = i['against']['pool']
 
@@ -71,7 +70,7 @@ class Bot:
       against = {"users": [], "pool": 0}
       ID = await self.make_bet(ctx, args, pro, against)
       args = str(args)
-      title = re.sub("[,'\[\]]", "", args)
+      title = re.sub("[,'\[\]]", "", args) #pylint: disable=W1401
       await ctx.send(f"Bet \"{title.title()}\" created, it's ID is \"{ID}\".")
 
     elif args[0].lower() == "for" or args[0].lower() == "against":
@@ -98,7 +97,7 @@ class Bot:
             if answer == 1:
               userid_wager = [user_id, wager]
               if choice.lower() == "for": # Betting FOR Logic
-                title = re.sub("[,'\[\]]", "", str(active_bet['title']))
+                title = re.sub("[,'\[\]]", "", str(active_bet['title'])) #pylint: disable=W1401
                 active_bet['for']['pool'] += wager
                 users = active_bet['for']['users']
                 active_bet['user_ids'].append(user_id)
@@ -108,7 +107,7 @@ class Bot:
                 await ctx.message.add_reaction('✅')
     
               elif choice.lower() == "against": # Betting AGAINST Logic
-                title = re.sub("[,'\[\]]", "", str(active_bet['title']))
+                title = re.sub("[,'\[\]]", "", str(active_bet['title'])) #pylint: disable=W1401
                 active_bet['against']['pool'] += wager
                 users = active_bet['against']['users']
                 active_bet['user_ids'].append(user_id)
@@ -218,7 +217,7 @@ class Bot:
     elif result == "stalemate":
       title = "Stalemate!"
       colour = discord.Colour.gold()
-    active_bet = re.sub("[,'\[\]]", "", str(active_bet['title']))
+    active_bet = re.sub("[,'\[\]]", "", str(active_bet['title'])) #pylint: disable=W1401
     active_bet = active_bet.title()
     
     embed = discord.Embed(
@@ -561,8 +560,8 @@ class Bot:
 #############################################################################################
 
 
-# Making sure user has enough money to purchase card
   async def check_and_spend_scratchcard(self, ctx, amount):
+    """Making sure user has enough money to purchase card"""
     user_balance = self.bank.get_balance(ctx.author.id)
     # Insufficient balance
     if int(amount) > user_balance:
@@ -577,7 +576,6 @@ class Bot:
       self.logger.warn(str(e))
 
 
-# Purchasing a card
   async def purchase_card(self, ctx, amount, user):
     """Handling purchase of a scratch card"""
     ans = await self.check_and_spend_scratchcard(ctx, amount)
@@ -585,8 +583,8 @@ class Bot:
       return 1
 
 
-# Fair multiplier
   def get_multiplier(self):
+    """Multiplier calculation for winnings"""
     rand = random.randint(1, 100)
     multiplier = 2 + (math.pow((93 / 100), ((0 - rand) + 65)))
     return multiplier
@@ -597,8 +595,8 @@ class Bot:
     Generates a card
     returns 2 vars, win (bool) and card (nested array/matrix)
     """
-    chance_to_win = 20  # In percentage
-    chance_to_almost = 10  # In Percentage
+    chance_to_win = 18  # In percentage
+    chance_to_almost = 20 # In Percentage
     emojis = self.sm.get_scratch_emojis()
     def almost():
       left_align = True if (randint(0, 1) == 0) else False
@@ -616,7 +614,7 @@ class Bot:
     def random():
       row = []
       _emojis = emojis.copy()
-      for i in range(3):
+      for i in range(3): #pylint: disable=w0612
         row.append(_emojis.pop(randint(0, len(_emojis) - 1)))
       return row
 
@@ -634,7 +632,7 @@ class Bot:
     """Converts card matrix to string for discord"""
     d_string = ''
     for row in card:
-      d_string += '`|\:/|`' + '-'.join(row) + '`|\:/|`'
+      d_string += '`|    \/    | `'+ '`-`'.join(row) +'` |    \/    |`' #pylint: disable=w1401
       d_string += '\n'
     return d_string
 
@@ -642,42 +640,46 @@ class Bot:
   # Function of the actual game
   async def scratch_card_game(self, ctx, amount, user):
     """Actual scratch card game"""
+    padding_amount = 26
     win, card = self.get_scratch_card()
     multiplier = self.get_multiplier()
+
     pretty_multiplier = "{:.2f}".format(multiplier)
     winning_amount = math.floor(amount * multiplier)  # Using the predefined math equation to give multipier
-    pretty_string_winning_amount = f'{winning_amount} with a {pretty_multiplier} multiplier'
+    pretty_string_winning_amount = f'{amount} x {pretty_multiplier} -> {winning_amount}'
+
     blank = (' ' * len(str(pretty_string_winning_amount)))
-    padding = (' ' * (13 - len(str(pretty_string_winning_amount))))
+    padding = (' ' * (padding_amount - len(str(pretty_string_winning_amount))))
+
+    outcome = f'||`| You won! {pretty_string_winning_amount}{padding}|`||' if win else f'||`| You lost...{blank}{padding[:-2]}|`||'
     if win:
-      await ctx.send(self.convert_card_to_string(card))  # Winning scratchcard
-      await ctx.send(f'||`|You win! {pretty_string_winning_amount}{padding}`||')
-      self.bank.summon_currency(user, winning_amount)  # Payout
+      await ctx.send(self.convert_card_to_string(card) + outcome)
+      self.bank.summon_currency(user, winning_amount) # Winning scratchcard
     else:
-      await ctx.send(self.convert_card_to_string(card))  # Losing scratchcard
-      await ctx.send(f'||`|You lost {blank}{padding}`||')
+      await ctx.send(self.convert_card_to_string(card) + outcome)
 
 
   async def scratchcard(self, ctx, arg, arg2):
     """Main scratch card command"""
     user = ctx.author.id
     if (arg != None
-        and arg.lower() == "buy"  # Initiator command
+        and arg.lower() == "buy" # Initiator command
         and arg2 != None
         and arg2.isdigit()
         and int(arg2) >= int(self.config['SCRATCHCARD_MIN_BET'])):
       amount = int(arg2)
       ans = await self.purchase_card(ctx, amount, user)  # Purchasing and withdrawing amount from their balance
       if ans == 1:
-        await ctx.message.add_reaction('✅')
         await self.scratch_card_game(ctx, amount, user)  # Starting the scratchcard
+        await ctx.message.add_reaction('✅')
 
     elif arg.lower() == "help": # Help embed
       await self.help_embed(ctx, "scratchcard")
 
     else:
       await ctx.message.add_reaction('❌')
-      await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast 50 {self.cm.currency()}!')
+      await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast {self.config["SCRATCHCARD_MIN_BET"]} {self.cm.currency()}!')
+
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
