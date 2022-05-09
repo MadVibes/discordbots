@@ -60,7 +60,7 @@ class EmoteManager:
             found_emoji = EmoteManager.get_emoji_from_name(emoji, all_emojis)
             self.active_emojis[found_emoji.name] = found_emoji.id
         self.use_emoji = True
-        self.logger.debug('Loaded emojis!')
+        self.logger.debug('Loaded external emojis!')
 
 
     @staticmethod
