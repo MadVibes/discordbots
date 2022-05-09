@@ -77,23 +77,26 @@ async def on_ready():
     # Load ScratchManager
     sm.set_guild(client.get_guild(bot.guild_id))
     await sm.try_add_emojis(config['EMOJI_SOURCE'])
-    print(sm.active_emojis)
+
 
 @client.command(name='bet')
 async def bet(ctx: commands.Context, *args):
     """Create and join bets"""
     await bot.bet(ctx, args)
 
+
 @client.command(name='pay')
 async def pay(ctx, arg, arg2=None):
     """Pay out a bet"""
     await bot.pay(ctx, arg, arg2)
+
 
 @client.command(name='deathroll')
 @commands.guild_only()
 async def deathroll(ctx, arg=None, arg2=None):
     """Create and join deathrolls"""
     await bot.deathroll(ctx, arg, arg2)
+
 
 @client.command(name='scratchcard')
 @commands.guild_only()
@@ -102,8 +105,8 @@ async def scratchcard(ctx, arg=None, arg2=None):
     try:
         await bot.scratchcard(ctx, arg, arg2)
     except Exception as e:
-      logger.error('Failed to handle Scratchcard:')
-      logger.error(str(e))
+        logger.error('Failed to handle Scratchcard:')
+        logger.error(str(e))
 
 
 # Start the bot using TOKEN
