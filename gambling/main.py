@@ -77,7 +77,6 @@ async def on_ready():
     # Load ScratchManager
     sm.set_guild(client.get_guild(bot.guild_id))
     await sm.try_add_emojis(config['EMOJI_SOURCE'])
-    logger.debug(sm.active_emojis)
 
 
 @client.command(name='bet')
