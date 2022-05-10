@@ -108,8 +108,8 @@ class Bank:
 
 
     def move_currency(self, user_id_sender: int, user_id_receiver: int, amount: int):
-        """moves balance from one user id to another. returns users balance afterwards as int"""
-        # create payload/request for bank server
+        """Moves balance from one user id to another. Returns users balance afterwards as int"""
+        # Create payload/request for bank server
         payload = dumps({
             'action': 'moveCurrency',
             'parameters': {
@@ -118,31 +118,31 @@ class Bank:
                 'amount': amount
             }
         })
-        # create headers
+        # Create headers
         headers = self.default_headers
-        headers['content-length'] = str(len(payload))
-        headers['authorization'] = self.config['comms_secret']
-        # send request
-        r = requests.post(url=self.config['comms_target']+"/action",
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
                 data=payload,
                 headers=headers,
                 timeout=10
             )
         content = loads(r.content)
-        # if the code is not 200, raise an error with the response of the bank
+        # If the code is not 200, raise an error with the response of the bank
         if r.status_code != 200:
-            self.logger.warn('bank response was a non 200')
+            self.logger.warn('Bank response was a non 200')
             self.logger.warn(content)
-            raise exception(content)
-        if content['request'] != 'accepted':
-            self.logger.warn('bank response was not accepted')
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
             self.logger.warn(content)
         return int(content['response'])
 
 
     def move_currency_taxed(self, user_id_sender: int, user_id_receiver: int, amount: int, tax_band: str):
-        """moves balance from one user id to another with tax. returns users balance afterwards as int"""
-        # create payload/request for bank server
+        """Moves balance from one user id to another with tax. Returns users balance afterwards as int"""
+        # Create payload/request for bank server
         payload = dumps({
             'action': 'moveCurrencyTaxed',
             'parameters': {
@@ -152,26 +152,27 @@ class Bank:
                 'tax_band': tax_band
             }
         })
-        # create headers
+        # Create headers
         headers = self.default_headers
-        headers['content-length'] = str(len(payload))
-        headers['authorization'] = self.config['comms_secret']
-        # send request
-        r = requests.post(url=self.config['comms_target']+"/action",
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
                 data=payload,
                 headers=headers,
                 timeout=10
             )
         content = loads(r.content)
-        # if the code is not 200, raise an error with the response of the bank
+        # If the code is not 200, raise an error with the response of the bank
         if r.status_code != 200:
-            self.logger.warn('bank response was a non 200')
+            self.logger.warn('Bank response was a non 200')
             self.logger.warn(content)
-            raise exception(content)
-        if content['request'] != 'accepted':
-            self.logger.warn('bank response was not accepted')
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
             self.logger.warn(content)
         return int(content['response'])
+
 
     def spend_currency(self, user_id: int, amount: int):
         """Spend users balance using user_id. Returns users balance afterwards as int"""
