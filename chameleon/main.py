@@ -76,7 +76,11 @@ async def on_ready():
 
 @client.command(name='tts')
 async def command_tts(ctx: commands.Context, *args):
-    """Execute tts command"""
+    """
+    Execute tts command
+    Usage:
+        tts [MESSAGE_TO_SAY]
+    """
 
     user_balance = bank.get_balance(ctx.author.id)
     # insufficient balance
@@ -94,7 +98,14 @@ async def command_tts(ctx: commands.Context, *args):
 
 @client.command(name='sound')
 async def command_sound(ctx: commands.Context, *args):
-    """Play sounds in discord"""
+    """
+    Play sounds in discord.
+    Usage:
+        sound list
+        sound play [NAME]
+        sound cost
+        sound help
+    """
     if len(args) == 0:
         await ctx.reply(f'Invalid command, see $sound help')
         return
