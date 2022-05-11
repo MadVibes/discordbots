@@ -68,7 +68,7 @@ async def on_reaction_add(reaction, user):
 @client.command(name='poll')
 async def command_poll(ctx: commands.Context, *args):
     """
-    Makes a bet with a custom name
+    Makes a bet with a custom name.
     Usage:
         poll
         poll create [TITLE]

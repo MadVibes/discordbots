@@ -77,7 +77,12 @@ async def on_ready():
 
 @client.command(name='shop')
 async def command_shop(ctx: commands.Context, *args):
-    """Access the store"""
+    """
+    Access the store
+    Usage:
+        shop list
+        shop buy [SERVICE_NAME]
+    """
     await bot.handle_input(ctx, *args)
 
 
