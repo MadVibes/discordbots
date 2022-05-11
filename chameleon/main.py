@@ -77,7 +77,7 @@ async def on_ready():
 @client.command(name='tts')
 async def command_tts(ctx: commands.Context, *args):
     """
-    Execute tts command
+    Execute tts command.
     Usage:
         tts [MESSAGE_TO_SAY]
     """
