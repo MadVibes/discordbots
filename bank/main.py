@@ -148,7 +148,7 @@ async def balance_fade():
 @client.command(name='balance')
 async def command_balance(ctx: commands.Context, *args):
     """
-    Display a users balance, or a target users balance
+    Display a users balance, or a target users balance.
     Usage:
         balance
         balance [NICKNAME]
@@ -200,7 +200,7 @@ async def command_balance(ctx: commands.Context, *args):
 @client.command(name='leaderboard')
 async def command_leaderboard(ctx: commands.Context, *args):
     """
-    Display a leaderboard
+    Display a leaderboard.
     Usage:
         leaderboard
     """
@@ -237,7 +237,7 @@ async def command_leaderboard(ctx: commands.Context, *args):
 @client.command(name='transfer')
 async def command_transfer(ctx: commands.Context, amount, *args):
     """
-    Tansfer money to another user
+    Tansfer money to another user.
     Usage:
         transfer [AMOUNT] [NICKNAME]
     """
@@ -302,10 +302,10 @@ async def command_transfer(ctx: commands.Context, amount, *args):
             await ctx.reply(f'Successfully transferred {amount} {cm.currency()} ᵇᵉᶠᵒʳᵉ ᵗᵃˣ to {" ".join(args)} ')
 
 
-@client.command(name='bank')
+@client.command(name='stats')
 async def command_balance(ctx: commands.Context, *args):
     """
-    Display a users balance, or a target users balance
+    Display stats about the bank.
     Usage:
         bank
     """

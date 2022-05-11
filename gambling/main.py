@@ -81,27 +81,55 @@ async def on_ready():
 
 @client.command(name='bet')
 async def bet(ctx: commands.Context, *args):
-    """Create and join bets"""
+    """
+    Create and join bets.
+    Usage:
+        bet
+        bet create [NAME]
+        bet for|against [ID] [WAGER]
+        bet help
+
+    See pay command for payouts
+    """
     await bot.bet(ctx, args)
 
 
 @client.command(name='pay')
 async def pay(ctx, arg, arg2=None):
-    """Pay out a bet"""
+    """
+    Pay out a bet.
+    Usage:
+        pay [ID] for|against|stalematea
+        pay help
+    """
     await bot.pay(ctx, arg, arg2)
 
 
 @client.command(name='deathroll')
 @commands.guild_only()
 async def deathroll(ctx, arg=None, arg2=None):
-    """Create and join deathrolls"""
+    """
+    Create and join deathrolls.
+    Usage:
+        deathroll
+        deathroll create [WAGER]
+        deathroll join [ID]
+        deathroll start [ID]
+        deathroll delete [ID]
+        deathroll help
+    """
     await bot.deathroll(ctx, arg, arg2)
 
 
 @client.command(name='scratchcard')
 @commands.guild_only()
 async def scratchcard(ctx, arg=None, arg2=None):
-    """Purchase and use a scratchcard"""
+    """
+    Purchase and use a scratchcard.
+    Usage:
+        scratchcard buy [WAGER]
+        scratchcard help
+    """
     try:
         await bot.scratchcard(ctx, arg, arg2)
     except Exception as e:

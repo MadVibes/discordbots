@@ -70,10 +70,7 @@ class Bot:
         """Handle input for the shop"""
         # If no args are given
         if len(args) == 0:
-            await ctx.reply('Invalid arguments, see help menu `$shop help`')
-        # arg = help
-        elif args[0] == 'help':
-            await ctx.reply('Hehe, yeah i\'ll implement this at somepoint :) Just do `$shop list`')
+            await ctx.reply('Invalid arguments, see help menu `$help shop`')
         # arg = list
         elif args[0] == 'list':
             embed = discord.Embed(name='Shopping list',
