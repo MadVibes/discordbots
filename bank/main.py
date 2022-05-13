@@ -252,8 +252,12 @@ async def command_transfer(ctx: commands.Context, amount, *args):
         return
 
     # No target user specified
-    if (len(args) != 1 and amount != None):
-        await ctx.reply(f'You must specify a target user and amount. See help menu')
+    if (len(args) == 0 or amount == None):
+        await ctx.reply('You must specify a target user and amount. See help menu')
+
+    # Check for negative/zero amount
+    elif (amount < 1):
+        await ctx.reply('Amount must be greater than zero!')
 
     # A target was specified
     else:
