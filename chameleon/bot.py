@@ -20,7 +20,7 @@ class Bot:
         self.client = client
         self.guild_id = 0
         self.clip_list = {
-                    "augh":"augh.mp3",
+                    "Augh":"augh.mp3",
                     "Aughhh":"aughhh.mp3",
                     "Bing Chilling":"bing_chilling.mp3",
                     "Bishcuish":"biscuits.mp3",
