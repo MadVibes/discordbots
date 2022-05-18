@@ -24,7 +24,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
-config.version = 'v1.3'
+config.version = 'v1.4'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -137,6 +137,35 @@ async def scratchcard(ctx, arg=None, arg2=None):
         logger.error(str(e))
 
 
+@client.command(name='slots')
+@commands.guild_only()
+async def slots(ctx, *args):
+    """
+    Purchase to play on the slot machine.
+    Usage:
+        slots spin [WAGER]
+        scratchcard help
+    """
+    try:
+        if args[0].lower() == "spin":
+            if args[1].isdigit():
+                if int(args[1]) > 10:
+                    await bot.slots(ctx, int(args[1]))
+                else:
+                    await ctx.message.add_reaction('❌')
+                    await ctx.send("Wagers must be over 10 VBC")
+            else:
+                await ctx.message.add_reaction('❌')
+        
+        elif args[0].lower() == "help":
+            await bot.help_embed(ctx, "slots")
+
+    except Exception as e:
+        logger.error('Failed to handle Scratchcard:')
+        logger.error(str(e))
+
+
+
 # Start the bot using TOKEN
 client.run(TOKEN)
 
@@ -155,4 +184,3 @@ client.run(TOKEN)
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-

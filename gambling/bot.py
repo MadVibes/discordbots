@@ -22,6 +22,38 @@ db_schema = {
   "deathrolls": []
 }
 
+class Slot:
+  def __init__(self):
+    self.slot_machine = [[0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0],]
+
+  def spin(self):
+    current_machine = self.slot_machine
+    for row in range(len(current_machine)):
+      for index, elem in enumerate(current_machine[row]):
+        current_machine[row][index] = random.randint(2, 7)
+    return current_machine
+
+  def check_win(self, current_machine):
+    wins = {}
+    for row in range(len(current_machine)):
+      multiplier = 0
+      number = current_machine[row][0]
+      for index, elem in enumerate(current_machine[row]):
+        if current_machine[row][index] == number:
+          multiplier += 1
+        else:
+          break
+          
+      if multiplier > 2:
+        wins.update({row: multiplier})
+    return wins
+
+
+slots = Slot()
 
 class Bot:
   def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager, scratch_manager: ScratchManager):
@@ -253,10 +285,12 @@ class Bot:
 
     elif type == "scratchcard":
       title = "Scratchcard Command Help"
+
+    elif type == "slots":
+      title = "Slots Command Help"
       
     embed = discord.Embed(
       title=f'{title}',
-      description='-------',
       colour=discord.Colour.green()
     )
     
@@ -278,6 +312,9 @@ class Bot:
 
     elif type == "scratchcard":
       embed.add_field(name='$scratchcard buy [Amount]', value='Starts a scratchcard for the amount specified', inline=False)
+
+    elif type == "slots":
+      embed.add_field(name='$slots spin [wager]', value='Spin the slot machine with a custom wager.' ,inline=False)
 
     await ctx.send(embed=embed)
     
@@ -681,6 +718,61 @@ class Bot:
       await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast {self.config["SCRATCHCARD_MIN_BET"]} {self.cm.currency()}!')
 
 
+#############################################################################################
+# Slots
+#############################################################################################
+
+  async def check_and_spend_slots(self, ctx, amount):
+      """Making sure user has enough money to play on the slot machine"""
+      user_balance = self.bank.get_balance(ctx.author.id)
+      # Insufficient balance
+      if int(amount) > user_balance:
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}') # If balance insf
+        return
+      try:
+        self.bank.spend_currency_taxed(ctx.author.id, int(amount), self.config['SLOTS_TAX_BAND']) # Spending the amount
+        return 1
+
+      except Exception as e:
+        self.logger.warn('Failed to execute bet:')
+        self.logger.warn(str(e))
+
+
+  async def slots(self, ctx, wager):
+    answer = await self.check_and_spend_slots(ctx, wager)
+
+    if answer == 1:
+      await ctx.message.add_reaction('✅')
+      current_slots = slots.spin()
+      wins = slots.check_win(current_slots)
+      win_amount = 0
+      slot_str = "O\n"
+
+      
+      for row in range(len(current_slots)):
+        if row in wins:
+          slot_str += f"|\| \u200b \u200b >> **|{str(current_slots[row]).replace(',', '').strip()}|** << Win x{(wins[row])*2}!\n"
+          win_amount += wins[row]*2 * wager
+        else:
+          slot_str += f"|\| \u200b \u200b >> **|{str(current_slots[row]).replace(',', '').strip()}|** <<\n"
+          
+      if wins:
+        slot_str += f"\nYou won {win_amount}!"
+        self.bank.summon_currency(ctx.author.id, win_amount)
+      else:
+        slot_str += f"\nYou lost..."
+        
+      embed = discord.Embed(
+        title='Slot Machine',
+        description = slot_str,
+        colour=discord.Colour.gold()
+      )
+      await ctx.send(embed=embed)
+    else:
+      await ctx.message.add_reaction('❌')
+
+  
+
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
 #
@@ -696,4 +788,3 @@ class Bot:
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
