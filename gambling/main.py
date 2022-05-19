@@ -150,7 +150,7 @@ async def slots(ctx, *args):
         if args[0].lower() == "spin":
             if args[1].isdigit():
                 if int(args[1]) > 10:
-                    await bot.slots(ctx, int(args[1]))
+                    await bot.play_slots(ctx, int(args[1]))
                 else:
                     await ctx.message.add_reaction('❌')
                     await ctx.send("Wagers must be over 10 VBC")

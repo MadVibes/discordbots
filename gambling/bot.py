@@ -8,7 +8,7 @@ import numpy as np
 import asyncio
 import random
 from random import randint, shuffle
-from slot import Slot
+from slot import Slot_Machine
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
@@ -32,7 +32,7 @@ class Bot:
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     self.cm = coin_manager
     self.sm = scratch_manager
-    self.slots = Slot()
+    self.slots = Slot_Machine()
 
   # Embed for bets
   async def bet_embed(self, ctx, data):
@@ -707,7 +707,7 @@ class Bot:
         self.logger.warn(str(e))
 
 
-  async def slots(self, ctx, wager):
+  async def play_slots(self, ctx, wager):
     answer = await self.check_and_spend_slots(ctx, wager)
 
     if answer == 1:
