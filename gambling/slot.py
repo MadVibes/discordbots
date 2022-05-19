@@ -1,7 +1,7 @@
 import random
 
 
-class Slot:
+class Slot_Machine:
 
 
   def __init__(self):
@@ -16,7 +16,7 @@ class Slot:
     current_machine = self.slot_machine
     for row in range(len(current_machine)):
       for index, elem in enumerate(current_machine[row]):
-        current_machine[row][index] = random.randint(2, 7)
+        current_machine[row][index] = random.randint(2, 8)
     return current_machine
 
 
