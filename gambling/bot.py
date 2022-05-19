@@ -717,7 +717,6 @@ class Bot:
       win_amount = 0
       slot_str = "O\n"
 
-      
       for row in range(len(current_slots)):
         if row in wins:
           slot_str += f"|\| \u200b \u200b >> **|{str(current_slots[row]).replace(',', '').strip()}|** << Win x{(wins[row])*2}!\n"
@@ -740,7 +739,6 @@ class Bot:
     else:
       await ctx.message.add_reaction('❌')
 
-  
 
 ########################################################################################################
 #   Copyright (C) 2022  Liam Coombs, Sam Tipper, Rhydian Davies
