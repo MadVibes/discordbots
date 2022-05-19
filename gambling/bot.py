@@ -719,10 +719,10 @@ class Bot:
 
       for row in range(len(current_slots)):
         if row in wins:
-          slot_str += f"|\| \u200b \u200b >> **|{str(current_slots[row]).replace(',', '').strip()}|** << Win x{(wins[row])*2}!\n"
+          slot_str += f"|\| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** << Win x{(wins[row])*2}!\n"
           win_amount += wins[row]*2 * wager
         else:
-          slot_str += f"|\| \u200b \u200b >> **|{str(current_slots[row]).replace(',', '').strip()}|** <<\n"
+          slot_str += f"|\| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** <<\n"
           
       if wins:
         slot_str += f"\nYou won {win_amount}!"
