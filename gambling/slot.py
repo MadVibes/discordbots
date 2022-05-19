@@ -16,7 +16,7 @@ class Slot_Machine:
     current_machine = self.slot_machine
     for row in range(len(current_machine)):
       for index, elem in enumerate(current_machine[row]):
-        current_machine[row][index] = random.randint(2, 8)
+        current_machine[row][index] = random.randint(1, 7)
     return current_machine
 
 
