@@ -8,7 +8,7 @@ import numpy as np
 import asyncio
 import random
 from random import randint, shuffle
-from slots import Slot
+from slot import Slot
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
