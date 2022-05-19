@@ -8,6 +8,7 @@ import numpy as np
 import asyncio
 import random
 from random import randint, shuffle
+from slots import Slot
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
@@ -22,7 +23,6 @@ db_schema = {
   "deathrolls": []
 }
 
-
 class Bot:
   def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager, scratch_manager: ScratchManager):
     self.logger = logger
@@ -32,6 +32,7 @@ class Bot:
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     self.cm = coin_manager
     self.sm = scratch_manager
+    self.slots = Slot()
 
   # Embed for bets
   async def bet_embed(self, ctx, data):
@@ -253,10 +254,12 @@ class Bot:
 
     elif type == "scratchcard":
       title = "Scratchcard Command Help"
+
+    elif type == "slots":
+      title = "Slots Command Help"
       
     embed = discord.Embed(
       title=f'{title}',
-      description='-------',
       colour=discord.Colour.green()
     )
     
@@ -278,6 +281,9 @@ class Bot:
 
     elif type == "scratchcard":
       embed.add_field(name='$scratchcard buy [Amount]', value='Starts a scratchcard for the amount specified', inline=False)
+
+    elif type == "slots":
+      embed.add_field(name='$slots spin [wager]', value='Spin the slot machine with a custom wager.' ,inline=False)
 
     await ctx.send(embed=embed)
     
@@ -679,6 +685,59 @@ class Bot:
     else:
       await ctx.message.add_reaction('❌')
       await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast {self.config["SCRATCHCARD_MIN_BET"]} {self.cm.currency()}!')
+
+
+#############################################################################################
+# Slots
+#############################################################################################
+
+  async def check_and_spend_slots(self, ctx, amount):
+      """Making sure user has enough money to play on the slot machine"""
+      user_balance = self.bank.get_balance(ctx.author.id)
+      # Insufficient balance
+      if int(amount) > user_balance:
+        await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}') # If balance insf
+        return
+      try:
+        self.bank.spend_currency_taxed(ctx.author.id, int(amount), self.config['SLOTS_TAX_BAND']) # Spending the amount
+        return 1
+
+      except Exception as e:
+        self.logger.warn('Failed to execute bet:')
+        self.logger.warn(str(e))
+
+
+  async def slots(self, ctx, wager):
+    answer = await self.check_and_spend_slots(ctx, wager)
+
+    if answer == 1:
+      await ctx.message.add_reaction('✅')
+      current_slots = self.slots.spin()
+      wins = self.slots.check_win(current_slots)
+      win_amount = 0
+      slot_str = "O\n"
+
+      for row in range(len(current_slots)):
+        if row in wins:
+          slot_str += f"|\| \u200b \u200b >> **|{str(current_slots[row]).replace(',', '').strip()}|** << Win x{(wins[row])*2}!\n"
+          win_amount += wins[row]*2 * wager
+        else:
+          slot_str += f"|\| \u200b \u200b >> **|{str(current_slots[row]).replace(',', '').strip()}|** <<\n"
+          
+      if wins:
+        slot_str += f"\nYou won {win_amount}!"
+        self.bank.summon_currency(ctx.author.id, win_amount)
+      else:
+        slot_str += f"\nYou lost..."
+        
+      embed = discord.Embed(
+        title='Slot Machine',
+        description = slot_str,
+        colour=discord.Colour.gold()
+      )
+      await ctx.send(embed=embed)
+    else:
+      await ctx.message.add_reaction('❌')
 
 
 ########################################################################################################
