@@ -165,7 +165,6 @@ async def slots(ctx, *args):
         logger.error(str(e))
 
 
-
 # Start the bot using TOKEN
 client.run(TOKEN)
 

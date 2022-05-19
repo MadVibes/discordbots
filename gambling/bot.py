@@ -23,8 +23,6 @@ db_schema = {
   "deathrolls": []
 }
 
-slots = Slot()
-
 class Bot:
   def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager, scratch_manager: ScratchManager):
     self.logger = logger
@@ -34,6 +32,7 @@ class Bot:
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     self.cm = coin_manager
     self.sm = scratch_manager
+    self.slots = Slot()
 
   # Embed for bets
   async def bet_embed(self, ctx, data):
@@ -713,8 +712,8 @@ class Bot:
 
     if answer == 1:
       await ctx.message.add_reaction('✅')
-      current_slots = slots.spin()
-      wins = slots.check_win(current_slots)
+      current_slots = self.slots.spin()
+      wins = self.slots.check_win(current_slots)
       win_amount = 0
       slot_str = "O\n"
 
