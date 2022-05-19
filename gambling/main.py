@@ -144,7 +144,7 @@ async def slots(ctx, *args):
     Purchase to play on the slot machine.
     Usage:
         slots spin [WAGER]
-        scratchcard help
+        slots help
     """
     try:
         if args[0].lower() == "spin":
