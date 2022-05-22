@@ -719,13 +719,13 @@ class Bot:
 
       for row in range(len(current_slots)):
         if row in wins:
-          slot_str += f"|\| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** << Win x{(wins[row])*2}!\n"
-          win_amount += wins[row]*2 * wager
+          slot_str += f"| \| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** << Win x{wins[row]}!\n"
+          win_amount += round(wins[row] * wager * len(wins))
         else:
-          slot_str += f"|\| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** <<\n"
+          slot_str += f"| \| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** <<\n"
           
       if wins:
-        slot_str += f"\nYou won {win_amount}!"
+        slot_str += f"\nYou won {win_amount} {self.cm.currency(animated=True)}"
         self.bank.summon_currency(ctx.author.id, win_amount)
       else:
         slot_str += f"\nYou lost..."
