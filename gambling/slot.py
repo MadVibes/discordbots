@@ -11,12 +11,13 @@ class Slot_Machine:
                          [0, 0, 0, 0, 0],
                          [0, 0, 0, 0, 0],]
 
+    self.conversions = {2: 0.3, 3: 3, 4: 20, 5: 100}
 
   def spin(self):
     current_machine = self.slot_machine
     for row in range(len(current_machine)):
       for index, elem in enumerate(current_machine[row]):
-        current_machine[row][index] = random.randint(1, 7)
+        current_machine[row][index] = random.randint(1, 8)
     return current_machine
 
 
@@ -31,8 +32,8 @@ class Slot_Machine:
         else:
           break
           
-      if multiplier > 2:
-        wins.update({row: multiplier})
+      if multiplier > 1:
+        wins.update({row: self.conversions.get(multiplier)})
     return wins
     
 ########################################################################################################
