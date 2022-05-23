@@ -86,7 +86,6 @@ async def on_ready():
 
 
 
-
 # Start the bot using TOKEN
 client.run(TOKEN)
 
