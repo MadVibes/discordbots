@@ -107,4 +107,3 @@ COMMAND_PREFIX = $
 IGNORE_COMMANDS = balance,transfer,tts,shop,leaderboard,poll,scratchcard,slots
 STATUS_START_ONLINE = True
 EMOJI_SOURCE = ./emojis
-POSTING_CHANNEL_ID = CHANNEL HERE!

@@ -720,7 +720,7 @@ class Bot:
       for row in range(len(current_slots)):
         if row in wins:
           slot_str += f"| \| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** << Win x{wins[row]}!\n"
-          win_amount += round(wins[row] * wager * len(wins))
+          win_amount += round(wins[row] * wager)
         else:
           slot_str += f"| \| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** <<\n"
           

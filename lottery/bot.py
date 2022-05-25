@@ -17,10 +17,11 @@ from lib.bank_interface import Bank #pylint: disable=E0401
 
 
 db_schema = {
-  "user_choices": {}, 
-  "taken_numbers": [],
-  "can_purchase_ticket": False,
-  "lottery_completed": False
+  "user choices": {}, 
+  "taken numbers": [],
+  "purchaseable": False,
+  "lottery completed": False,
+  "posting channel": 0
 }
 
 
@@ -31,3 +32,31 @@ class Bot:
     self.client = client
     self.bank = bank
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
+
+
+  def find_random_channel(self):
+    for guild in self.client.guilds:
+      if str(guild) == self.config['DISCORD_GUILD']:
+        channel = random.choice(guild.text_channels).id
+        break
+          
+      else:
+        channel = 0
+
+    return channel
+
+
+  async def announcement(self):
+    data = self.data.read()
+    if data['posting channel'] == 0: # If channel isn't specified, obtain a random one from the same server/guild
+      channel_id = self.find_random_channel() 
+    else: 
+      channel_id = data['posting channel']
+      
+    if channel_id != 0:
+      channel_obj = await self.client.fetch_channel(channel_id)
+      await channel_obj.send("Pog!") 
+      
+    
+      
+      
