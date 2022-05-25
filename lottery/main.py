@@ -51,9 +51,8 @@ cm = CoinManager(logger)
 
 @tasks.loop(minutes=30)
 async def lotto_date_check():
-    await bot.announcement()
     if datetime.today().weekday() == 4:
-        pass
+        await bot.announcement()
     
 
 
