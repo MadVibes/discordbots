@@ -107,3 +107,4 @@ COMMAND_PREFIX = $
 IGNORE_COMMANDS = balance,transfer,tts,shop,leaderboard,poll,scratchcard,slots
 STATUS_START_ONLINE = True
 EMOJI_SOURCE = ./emojis
+LOTTERY_TAX_BAND = 2
