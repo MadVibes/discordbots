@@ -51,13 +51,18 @@ sm = ScratchManager(logger)
 bot = Bot(logger, config, bank, client, cm, sm)
 
 
-@tasks.loop(minutes=1)
+@tasks.loop(seconds=59)
 async def lotto_date_check():
-    if datetime.today().weekday() == 3 and datetime.today().hour == 12:
-        await bot.announcement()
+    if datetime.today().weekday() == 4 and datetime.today().hour == 20:
+
+        if datetime.today().minute == 26:
+            await bot.announcement()
     
-    elif datetime.today().weekday() == 3 and datetime.today().hour == 2:
-        await bot.open_purchases()
+        elif datetime.today().minute == 33:
+            await bot.toggle_purchases()
+
+        elif datetime.today().minute == 58:
+            await bot.lottery_game()
 
 
 @client.event
@@ -93,6 +98,28 @@ async def on_ready():
     lotto_date_check.start()
 
 
+@client.command(name='lotto')
+@commands.guild_only()
+async def lotto(ctx, arg, arg2=None):
+    """
+    Purchase and use a lottery ticket.
+    Usage:
+        lotto buy [WAGER]
+        lotto taken
+        lotto help
+    """
+
+    if arg.lower() == "buy" and arg2 != None and arg2.isdigit():
+        if int(arg2) in range(1, 101):
+            await bot.buy_ticket(ctx, int(arg2))
+    
+    elif arg.lower() == "taken":
+        await bot.number_check(ctx)
+
+    elif arg.lower() == "random":
+        if arg2.isdigit():
+            if int(arg2) < 101:
+                await bot.buy_random(ctx, int(arg2))
 
 
 # Start the bot using TOKEN
