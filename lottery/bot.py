@@ -45,7 +45,6 @@ class Bot:
           
       else:
         channel = 0
-
     return channel
 
 
@@ -54,7 +53,6 @@ class Bot:
       channel_id = self.find_random_channel() 
     else: 
       channel_id = data['posting channel']
-
     return channel_id
 
 
@@ -64,7 +62,6 @@ class Bot:
         break
     
     self.bank.withdraw_tax_currency(int(id), data['total to win'])
-    
     return id
 
 
@@ -134,9 +131,32 @@ class Bot:
       self.data.write(data)
 
 
-  # USER COMMANDS
+  # USER COMMANDS || Things that interact with the user
 
-  async def buy_ticket(self, ctx, number):
+  async def set_posting_channel(self, ctx, id):
+    data = self.data.read()
+    data['posting channel'] = id
+    self.data.write(data)
+    await ctx.send("You have successfully updated the Lottery announcement channel!")
+
+
+  async def posting_channel_choices(self, ctx): # Embed showing all text channels in the scope of ctx.guild
+    channel_str = ""
+    for index, channel in enumerate(ctx.guild.text_channels):
+      if index < 10:
+        index = f"0{str(index)}"
+      channel_str += f"``{index}:`` {channel}\n"
+
+    embed = discord.Embed(
+      title='Choose a Lottery Annoucement Channel!',
+      description=f'{channel_str}',
+      colour=discord.Color.blue()
+    )
+    await ctx.send(embed=embed)
+    return {i: k.id for i, k in enumerate(ctx.guild.text_channels)}
+
+    
+  async def buy_ticket(self, ctx, number): 
     data = self.data.read()
     if data['purchaseable'] == True:
       if number not in data['taken numbers']:
@@ -151,7 +171,7 @@ class Bot:
         await self.number_check(ctx)
 
   
-  async def buy_random(self, ctx, amount):
+  async def buy_random(self, ctx, amount): # Buy a custom amount of randomly selected tickets
     data = self.data.read()
     if data['purchaseable'] == True:
       if await self.check_and_spend_lottery(ctx, int(math.floor(data['total to win']) / 100 * amount)) == 1:
@@ -168,7 +188,7 @@ class Bot:
         await ctx.send(f"You bought the numbers: **{numbers_chosen}**")
     
 
-  async def number_check(self, ctx):
+  async def number_check(self, ctx): # Embed for checking what numbers are available
     number_str = ""
     data = self.data.read()
     for number in range(1, 101):
@@ -189,4 +209,3 @@ class Bot:
     )
     await ctx.send(embed=embed)
       
-

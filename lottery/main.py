@@ -7,6 +7,7 @@ from fuzzywuzzy import process
 from discord.ext import tasks
 from discord.ext import commands
 from datetime import datetime
+import asyncio
 
 sys.path.insert(0, '../')
 sys.path.insert(0, './')
@@ -106,23 +107,39 @@ async def lotto(ctx, arg, arg2=None):
     Usage:
         lotto buy [WAGER]
         lotto taken
+        lotto set
         lotto help
     """
 
-    if arg.lower() == "buy" and arg2 != None and arg2.isdigit():
+    if arg.lower() == "buy" and arg2 != None and arg2.isdigit(): # Used to buy lottery tickets
         if int(arg2) in range(1, 101):
             await bot.buy_ticket(ctx, int(arg2))
     
-    elif arg.lower() == "taken":
+    elif arg.lower() == "taken": # Invoke the embed for showing what numbers are still available
         await bot.number_check(ctx)
 
-    elif arg.lower() == "random":
-        if arg2.isdigit():
-            if int(arg2) < 101:
-                await bot.buy_random(ctx, int(arg2))
+    elif arg.lower() == "random" and arg2.isdigit(): # Buying a specified amount of random tickets
+        if int(arg2) < 101:
+            await bot.buy_random(ctx, int(arg2))
+
+    elif arg.lower() == "set": # Setting the lottery announcement channel
+        channel_options = await bot.posting_channel_choices(ctx)
+        user_choice = await client.wait_for('message', check=lambda m: m.author.id == ctx.author.id, timeout=15.0)
+        try:
+            if user_choice.content.isdigit():
+                if int(user_choice.content) in channel_options:
+                    await bot.set_posting_channel(ctx, int(channel_options[int(user_choice.content)]))
+                else:
+                    await ctx.send("Wait a minute, that number isn't on the list, please try again.")
+            else:
+                await ctx.send("Oops! You need to use the numbers, not the names.")
+
+        except asyncio.TimeoutError:
+          await ctx.send("Command timed out.")
+        
 
 
-# Start the bot using TOKEN
+# Start the bot using TOKENS
 client.run(TOKEN)
 
 ########################################################################################################
