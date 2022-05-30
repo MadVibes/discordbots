@@ -54,16 +54,18 @@ bot = Bot(logger, config, bank, client, cm, sm)
 
 @tasks.loop(seconds=59)
 async def lotto_date_check():
-    if datetime.today().weekday() == 4 and datetime.today().hour == 20:
+    if datetime.today().weekday() == 4 and datetime.today().hour == 17:
 
-        if datetime.today().minute == 26:
-            await bot.announcement()
+        if datetime.today().minute == 0:
+            balance_check = bot.check_tax_balance()
+            if balance_check == True:
+                await bot.announcement() # Game announcement
     
-        elif datetime.today().minute == 33:
-            await bot.toggle_purchases()
+        elif datetime.today().minute == 10:
+            await bot.toggle_purchases() # Turning purchases on
 
-        elif datetime.today().minute == 58:
-            await bot.lottery_game()
+        elif datetime.today().minute == 20:
+            await bot.lottery_game() # The game beginning / turning purchases off
 
 
 @client.event
@@ -105,7 +107,8 @@ async def lotto(ctx, arg, arg2=None):
     """
     Purchase and use a lottery ticket.
     Usage:
-        lotto buy [WAGER]
+        lotto buy [NUMBER]
+        lotto random [AMOUNT]
         lotto taken
         lotto set
         lotto help
@@ -121,6 +124,8 @@ async def lotto(ctx, arg, arg2=None):
     elif arg.lower() == "random" and arg2.isdigit(): # Buying a specified amount of random tickets
         if int(arg2) < 101:
             await bot.buy_random(ctx, int(arg2))
+        else:
+            await ctx.send("There are only 100 numbers to buy... Don't be a chump and buy them all, party pooper.")
 
     elif arg.lower() == "set": # Setting the lottery announcement channel
         channel_options = await bot.posting_channel_choices(ctx)
@@ -136,8 +141,15 @@ async def lotto(ctx, arg, arg2=None):
 
         except asyncio.TimeoutError:
           await ctx.send("Command timed out.")
-        
 
+    elif arg.lower() == "inv":
+        await bot.check_player_tickets(ctx)
+
+
+@client.command(name='go')
+@commands.guild_only()
+async def go(ctx):       
+    await bot.lottery_game()
 
 # Start the bot using TOKENS
 client.run(TOKEN)
