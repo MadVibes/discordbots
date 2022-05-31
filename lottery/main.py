@@ -145,12 +145,6 @@ async def lotto(ctx, arg, arg2=None):
     elif arg.lower() == "inv":
         await bot.check_player_tickets(ctx)
 
-
-@client.command(name='go')
-@commands.guild_only()
-async def go(ctx):       
-    await bot.lottery_game()
-
 # Start the bot using TOKENS
 client.run(TOKEN)
 
