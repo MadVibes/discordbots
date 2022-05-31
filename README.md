@@ -5,4 +5,5 @@ Ensure that the following files exist:
 - data.json
 - data-bets.json
 - data-polling.json
+- data-lottery.json
 - output.log
