@@ -37,6 +37,21 @@ class Bot:
     self.sm = scratch_manager
 
 
+  async def help_embed(self, ctx):
+    embed = discord.Embed(
+      title='Lottery Help',
+      colour=discord.Colour.blue()
+    )
+    embed.add_field(name='$lotto buy [NUMBER]', value='Purchases a number chosen by the user.' ,inline=False)
+    embed.add_field(name='$lotto random [AMOUNT]', value='Purchases a specified amount of random numbers that are still available.' ,inline=False)
+    embed.add_field(name='$lotto taken', value='Shows what numbers can still be purchased.' ,inline=False)
+    embed.add_field(name='$lotto inv', value='Displays what numbers you have purchased.' ,inline=False)
+    embed.add_field(name='$lotto set', value='Changes the announcement channel for the lottery.' ,inline=False)
+
+    await ctx.send(embed=embed)
+
+
+
   def check_tax_balance(self):
     if self.bank.get_tax_balance() >= 100:
       return True

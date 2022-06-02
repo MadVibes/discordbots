@@ -145,6 +145,9 @@ async def lotto(ctx, arg, arg2=None):
     elif arg.lower() == "inv":
         await bot.check_player_tickets(ctx)
 
+    elif arg.lower() == "help":
+        await bot.help_embed(ctx)
+
 # Start the bot using TOKENS
 client.run(TOKEN)
 
