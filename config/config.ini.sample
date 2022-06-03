@@ -104,7 +104,6 @@ COMMS_SECRET = secret
 COMMS_TARGET = http://127.0.0.1:7101
 DEFAULT_NAME = VibeBot Lottery
 COMMAND_PREFIX = $
-IGNORE_COMMANDS = balance,transfer,tts,shop,leaderboard,poll,scratchcard,slots
 STATUS_START_ONLINE = True
 EMOJI_SOURCE = ./emojis
 LOTTERY_TAX_BAND = 2

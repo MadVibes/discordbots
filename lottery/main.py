@@ -15,7 +15,7 @@ from lib.logger import Logger #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
 from lib.server import Web_Server #pylint: disable=E0401
 from lib.shared import Shared #pylint: disable=E0401
-from lib.emote_manager import CoinManager, ScratchManager
+from lib.emote_manager import CoinManager #pylint: disable=E0401
 from lib.utils import Utils #pylint: disable=E0401
 from bot import Bot
 
@@ -48,8 +48,7 @@ logger.log(f'Starting {bot_type} - ' + config.version)
 client = commands.Bot(command_prefix=config['COMMAND_PREFIX'], intents=intents)
 bank = Bank(logger, config)
 cm = CoinManager(logger)
-sm = ScratchManager(logger)
-bot = Bot(logger, config, bank, client, cm, sm)
+bot = Bot(logger, config, bank, client, cm)
 
 
 @tasks.loop(seconds=59)
@@ -94,9 +93,6 @@ async def on_ready():
         await cm.populate_bot_emojis()
     time = 30 # Seconds
     Utils.future_call(time, initCM, [cm])
-    # Load ScratchManager
-    sm.set_guild(client.get_guild(bot.guild_id))
-    await sm.try_add_emojis(config['EMOJI_SOURCE'])
 
     lotto_date_check.start()
 

@@ -14,7 +14,7 @@ sys.path.insert(0, './')
 from lib.logger import Logger #pylint: disable=E0401
 from lib.data import Database #pylint: disable=E0401
 from lib.bank_interface import Bank #pylint: disable=E0401
-from lib.emote_manager import CoinManager, ScratchManager #pylint: disable=E0401
+from lib.emote_manager import CoinManager #pylint: disable=E0401
 
 
 db_schema = {
@@ -27,14 +27,13 @@ db_schema = {
 
 
 class Bot:
-  def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager, scratch_manager: ScratchManager):
+  def __init__(self, logger: Logger, config, bank, client: discord.Client, coin_manager: CoinManager):
     self.logger = logger
     self.config = config
     self.client = client
     self.bank = bank
     self.data = Database(self.logger, self.config['DATA_STORE'], db_schema)
     self.cm = coin_manager
-    self.sm = scratch_manager
 
 
   async def help_embed(self, ctx):
