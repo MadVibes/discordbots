@@ -8,7 +8,7 @@ WORKDIR /app
 COPY start.sh start.sh
 COPY bank bank
 COPY chameleon chameleon
-COPY shop shop
+COPY store store
 COPY gambling gambling
 COPY polling polling
 COPY requirements requirements

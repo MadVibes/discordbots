@@ -39,12 +39,12 @@ services:
       - bank
     network_mode: host
 
-  shop:
+  store:
     container_name: VibeBot-Shop
     restart: on-failure
     image: vibebot
     environment:
-      - bot=shop
+      - bot=store
     volumes:
       - ./config/config.ini:/app/config/config.ini:ro
       - ./data/output.log:/app/data/shop.log:rw

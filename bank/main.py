@@ -147,7 +147,12 @@ async def balance_fade():
 
 @client.command(name='balance')
 async def command_balance(ctx: commands.Context, *args):
-    """Display a users balance, or a target users balance"""
+    """
+    Display a users balance, or a target users balance.
+    Usage:
+        balance
+        balance [NICKNAME]
+    """
     if not(bot.user_id_exists(int(ctx.author.id))):
         bot.create_user(int(ctx.author.id), ctx.author.display_name)
 
@@ -194,7 +199,11 @@ async def command_balance(ctx: commands.Context, *args):
 
 @client.command(name='leaderboard')
 async def command_leaderboard(ctx: commands.Context, *args):
-    """Display a leaderboard"""
+    """
+    Display a leaderboard.
+    Usage:
+        leaderboard
+    """
     if not(bot.user_id_exists(int(ctx.author.id))):
         bot.create_user(int(ctx.author.id), ctx.author.display_name)
 
@@ -226,13 +235,84 @@ async def command_leaderboard(ctx: commands.Context, *args):
 
 
 @client.command(name='transfer')
-async def command_transfer(ctx: commands.Context, *args):
-    """Tansfer money to another player {NOT WORKING :(}"""
+async def command_transfer(ctx: commands.Context, amount, *args):
+    """
+    Tansfer money to another user.
+    Usage:
+        transfer [AMOUNT] [NICKNAME]
+    """
+    if not(bot.user_id_exists(int(ctx.author.id))):
+        bot.create_user(int(ctx.author.id), ctx.author.display_name)
+
+    # Parse args
+    try:
+        amount = int(amount)
+    except Exception as e:
+        await ctx.reply(f'{amount} is not a valid integer')
+        return
+
+    # No target user specified
+    if (len(args) == 0 or amount == None):
+        await ctx.reply('You must specify a target user and amount. See help menu')
+
+    # Check for negative/zero amount
+    elif (amount < 1):
+        await ctx.reply('Amount must be greater than zero!')
+
+    # A target was specified
+    else:
+        guild: discord.Guild = client.get_guild(bot.guild_id)
+        all_members = guild.members
+        all_member_names = list(map(lambda member: member.display_name, all_members))
+        args_comb = ' '.join(args)
+        fuzzy = process.extract(args_comb, all_member_names)
+        logger.debug('Fuzzy matches in transfer action:')
+        matches = []
+        for match in fuzzy:
+            logger.debug(f'{match[0]}:{match[1]}')
+            if match[1] > 95:
+                matches.append(match[0])
+        logger.debug('Matches within threshold:')
+        logger.debug(', '.join(matches))
+        # Handle matches
+        # 0 matches
+        if len(matches) == 0:
+            await ctx.reply('No users match that name')
+            return
+        # 1+ matches
+        elif len(matches) > 1:
+            items = []
+            for item in matches:
+                items.append(' \n - '+item)
+            await ctx.reply('User was too generic, did you mean?' + ''.join(items))
+            return
+        target_id = -1
+        for member in all_members:
+            if member.display_name == matches[0]:
+                target_id = member.id
+                break
+        user_currency = bot.get_balance(ctx.author.id)
+        if user_currency < int(amount):
+            await ctx.reply(f'Insufficient balance, current balance is {user_currency} {cm.currency()}')
+            await ctx.message.add_reaction('❌')
+        else:
+            move_currency_taxed(servlet, {
+                    "user_id_sender": ctx.author.id,
+                    "user_id_receiver": target_id,
+                    "amount": int(amount),
+                    "tax_band": config['TRANSFER_TAX_BAND']
+                })
+            await ctx.message.add_reaction('✅')
+            await ctx.reply(f'Successfully transferred {amount} {cm.currency()} ᵇᵉᶠᵒʳᵉ ᵗᵃˣ to {" ".join(args)} ')
 
 
-@client.command(name='bank')
+@client.command(name='stats')
 async def command_balance(ctx: commands.Context, *args):
-    """Display a users balance, or a target users balance"""
+    """
+    Display stats about the bank.
+    Usage:
+        bank
+    """
     embed = discord.Embed(title='**VibeCoin Bank Stats**', colour=discord.Colour.gold())
     embed.add_field(value=f'Bank currently holds {bot.get_balance(client.user.id)} {cm.currency()}\n and the Tax account holds {bot.get_balance(int(config["TAX_ACCOUNT_ID"]))} {cm.currency()}', name='-------', inline=False)
     await ctx.send(embed=embed)
@@ -275,6 +355,21 @@ def move_currency(service: Servlet, parameters: json):
         raise Exception('user_id_sender, user_id_receiver, amount were not all included in parameters')
 
     return service.bot.req_move_currency(user_id_sender=parameters['user_id_sender'], user_id_receiver=parameters['user_id_receiver'], amount=parameters['amount'])
+
+
+def move_currency_taxed(service: Servlet, parameters: json):
+    """move balance from user to another, split amount into tax account based on band"""
+    if ('user_id_sender' not in parameters
+        or 'user_id_receiver' not in parameters
+        or 'amount' not in parameters
+        or 'tax_band' not in parameters):
+        raise Exception('user_id_sender, user_id_receiver, amount, tax_band were not all included in parameters')
+
+    tax_amount = math.floor(parameters['amount'] * float(service.bot.tax_bands[parameters['tax_band']])/100)
+    move_amount = int(parameters['amount']) - tax_amount
+    service.bot.req_move_currency(user_id_sender=parameters['user_id_sender'], user_id_receiver=int(service.bot.config['TAX_ACCOUNT_ID']), amount=tax_amount)
+
+    return service.bot.req_move_currency(user_id_sender=parameters['user_id_sender'], user_id_receiver=parameters['user_id_receiver'], amount=move_amount)
 
 
 def spend_currency(service: Servlet, parameters: json):
@@ -366,6 +461,7 @@ actions = {
     'getBankBalance': get_bank_balance,
     'getTaxBalance': get_tax_balance,
     'moveCurrency': move_currency,
+    'moveCurrencyTaxed': move_currency_taxed,
     'spendCurrency': spend_currency,
     'withdrawCurrency': withdraw_currency,
     'withdrawTaxCurrency': withdraw_tax_currency,

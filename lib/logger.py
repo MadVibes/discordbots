@@ -75,6 +75,9 @@ class Logger:
     ####################################################################################################
     def write(self, content, level):
 
+        # handle non string/int content
+        if type(content) is not (str or int): content = str(content)
+
         prefix = Logger.get_prefix(level)
 
         # Add custom prefix
