@@ -25,24 +25,25 @@ class EmoteManager:
 
     async def try_add_emojis(self, emoji_source):
         """Attempts to add bot emojis"""
-        bot_emojis = self.custom_emojis
+        bot_emojis = self.custom_emojis.copy()
         all_emojis = []
         all_emojis_string = []
         for emoji in await self.guild.fetch_emojis():
             all_emojis.append(emoji)
             all_emojis_string.append(emoji.name)
-        # Clean up existing emojis
-        for emoji in bot_emojis:
+        # Allow skipping of existing existing emojis
+        for emoji in bot_emojis.copy():
             if emoji in all_emojis_string:
-                to_remove = EmoteManager.get_emoji_from_name(emoji, all_emojis)
-                await to_remove.delete()
-                time.sleep(1.0)
+                self.logger.debug(f'Existing emoji found: {emoji}')
+                self.active_emojis[emoji] = (await EmoteManager.fetch_emoji_from_name(emoji, self.guild)).id
+                bot_emojis.remove(emoji)
         # Attempt to insert emoji
         for emoji in bot_emojis:
             with open(f'{emoji_source}/{emoji}' + (".gif" if '_ANIM' in emoji else ".png"), 'rb') as image:
                 try:
+                    self.logger.debug(f'Adding emoji: {emoji}')
                     created_emoji = await self.guild.create_custom_emoji(name=emoji, image=BytesIO(image.read()).getvalue(), reason='Bot Bank Emojis')
-                    time.sleep(1.0)
+                    time.sleep(0.5)
                     self.active_emojis[created_emoji.name] = created_emoji.id
                 except Exception as e:
                     self.logger.error(f'Failed to insert emoji: {emoji}')
@@ -60,13 +61,21 @@ class EmoteManager:
             found_emoji = EmoteManager.get_emoji_from_name(emoji, all_emojis)
             self.active_emojis[found_emoji.name] = found_emoji.id
         self.use_emoji = True
-        self.logger.debug('Loaded emojis!')
+        self.logger.debug('Loaded external emojis!')
 
 
     @staticmethod
     def get_emoji_from_name(name: str, all_emojis):
         """Gets emoji from emojis list using name string"""
         for emoji in all_emojis:
+            if emoji.name == name:
+                return emoji
+        return None
+    
+    @staticmethod
+    async def fetch_emoji_from_name(name: str, guild: Guild):
+        """Gets emoji from emojis list using name string"""
+        for emoji in await guild.fetch_emojis():
             if emoji.name == name:
                 return emoji
         return None
@@ -118,16 +127,16 @@ class ScratchManager(EmoteManager):
         """Returns scrath emoji string"""
         if not self.use_emoji:
             return [  # List of emotes for the scratch card to use
-              f'||:smile:||',
-              f'||:nerd:||',
-              f'||:star_struck:||',
-              f'||:thinking:||',
-              f'||:disguised_face:||',
-              f'||:skull:||',
-              f'||:money_mouth:||',
-              f'||:poop:||',
-              f'||:clown:||',
-              f'||:cowboy:||',
+                f'||:smile:||',
+                f'||:nerd:||',
+                f'||:star_struck:||',
+                f'||:thinking:||',
+                f'||:disguised_face:||',
+                f'||:skull:||',
+                f'||:money_mouth:||',
+                f'||:poop:||',
+                f'||:clown:||',
+                f'||:cowboy:||',
             ]
         if len(self.active_emojis) == 0:
             self.logger.error('Bot emojis have not be loaded, try calling populate_bot_emojis()')

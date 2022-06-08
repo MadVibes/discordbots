@@ -140,6 +140,40 @@ class Bank:
         return int(content['response'])
 
 
+    def move_currency_taxed(self, user_id_sender: int, user_id_receiver: int, amount: int, tax_band: str):
+        """Moves balance from one user id to another with tax. Returns users balance afterwards as int"""
+        # Create payload/request for bank server
+        payload = dumps({
+            'action': 'moveCurrencyTaxed',
+            'parameters': {
+                'user_id_sender': user_id_sender,
+                'user_id_receiver': user_id_receiver,
+                'amount': amount,
+                'tax_band': tax_band
+            }
+        })
+        # Create headers
+        headers = self.default_headers
+        headers['Content-Length'] = str(len(payload))
+        headers['Authorization'] = self.config['COMMS_SECRET']
+        # Send request
+        r = requests.post(url=self.config['COMMS_TARGET']+"/action",
+                data=payload,
+                headers=headers,
+                timeout=10
+            )
+        content = loads(r.content)
+        # If the code is not 200, raise an error with the response of the bank
+        if r.status_code != 200:
+            self.logger.warn('Bank response was a non 200')
+            self.logger.warn(content)
+            raise Exception(content)
+        if content['request'] != 'Accepted':
+            self.logger.warn('Bank response was not Accepted')
+            self.logger.warn(content)
+        return int(content['response'])
+
+
     def spend_currency(self, user_id: int, amount: int):
         """Spend users balance using user_id. Returns users balance afterwards as int"""
         # Create payload/request for bank server
