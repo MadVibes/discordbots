@@ -805,24 +805,27 @@ class Bot:
         self.bank.summon_currency(user, 90)
         break
       if guessed_num.content.isdigit() and 0 < int(guessed_num.content) < 101:
-        if guessed_num == winning_number:
+        if int(guessed_num.content) == winning_number:
           if i == 0:
             await asyncio.sleep(0.5)
-            ctx.send(f'Unreal! You got it right first try and won 1000 {self.cm.currency()}!')
+            await ctx.send(f'Unreal! You got it right first try and won 1000 {self.cm.currency()}!')
             self.bank.summon_currency(user, 1000)
-          if i == 1:
+            break
+          elif i == 1:
             await asyncio.sleep(0.5)
-            ctx.send(f'Awesome! You got it right second try and won 750 {self.cm.currency()}!')
+            await ctx.send(f'Awesome! You got it right second try and won 750 {self.cm.currency()}!')
             self.bank.summon_currency(user, 750)
-          if i == 2:
+            break
+          elif i == 2:
             await asyncio.sleep(0.5)
-            ctx.send(f'Not bad! You got it right third try and won 500 {self.cm.currency()}!')
+            await ctx.send(f'Not bad! You got it right third try and won 500 {self.cm.currency()}!')
             self.bank.summon_currency(user, 500)
-          if i == 3:
+            break
+          elif i == 3:
             await asyncio.sleep(0.5)
-            ctx.send(f'Ahah! You finally got it right and won 250 {self.cm.currency()}!')
+            await ctx.send(f'Ahah! You finally got it right and won 250 {self.cm.currency()}!')
             self.bank.summon_currency(user, 250)
-          break
+            break
         elif i < 3:
           await asyncio.sleep(0.5)
           await ctx.send('Wrong! Here\'s a hint')
@@ -845,8 +848,9 @@ class Bot:
       elif arg.lower() == 'start': # Start command
         ans = await self.purchase_card(ctx, 90, user)  # Purchasing and withdrawing amount from their balance
         if ans == 1:
-          await self.numbergame_main(ctx, user)  # Starting the game
           await ctx.message.add_reaction('✅')
+          await self.numbergame_main(ctx, user)  # Starting the game
+
     else:
       await ctx.message.add_reaction('❌')
       await ctx.send(f'$ng to start a game! or $ng help for the help command!')
