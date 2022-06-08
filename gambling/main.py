@@ -165,6 +165,22 @@ async def slots(ctx, *args):
         logger.error(str(e))
 
 
+@client.command(name='ng')
+@commands.guild_only()
+async def numberguesser(ctx, arg=None):
+    """
+    Purchase and play Number Guesser.
+    Usage:
+        ng start
+        ng help
+    """
+    try:
+        await bot.NG_start(ctx, arg)
+    except Exception as e:
+        logger.error('Failed to handle Number guesser:')
+        logger.error(str(e))
+
+
 # Start the bot using TOKEN
 client.run(TOKEN)
 

@@ -41,7 +41,8 @@ class Bot:
                     "Sod it":"sod_it.mp3",
                     "Wow":"wow.mp3",
                     "WTF yo doin?":"wtf.mp3",
-                    "Yes please":"yes_please.mp3"
+                    "Yes please":"yes_please.mp3",
+                    "Sleeper":"sleeper.mp3"
                 }
 
 
