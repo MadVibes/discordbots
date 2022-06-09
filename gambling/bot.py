@@ -289,7 +289,7 @@ class Bot:
       embed.add_field(name='$slots spin [wager]', value='Spin the slot machine with a custom wager.' ,inline=False)
 
     elif type == "ng":
-      embed.add_field(name='$ng start', value='Starts the game of Number Guesser!', inline=False)
+      embed.add_field(name='$ng start', value=f'Starts the game of Number Guesser! Cost: 90 {self.cm.currency()}', inline=False)
       embed.add_field(name='How it works:', value='A number will be picked at random between 1 and 100 then '
                                                   'you will have 4 chances to guess the number.\nFor each'
                                                   ' wrong guess you will be awarded a hint and your prize money will'
@@ -832,7 +832,7 @@ class Bot:
           await self.hint(ctx, winning_number, i, int(guessed_num.content))
         else:
           await asyncio.sleep(0.5)
-          await ctx.send(f'You have lost, the number was {winning_number} :woozy_face:')
+          await ctx.send(f'You lost! the number was {winning_number} :woozy_face:')
           break
       else:
         await ctx.send('Choose a number between 1 and 100!')

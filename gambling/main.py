@@ -171,7 +171,7 @@ async def numberguesser(ctx, arg=None):
     """
     Purchase and play Number Guesser.
     Usage:
-        ng start
+        ng start Costs: 90 VBC
         ng help
     """
     try:
