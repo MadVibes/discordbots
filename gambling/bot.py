@@ -289,7 +289,7 @@ class Bot:
       embed.add_field(name='$slots spin [wager]', value='Spin the slot machine with a custom wager.' ,inline=False)
 
     elif type == "ng":
-      embed.add_field(name='$ng start', value=f'Starts the game of Number Guesser! Cost: 90 {self.cm.currency()}', inline=False)
+      embed.add_field(name='$ng start', value=f'Starts the game of Number Guesser! This costs 90 {self.cm.currency()}', inline=False)
       embed.add_field(name='How it works:', value='A number will be picked at random between 1 and 100 then '
                                                   'you will have 4 chances to guess the number.\nFor each'
                                                   ' wrong guess you will be awarded a hint and your prize money will'
