@@ -292,7 +292,7 @@ class Bot:
       embed.add_field(name='$ng start', value=f'Starts the game of Number Guesser! This costs 90 {self.cm.currency()}', inline=False)
       embed.add_field(name='How it works:', value='A number will be picked at random between 1 and 100 then '
                                                   'you will have 4 chances to guess the number.\nFor every'
-                                                  ' wrong guess you will be awarded a hint and your prize money will'
+                                                  ' wrong guess you\'ll be awarded a hint and your prize money will'
                                                   ' go down. If after 4 guesses you don\'t get the number '
                                                   'you will lose!', inline=False)
 
