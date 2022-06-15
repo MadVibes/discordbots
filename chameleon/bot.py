@@ -25,6 +25,7 @@ class Bot:
                     "Bing Chilling":"bing_chilling.mp3",
                     "Bishcuish":"biscuits.mp3",
                     "Skedaddle":"bongo.mp3",
+                    "Bonjour":"bonjour.mp3",
                     "Careless Whisper":"careless_whisper.mp3",
                     "Emotional Damage":"damage.mp3",
                     "Ding":"ding.mp3",
@@ -39,7 +40,8 @@ class Bot:
                     "REEEE":"ree.mp3",
                     "Sod it":"sod_it.mp3",
                     "Wow":"wow.mp3",
-                    "WTF yo doin?":"wtf.mp3"
+                    "WTF yo doin?":"wtf.mp3",
+                    "Yes please":"yes_please.mp3"
                 }
 
 

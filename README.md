@@ -15,4 +15,4 @@ Instead of going with the sensible approach of implementing different COGS to ha
 ## Final Notes
 Feel free to use these bots, But there is no support for bugs. If you do find an issue, feel free to raise it and it will probably get fixed eventually :) 
 
-To run the bots, Update the sample config.ini and add the bots to your server. Then run the python 'main.py's for each bot (Make sure to start the bank first). Or, build and run from the docker images (The Dockerfile uses the image from DockerfileBase from a private registry, remember to change Dockerfile to use local/your own registry).
+To run the bots, Update the sample config.ini and add the bots to your server. Then run the python 'main.py's for each bot (Make sure to start the bank first). Or, build and run from the docker images (The Dockerfile uses the image from DockerfileBase from a private registry, remember to change Dockerfile to use local/your own registry). 
