@@ -11,6 +11,7 @@ config.ini
 data.json
 data-bets.json
 data-polling.json
+data-lottery.json
 
 # VIM
 *.swp
@@ -29,3 +30,4 @@ polls.log
 sample1.log
 sample2.log
 output.log
+lottery.log
