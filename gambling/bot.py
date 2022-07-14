@@ -802,7 +802,7 @@ class Bot:
         guessed_num = await self.client.wait_for('message', check=lambda m: m.author.id == ctx.author.id, timeout=60.0)
       except asyncio.TimeoutError:
         await ctx.send("You've stopped playing? You've been refunded.")
-        self.bank.summon_currency(user, 90)
+        self.bank.withdraw_currency(user, 90)
         break
       if guessed_num.content.isdigit() and 0 < int(guessed_num.content) < 101:
         if int(guessed_num.content) == winning_number:
@@ -841,15 +841,14 @@ class Bot:
 
 
   async def NG_start(self, ctx, arg):
-    user = ctx.author.id
     if arg != None:
       if arg.lower() == "help":  # Help embed
         await self.help_embed(ctx, "ng")
       elif arg.lower() == 'start': # Start command
-        ans = await self.purchase_card(ctx, 90, user)  # Purchasing and withdrawing amount from their balance
+        ans = await self.purchase_card(ctx, 90, ctx.author.id)  # Purchasing and withdrawing amount from their balance
         if ans == 1:
           await ctx.message.add_reaction('✅')
-          await self.numbergame_main(ctx, user)  # Starting the game
+          await self.numbergame_main(ctx, ctx.author.id)  # Starting the game
 
     else:
       await ctx.message.add_reaction('❌')
