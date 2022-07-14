@@ -24,7 +24,7 @@ config = configparser.ConfigParser()
 config.read('./config/config.ini') # CHANGE ME
 config = config[bot_type]
 config.bot_type = bot_type
-config.version = 'v1.4'
+config.version = 'v1.5'
 
 TOKEN = config['DISCORD_TOKEN']
 GUILD = config['DISCORD_GUILD']
@@ -164,6 +164,21 @@ async def slots(ctx, *args):
         logger.error('Failed to handle Scratchcard:')
         logger.error(str(e))
 
+
+@client.command(name='ng')
+@commands.guild_only()
+async def numberguesser(ctx, arg=None):
+    """
+    Purchase and play Number Guesser.
+    Usage:
+        ng start Costs: 90 VBC
+        ng help
+    """
+    try:
+        await bot.NG_start(ctx, arg)
+    except Exception as e:
+        logger.error('Failed to handle Number guesser:')
+        logger.error(str(e))
 
 # Start the bot using TOKEN
 client.run(TOKEN)

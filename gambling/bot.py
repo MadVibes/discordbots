@@ -257,6 +257,9 @@ class Bot:
 
     elif type == "slots":
       title = "Slots Command Help"
+
+    elif type == "ng":
+      title = "Number Guesser Command Help"
       
     embed = discord.Embed(
       title=f'{title}',
@@ -284,6 +287,14 @@ class Bot:
 
     elif type == "slots":
       embed.add_field(name='$slots spin [wager]', value='Spin the slot machine with a custom wager.' ,inline=False)
+
+    elif type == "ng":
+      embed.add_field(name='$ng start', value=f'Starts the game of Number Guesser! This costs 90 {self.cm.currency()}', inline=False)
+      embed.add_field(name='How it works:', value='A number will be picked at random between 1 and 100 then '
+                                                  'you will have 4 chances to guess the number.\nFor every'
+                                                  ' wrong guess you\'ll be awarded a hint and your prize money will'
+                                                  ' go down. If after 4 guesses you don\'t get the number '
+                                                  'you will lose!', inline=False)
 
     await ctx.send(embed=embed)
     
@@ -681,7 +692,6 @@ class Bot:
 
     elif arg.lower() == "help": # Help embed
       await self.help_embed(ctx, "scratchcard")
-
     else:
       await ctx.message.add_reaction('❌')
       await ctx.send(f'$scratchcard buy [amount]\nYou need to wager atleast {self.config["SCRATCHCARD_MIN_BET"]} {self.cm.currency()}!')
@@ -720,7 +730,8 @@ class Bot:
       for row in range(len(current_slots)):
         if row in wins:
           slot_str += f"| \| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** << Win x{wins[row]}!\n"
-          win_amount += round(wins[row] * wager)
+          win_amount += round(wins[row] * wager * len(wins))
+
         else:
           slot_str += f"| \| \u200b \u200b >> **|``{str(current_slots[row]).replace(',', '').strip()}``|** <<\n"
           
@@ -738,6 +749,110 @@ class Bot:
       await ctx.send(embed=embed)
     else:
       await ctx.message.add_reaction('❌')
+
+#############################################################################################
+# Number Guesser
+#############################################################################################
+
+  async def check_and_spend_ng(self, ctx, price):
+    """Making sure user has enough money to purchase service for Number Game"""
+    user_balance = self.bank.get_balance(ctx.author.id)
+    # Insufficient balance
+    if int(price) > user_balance:
+      await ctx.reply(f'Insufficient balance, current balance is {user_balance} {self.cm.currency()}') # If balance insf
+      return
+    try:
+      self.bank.spend_currency_taxed(ctx.author.id, int(price), self.config['NUMBER_GAME_TAX_BAND']) # Spending the amount
+      return 1
+
+    except Exception as e:
+      self.logger.warn('Failed to execute:')
+      self.logger.warn(str(e))
+
+
+  async def purchase_service_ng(self, ctx, price, user):
+    """Handling purchase of a Number Game"""
+    ans = await self.check_and_spend_ng(ctx, price)
+    if ans == 1:
+      return 1
+
+  async def hint(self, ctx, winning_number, guess, guessed_num):
+      if guess == 0:
+          if guessed_num < winning_number:
+            await ctx.send('The number is higher! Take another shot!')
+          else:
+              await ctx.send('The number is lower! Take another shot!')
+      elif guess == 1:
+          if winning_number %2 == 0:
+              await ctx.send('It\'s an even number! Take another shot!')
+          else:
+              await ctx.send('It\'s an odd number! Take another shot!')
+      elif guess == 2:
+          last_digit = str(winning_number)[-1]
+          await ctx.send(f'The last digit of the number is {last_digit}! Take another shot!')
+
+
+  async def numbergame_main(self, ctx, user):
+    winning_number = random.randint(1, 100)
+    await ctx.send(f'Welcome to the Number Guesser game!\n Guess a number!')
+    i = -1
+    while i <= 4:
+      i += 1
+      try:
+        guessed_num = await self.client.wait_for('message', check=lambda m: m.author.id == ctx.author.id, timeout=60.0)
+      except asyncio.TimeoutError:
+        await ctx.send("You've stopped playing? You've been refunded.")
+        self.bank.withdraw_currency(user, 90)
+        break
+      if guessed_num.content.isdigit() and 0 < int(guessed_num.content) < 101:
+        if int(guessed_num.content) == winning_number:
+          if i == 0:
+            await asyncio.sleep(0.5)
+            await ctx.send(f'Unreal! You got it right first try and won 1000 {self.cm.currency()}!')
+            self.bank.summon_currency(user, 1000)
+            break
+          elif i == 1:
+            await asyncio.sleep(0.5)
+            await ctx.send(f'Awesome! You got it right second try and won 750 {self.cm.currency()}!')
+            self.bank.summon_currency(user, 750)
+            break
+          elif i == 2:
+            await asyncio.sleep(0.5)
+            await ctx.send(f'Not bad! You got it right third try and won 500 {self.cm.currency()}!')
+            self.bank.summon_currency(user, 500)
+            break
+          elif i == 3:
+            await asyncio.sleep(0.5)
+            await ctx.send(f'Ahah! You finally got it right and won 250 {self.cm.currency()}!')
+            self.bank.summon_currency(user, 250)
+            break
+        elif i < 3:
+          await asyncio.sleep(0.5)
+          await ctx.send('Wrong! Here\'s a hint')
+          await self.hint(ctx, winning_number, i, int(guessed_num.content))
+        else:
+          await asyncio.sleep(0.5)
+          await ctx.send(f'You lost! the number was {winning_number} :woozy_face:')
+          break
+      else:
+        await ctx.send('Choose a number between 1 and 100!')
+        i -= 1
+
+
+
+  async def NG_start(self, ctx, arg):
+    if arg != None:
+      if arg.lower() == "help":  # Help embed
+        await self.help_embed(ctx, "ng")
+      elif arg.lower() == 'start': # Start command
+        ans = await self.purchase_card(ctx, 90, ctx.author.id)  # Purchasing and withdrawing amount from their balance
+        if ans == 1:
+          await ctx.message.add_reaction('✅')
+          await self.numbergame_main(ctx, ctx.author.id)  # Starting the game
+
+    else:
+      await ctx.message.add_reaction('❌')
+      await ctx.send(f'$ng to start a game! or $ng help for the help command!')
 
 
 ########################################################################################################

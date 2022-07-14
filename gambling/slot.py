@@ -11,7 +11,7 @@ class Slot_Machine:
                          [0, 0, 0, 0, 0],
                          [0, 0, 0, 0, 0],]
 
-    self.conversions = {2: 0.3, 3: 3, 4: 30, 5: 100}
+    self.conversions = {2: 0.3, 3: 3, 4: 20, 5: 100}
 
   def spin(self):
     current_machine = self.slot_machine
@@ -37,7 +37,7 @@ class Slot_Machine:
     return wins
     
 ########################################################################################################
-#   Copyright (C) 2022  Liam Coombs
+#   Copyright (C) 2022  Liam Coombs, Sam Tipper
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
