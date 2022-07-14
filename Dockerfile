@@ -11,6 +11,7 @@ COPY chameleon chameleon
 COPY store store
 COPY gambling gambling
 COPY polling polling
+COPY lottery lottery
 COPY requirements requirements
 COPY lib lib
 COPY emojis emojis
